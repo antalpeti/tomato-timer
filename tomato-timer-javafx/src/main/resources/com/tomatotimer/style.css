@@ -2,6 +2,7 @@
    TomatoTimer JavaFX – style.css
    Compact, dark-themed, transparent window skin.
    Icon colours & accent palette live in IconFactory.java.
+   Gradient background logic lives in TimerBackgroundHelper.java.
    ============================================================ */
 
 /* ---- Root / window ---------------------------------------- */
@@ -12,21 +13,31 @@
     -fx-border-radius: 2;
 }
 
+/* ---- Timer face root (buttons.fxml StackPane) ------------- */
+/* Initial fallback colour; overridden every tick by            */
+/* TimerBackgroundHelper.computeRootGradientCss() via Java.    */
+.buttons-root {
+    -fx-background-color: #0D1117;
+}
+
 /* ---- Progress bar fills entire window height -------------- */
 .timer-progress {
     -fx-pref-height: 44;
     -fx-min-height:  44;
     -fx-max-height:  Infinity;
-    -fx-accent: #4ECDC4;   /* teal – matches IconFactory.COLOR_PLAY */
+    /* -fx-accent set dynamically by ButtonsController as a fallback */
 }
 .timer-progress .bar {
     -fx-background-radius: 0;
     -fx-background-insets: 0;
+    /* gradient set dynamically by ButtonsController via .bar lookup */
 }
 .timer-progress .track {
     -fx-background-radius: 0;
     -fx-background-insets: 0;
-    -fx-background-color: #1a1a1a;
+    /* near-transparent overlay so root gradient shows through;     */
+    /* value overridden each tick by TimerBackgroundHelper.          */
+    -fx-background-color: rgba(0, 0, 0, 0.18);
 }
 
 /* ---- Labels ----------------------------------------------- */

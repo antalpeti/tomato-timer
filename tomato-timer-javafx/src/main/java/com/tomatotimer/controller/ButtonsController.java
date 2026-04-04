@@ -119,6 +119,14 @@ public class ButtonsController {
     public void updateUI(TimerMode mode, boolean isPaused, boolean isOverTime,
                          double progressPct, String timeStr, String infoStr) {
 
+        // ---- Root-pane ambient gradient (state + mode aware) ----------------
+        // Covers the entire window background with a smooth three-stop
+        // linear gradient that shifts continuously with progress and mode.
+        // The gradient is always dark enough to keep text and icons legible.
+        rootPane.setStyle("-fx-background-color: " +
+                TimerBackgroundHelper.computeRootGradientCss(
+                        mode, progressPct, isPaused, isOverTime) + ";");
+
         // ---- Progress bar value ---------------------------------------------
         // WPF: paused → indeterminate; overtime → 100 %; otherwise → current %
         if (isPaused) {
@@ -129,23 +137,26 @@ public class ButtonsController {
             progressBar.setProgress(progressPct / 100.0);
         }
 
-        // ---- Progress bar accent colour (continuous interpolation) ----------
-        // Implements the WPF logic (green → yellow at 80 % → red at overtime)
-        // with mode-aware base colours and smooth blending via TimerBackgroundHelper.
+        // ---- Progress-bar fallback accent (used before sub-node lookup succeeds)
         final Color accent = TimerBackgroundHelper.computeAccentColor(
                 mode, progressPct, isPaused, isOverTime);
         progressBar.setStyle("-fx-accent: " + TimerBackgroundHelper.toCssHex(accent) + ";");
 
-        // ---- Track (background) colour – mode-specific dark tint ------------
-        // Look up the .track sub-node (available after the first layout pass).
-        final String trackHex = TimerBackgroundHelper.computeTrackColor(
-                mode, isPaused, isOverTime);
+        // ---- .bar sub-node: vertical 3-D gradient fill ----------------------
+        // Lighter-top → accent-mid → darker-bottom gives the filled bar
+        // a dimensional look without obscuring overlaid labels or icons.
+        final Node bar = progressBar.lookup(".bar");
+        if (bar != null) {
+            bar.setStyle(TimerBackgroundHelper.computeBarCss(
+                    mode, progressPct, isPaused, isOverTime));
+        }
+
+        // ---- .track sub-node: near-transparent overlay ----------------------
+        // rgba(0,0,0,0.18) lets the root-pane ambient gradient show through
+        // the unfilled portion of the bar, completing the full-window effect.
         final Node track = progressBar.lookup(".track");
         if (track != null) {
-            track.setStyle(
-                    "-fx-background-color: " + trackHex + ";" +
-                    "-fx-background-radius: 0;" +
-                    "-fx-background-insets: 0;");
+            track.setStyle(TimerBackgroundHelper.computeTrackCss());
         }
 
         // ---- Labels ---------------------------------------------------------
