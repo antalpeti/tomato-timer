@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.image.*?>
+
+<!--
+  main.fxml – outermost shell.
+  Hosts the content pane (where pages are swapped in) and the always-visible
+  window controls (always-on-top toggle + close menu).
+-->
+<StackPane xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.tomatotimer.controller.MainController"
+           fx:id="rootPane"
+           styleClass="root-pane"
+           prefWidth="260" prefHeight="44"
+           minWidth="160" minHeight="44">
+
+    <!-- Page content fills the whole pane -->
+    <Pane fx:id="contentPane" maxWidth="Infinity" maxHeight="Infinity" />
+
+    <!-- Window controls – overlaid top-right; fade in/out on mouse-enter/leave -->
+    <HBox fx:id="windowControlPane"
+          alignment="TOP_RIGHT"
+          pickOnBounds="false"
+          StackPane.alignment="TOP_RIGHT">
+
+        <!-- Always-on-top toggle -->
+        <ToggleButton fx:id="btnAlwaysOnTop"
+                      styleClass="win-ctrl-btn"
+                      onAction="#handleAlwaysOnTop"
+                      prefWidth="20" prefHeight="20"
+                      focusTraversable="false">
+            <tooltip><Tooltip text="Always On Top"/></tooltip>
+            <graphic>
+                <ImageView fitWidth="14" fitHeight="14" preserveRatio="true">
+                    <image><Image url="@icons/9-av-make-available-offline.png"/></image>
+                </ImageView>
+            </graphic>
+        </ToggleButton>
+
+        <!-- Close menu button -->
+        <MenuButton styleClass="win-ctrl-btn"
+                    prefWidth="20" prefHeight="20"
+                    focusTraversable="false">
+            <tooltip><Tooltip text="Close"/></tooltip>
+            <graphic>
+                <ImageView fitWidth="14" fitHeight="14" preserveRatio="true">
+                    <image><Image url="@icons/1-navigation-cancel.png"/></image>
+                </ImageView>
+            </graphic>
+            <items>
+                <MenuItem text="Close (save state)"        onAction="#handleClose"/>
+                <MenuItem text="Close (don't save state)"  onAction="#handleCloseNoSave"/>
+            </items>
+        </MenuButton>
+    </HBox>
+</StackPane>
+
+

@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.geometry.*?>
+
+<!--
+  buttons.fxml – main timer face, equivalent to Page_Buttons.xaml.
+  Layout:
+    StackPane root
+      ProgressBar (full width/height background)
+      AnchorPane overlay:
+        labelTime        – centered, big font, visible when idle
+        labelInfo        – bottom-left, start time + pause info
+        labelTimeSmall   – bottom-right, visible when hovering
+        HBox (buttons)   – visible when hovering: settings | reset play pause work relax
+-->
+<StackPane xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.tomatotimer.controller.ButtonsController"
+           fx:id="rootPane"
+           styleClass="buttons-root"
+           prefWidth="260" prefHeight="44"
+           maxWidth="Infinity" maxHeight="Infinity">
+
+    <!-- Progress bar fills everything -->
+    <ProgressBar fx:id="progressBar"
+                 maxWidth="Infinity" maxHeight="Infinity"
+                 progress="0.0"
+                 styleClass="timer-progress"/>
+
+    <!-- Overlay AnchorPane -->
+    <AnchorPane maxWidth="Infinity" maxHeight="Infinity"
+                style="-fx-background-color: transparent;">
+
+        <!-- Primary time label (idle state) -->
+        <Label fx:id="labelTime"
+               text="Work  30:00"
+               styleClass="label-time"
+               AnchorPane.topAnchor="0"
+               AnchorPane.bottomAnchor="0"
+               AnchorPane.leftAnchor="0"
+               AnchorPane.rightAnchor="0"/>
+
+        <!-- Info label: start time + pause (bottom-left, compact) -->
+        <Label fx:id="labelInfo"
+               text=""
+               styleClass="label-info"
+               AnchorPane.bottomAnchor="0"
+               AnchorPane.leftAnchor="4"/>
+
+        <!-- Small time label bottom-right (hover state) -->
+        <Label fx:id="labelTimeSmall"
+               text=""
+               styleClass="label-time-small"
+               AnchorPane.bottomAnchor="0"
+               AnchorPane.rightAnchor="4"/>
+
+        <!-- Buttons row (hover state) -->
+        <HBox alignment="CENTER_LEFT" spacing="0"
+              AnchorPane.topAnchor="0"
+              AnchorPane.bottomAnchor="0"
+              AnchorPane.leftAnchor="0"
+              AnchorPane.rightAnchor="0">
+
+            <!-- Settings button (left) -->
+            <Button fx:id="btnSettings"
+                    styleClass="icon-btn"
+                    onAction="#onSettings"
+                    focusTraversable="false">
+                <tooltip><Tooltip text="Settings"/></tooltip>
+                <graphic>
+                    <ImageView fitWidth="26" fitHeight="26" preserveRatio="true">
+                        <image><Image url="@icons/2-action-settings.png"/></image>
+                    </ImageView>
+                </graphic>
+            </Button>
+
+            <!-- Spacer -->
+            <Region HBox.hgrow="ALWAYS"/>
+
+            <!-- Action buttons (center) -->
+            <HBox fx:id="buttonsBox" alignment="CENTER" spacing="0">
+
+                <Button fx:id="btnReset"
+                        styleClass="icon-btn"
+                        onAction="#onReset"
+                        onMousePressed="#onMouseReleased"
+                        focusTraversable="false">
+                    <tooltip><Tooltip text="Reset"/></tooltip>
+                    <graphic>
+                        <ImageView fitWidth="26" fitHeight="26" preserveRatio="true">
+                            <image><Image url="@icons/9-av-replay.png"/></image>
+                        </ImageView>
+                    </graphic>
+                </Button>
+
+                <Button fx:id="btnPlay"
+                        styleClass="icon-btn"
+                        onAction="#onPlay"
+                        focusTraversable="false">
+                    <tooltip><Tooltip text="Resume"/></tooltip>
+                    <graphic>
+                        <ImageView fitWidth="26" fitHeight="26" preserveRatio="true">
+                            <image><Image url="@icons/9-av-play.png"/></image>
+                        </ImageView>
+                    </graphic>
+                </Button>
+
+                <Button fx:id="btnPause"
+                        styleClass="icon-btn"
+                        onAction="#onPause"
+                        focusTraversable="false">
+                    <tooltip><Tooltip text="Pause"/></tooltip>
+                    <graphic>
+                        <ImageView fitWidth="26" fitHeight="26" preserveRatio="true">
+                            <image><Image url="@icons/9-av-pause.png"/></image>
+                        </ImageView>
+                    </graphic>
+                </Button>
+
+                <Button fx:id="btnWork"
+                        styleClass="icon-btn"
+                        onAction="#onWork"
+                        focusTraversable="false">
+                    <tooltip><Tooltip text="Go to work"/></tooltip>
+                    <graphic>
+                        <ImageView fitWidth="26" fitHeight="26" preserveRatio="true">
+                            <image><Image url="@icons/work_bag-32_alpha.png"/></image>
+                        </ImageView>
+                    </graphic>
+                </Button>
+
+                <!-- Relax – hold 2 s for Long Rest -->
+                <Button fx:id="btnRelax"
+                        styleClass="icon-btn"
+                        onAction="#onRelax"
+                        onMousePressed="#onRelaxPressed"
+                        onMouseReleased="#onMouseReleased"
+                        focusTraversable="false">
+                    <tooltip><Tooltip text="Take a break (hold 2 s for long break)"/></tooltip>
+                    <graphic>
+                        <ImageView fitWidth="26" fitHeight="26" preserveRatio="true">
+                            <image><Image url="@icons/12-hardware-gamepad.png"/></image>
+                        </ImageView>
+                    </graphic>
+                </Button>
+            </HBox>
+
+            <!-- Right spacer -->
+            <Region HBox.hgrow="ALWAYS" prefWidth="24"/>
+        </HBox>
+    </AnchorPane>
+</StackPane>
+
+
