@@ -30,7 +30,8 @@ public class AppSettings {
     private static final String KEY_SOUND_PAUSE        = "sound_pause";
     private static final String KEY_SOUND_WORK_DONE    = "sound_work_done";
     private static final String KEY_SOUND_REST_TIMEOUT = "sound_rest_timeout";
-    private static final String KEY_NEON_PRESET        = "neon_preset";
+    private static final String KEY_NEON_PRESET           = "neon_preset";
+    private static final String KEY_TASKBAR_ICON_ENABLE   = "taskbar_icon_enable";
 
     private AppSettings() {}
 
@@ -109,6 +110,10 @@ public class AppSettings {
     public void setNeonPreset(NeonPreset preset) {
         prefs.put(KEY_NEON_PRESET, preset.name());
     }
+
+    // ---- taskbar icon -------------------------------------------------------
+    public boolean isTaskbarIconEnable()           { return prefs.getBoolean(KEY_TASKBAR_ICON_ENABLE, true); }
+    public void    setTaskbarIconEnable(boolean v) { prefs.putBoolean(KEY_TASKBAR_ICON_ENABLE, v); }
 
     // ---- flush --------------------------------------------------------------
     public void save() {

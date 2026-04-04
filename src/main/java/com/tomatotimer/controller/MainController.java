@@ -2,7 +2,10 @@ package com.tomatotimer.controller;
 
 import com.tomatotimer.AppSettings;
 import com.tomatotimer.IconFactory;
+import com.tomatotimer.NeonPreset;
 import com.tomatotimer.SoundType;
+import com.tomatotimer.TaskbarIconRenderer;
+import com.tomatotimer.TimerBackgroundHelper;
 import com.tomatotimer.TimerMode;
 import com.tomatotimer.UiScaleHelper;
 import javafx.animation.FadeTransition;
@@ -21,6 +24,7 @@ import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
@@ -87,6 +91,10 @@ public class MainController {
 
     // ---- one-second clock ---------------------------------------------------
     private Timeline clock;
+
+    // ---- taskbar icon cache (avoids redraw when text + colour unchanged) ----
+    private String lastIconText  = "";
+    private Color  lastIconColor = null;
 
     // =========================================================================
     //  Initialisation
@@ -294,9 +302,78 @@ public class MainController {
                     : "\nPause: " + String.format("%d:%02d", pm, pse);
         }
 
-        if (buttonsController != null)
-            buttonsController.updateUI(settings.getNeonPreset(),
+        if (buttonsController != null) {
+            final var preset = settings.getNeonPreset();
+            buttonsController.updateUI(preset,
                     mode, isPaused, isOverTime, progressPct, timeStr, infoStr);
+            updateTaskbarIcon(preset, progressPct);
+        }
+    }
+
+    // =========================================================================
+    //  Taskbar icon (Windows dynamic icon showing remaining time)
+    // =========================================================================
+
+    /**
+     * Updates (or clears) the stage icon shown in the Windows taskbar every second.
+     *
+     * <p>Re-renders only when the displayed text or accent colour has actually changed
+     * to avoid unnecessary {@link javafx.scene.canvas.Canvas} snapshots.</p>
+     *
+     * @param preset      the currently active {@link NeonPreset}
+     * @param progressPct elapsed progress percentage in [0, 100]
+     */
+    private void updateTaskbarIcon(NeonPreset preset, double progressPct) {
+        if (stage == null) return;
+
+        if (!settings.isTaskbarIconEnable()) {
+            // Feature disabled – restore the default JVM icon
+            if (!stage.getIcons().isEmpty()) {
+                stage.getIcons().clear();
+            }
+            // Reset cache so re-enabling triggers an immediate redraw
+            lastIconText  = "";
+            lastIconColor = null;
+            return;
+        }
+
+        // ── Compute icon text (time only, no mode prefix) ─────────────────────
+        long absMs    = Math.abs(currentRemainingMs());
+        long totalSec = absMs / 1000;
+        long hours    = totalSec / 3600;
+        long minutes  = (totalSec % 3600) / 60;
+        long seconds  = totalSec % 60;
+
+        final String iconText = (hours > 0)
+                ? String.format("%d:%02d:%02d", hours, minutes, seconds)
+                : String.format("%d:%02d", minutes, seconds);
+
+        // ── Compute accent colour matching the timer face ─────────────────────
+        final Color accentColor = TimerBackgroundHelper.computeAccentColor(
+                preset, mode, progressPct, isPaused, isOverTime);
+
+        // ── Re-render only on change ──────────────────────────────────────────
+        if (iconText.equals(lastIconText) && accentColor.equals(lastIconColor)) return;
+
+        lastIconText  = iconText;
+        lastIconColor = accentColor;
+
+        final var image = TaskbarIconRenderer.render(iconText, accentColor);
+        stage.getIcons().setAll(image);
+    }
+
+    /** Returns the current remaining milliseconds (positive = time left, negative = overtime). */
+    private long currentRemainingMs() {
+        long modeDurationMs = switch (mode) {
+            case WORK       -> settings.getWorkTime()      * 60_000L + 800;
+            case RELAX      -> settings.getRelaxTime()     * 60_000L + 800;
+            case RELAX_LONG -> settings.getRelaxTimeLong() * 60_000L + 800;
+        };
+        if (isPaused) {
+            return modeDurationMs - timerElapsedWhenPaused;
+        }
+        long elapsed = java.time.Duration.between(timerStartTime, java.time.LocalDateTime.now()).toMillis();
+        return modeDurationMs - elapsed;
     }
 
     // =========================================================================

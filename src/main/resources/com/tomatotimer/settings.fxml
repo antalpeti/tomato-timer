@@ -97,6 +97,14 @@
 
             <!-- Sound settings -->
             <Separator orientation="VERTICAL" prefHeight="30"/>
+
+            <!-- Taskbar icon toggle -->
+            <CheckBox fx:id="cbTaskbarIcon" text="Taskbar"
+                      onAction="#onTaskbarIconChanged"
+                      focusTraversable="false">
+                <tooltip><Tooltip text="Show remaining time in Windows taskbar icon"/></tooltip>
+            </CheckBox>
+
             <!-- Sound settings button – graphic set by controller -->
             <Button fx:id="btnSoundSettings"
                     styleClass="icon-btn" onAction="#onSoundSettings"

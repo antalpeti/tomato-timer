@@ -32,6 +32,7 @@ public class SettingsController {
     @FXML private ComboBox<NeonPreset> cbNeonPreset;
     @FXML private CheckBox         cbEnableGCal;
     @FXML private CheckBox         cbCopyToClipboard;
+    @FXML private CheckBox         cbTaskbarIcon;
     @FXML private TextField        tfGCalSrc;
     @FXML private TextField        tfGCalText;
     @FXML private GridPane         gpGCalDetails;
@@ -107,6 +108,7 @@ public class SettingsController {
         // ── CheckBox labels ───────────────────────────────────────────────────
         cbEnableGCal.setStyle(lblStyle);
         cbCopyToClipboard.setStyle(lblStyle);
+        cbTaskbarIcon.setStyle(lblStyle);
 
         // ── Version label ─────────────────────────────────────────────────────
         labelVersion.setStyle(String.format("-fx-font-size: %.1fpx;",
@@ -138,6 +140,7 @@ public class SettingsController {
         tfGCalText.setText(settings.getGCalText());
         cbEnableGCal.setSelected(settings.isGCalEnable());
         cbCopyToClipboard.setSelected(settings.isGCalCopyToClipboard());
+        cbTaskbarIcon.setSelected(settings.isTaskbarIconEnable());
         updateGCalControls();
     }
 
@@ -151,6 +154,7 @@ public class SettingsController {
         settings.setGCalText(tfGCalText.getText());
         settings.setGCalEnable(cbEnableGCal.isSelected());
         settings.setGCalCopyToClipboard(cbCopyToClipboard.isSelected());
+        settings.setTaskbarIconEnable(cbTaskbarIcon.isSelected());
     }
 
     private void updateGCalControls() {
@@ -171,6 +175,11 @@ public class SettingsController {
     @FXML
     private void onGCalEnableChanged() {
         updateGCalControls();
+        syncToSettings();
+    }
+
+    @FXML
+    private void onTaskbarIconChanged() {
         syncToSettings();
     }
 
