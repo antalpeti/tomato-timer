@@ -69,6 +69,44 @@ mvn package
 java -jar target/tomato-timer-1.0.0-fat.jar
 ```
 
+### Windows double-click launch
+
+Two launcher scripts at the project root let you start the app without opening a terminal.
+
+| File | Purpose |
+|---|---|
+| `TomatoTimer.vbs` | **Primary launcher** -- double-click this; starts the batch hidden (no console flicker) |
+| `TomatoTimer.bat` | Core logic -- locates the newest `target\*-fat.jar`, verifies `javaw`, and launches with `start` |
+
+**Steps**
+
+1. Build the fat JAR once:
+   ```bat
+   mvn package
+   ```
+2. Double-click **`TomatoTimer.vbs`** in File Explorer.  
+   The app opens; no console window appears.
+
+**Verify the environment without launching** (run in a terminal):
+
+```bat
+TomatoTimer.bat --dry-run
+```
+
+Sample output when everything is ready:
+
+```text
+[DRY-RUN] JAR    : C:\...\target\tomato-timer-1.0.0-fat.jar
+[DRY-RUN] JAVAW  : C:\Program Files\Eclipse Adoptium\jdk-21...\bin\javaw.exe
+[DRY-RUN] Command: "...\javaw.exe" -jar "...\tomato-timer-1.0.0-fat.jar"
+[DRY-RUN] OK -- environment looks good, no process was started.
+```
+
+**Error handling**
+
+- If no fat JAR is found, a popup explains to run `mvn package`.
+- If `javaw` is not on `PATH`, a popup instructs you to install Java 21+.
+
 ## Requirements
 
 - Java 21+
