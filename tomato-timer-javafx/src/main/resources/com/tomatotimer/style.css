@@ -1,6 +1,7 @@
 /* ============================================================
    TomatoTimer JavaFX – style.css
    Compact, dark-themed, transparent window skin.
+   Icon colours & accent palette live in IconFactory.java.
    ============================================================ */
 
 /* ---- Root / window ---------------------------------------- */
@@ -16,7 +17,7 @@
     -fx-pref-height: 44;
     -fx-min-height:  44;
     -fx-max-height:  Infinity;
-    -fx-accent: #4CAF50;
+    -fx-accent: #4ECDC4;   /* teal – matches IconFactory.COLOR_PLAY */
 }
 .timer-progress .bar {
     -fx-background-radius: 0;
@@ -25,7 +26,7 @@
 .timer-progress .track {
     -fx-background-radius: 0;
     -fx-background-insets: 0;
-    -fx-background-color: #222222;
+    -fx-background-color: #1a1a1a;
 }
 
 /* ---- Labels ----------------------------------------------- */
@@ -34,14 +35,14 @@
     -fx-font-weight: bold;
     -fx-text-fill: white;
     -fx-alignment: center;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.8), 3, 0, 0, 1);
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.85), 4, 0, 0, 1);
 }
 
 .label-time-small {
     -fx-font-size: 11px;
     -fx-text-fill: white;
     -fx-alignment: center-right;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.8), 2, 0, 0, 1);
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.85), 2, 0, 0, 1);
 }
 
 .label-info {
@@ -66,20 +67,21 @@
     -fx-min-height: 34;
 }
 .icon-btn:hover {
-    -fx-background-color: rgba(255,255,255,0.15);
-    -fx-background-radius: 3;
+    -fx-background-color: rgba(255,255,255,0.12);
+    -fx-background-radius: 4;
 }
 .icon-btn:pressed {
-    -fx-background-color: rgba(255,255,255,0.30);
+    -fx-background-color: rgba(255,255,255,0.28);
+    -fx-background-radius: 4;
 }
 
 /* ---- Small icon buttons (sound settings) ------------------ */
 .icon-btn-sm {
     -fx-background-color: rgba(255,255,255,0.08);
-    -fx-border-color: rgba(255,255,255,0.2);
-    -fx-border-radius: 2;
-    -fx-background-radius: 2;
-    -fx-text-fill: white;
+    -fx-border-color: rgba(255,255,255,0.18);
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+    -fx-text-fill: #eeeeee;
     -fx-font-size: 11px;
     -fx-padding: 1 3 1 3;
     -fx-cursor: hand;
@@ -100,12 +102,13 @@
     -fx-max-width:  20;
     -fx-max-height: 20;
 }
-.win-ctrl-btn:hover   { -fx-background-color: rgba(255,255,255,0.2); }
-.win-ctrl-btn:pressed { -fx-background-color: rgba(200,50,50,0.6); }
+.win-ctrl-btn:hover   { -fx-background-color: rgba(255,255,255,0.18); -fx-background-radius: 3; }
+.win-ctrl-btn:pressed { -fx-background-color: rgba(200,50,50,0.55);   -fx-background-radius: 3; }
 
 /* ToggleButton selected state for AlwaysOnTop */
 .win-ctrl-btn:selected {
-    -fx-background-color: rgba(100,180,255,0.35);
+    -fx-background-color: rgba(162,155,254,0.30);  /* matches COLOR_PIN_ON */
+    -fx-background-radius: 3;
 }
 
 /* ---- Settings / sound-settings page background ------------ */
@@ -154,7 +157,7 @@
     -fx-font-size: 11px;
 }
 .text-field:focused {
-    -fx-border-color: #5599ff;
+    -fx-border-color: #4ECDC4;  /* teal focus ring */
 }
 
 /* ---- MenuButton / ContextMenu ------------------------------ */
@@ -186,4 +189,3 @@
 .scroll-bar:horizontal .track { -fx-background-color: #333; }
 .scroll-bar .increment-button,
 .scroll-bar .decrement-button { -fx-padding: 0; }
-

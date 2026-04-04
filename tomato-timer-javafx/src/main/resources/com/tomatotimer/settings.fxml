@@ -1,30 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.image.*?>
 <?import javafx.geometry.*?>
 <?import javafx.util.*?>
 
 <!--
   settings.fxml – equivalent to Page_Settings.xaml.
-  Layout: back-button | scrollable settings row | version label
+  Icons are assigned programmatically by SettingsController (SVGPath via IconFactory).
 -->
 <HBox xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.tomatotimer.controller.SettingsController"
+      fx:id="rootBox"
       prefHeight="44" maxWidth="Infinity"
       alignment="CENTER_LEFT"
       styleClass="page-root">
 
-    <!-- Back button -->
-    <Button styleClass="icon-btn"
+    <!-- Back button – graphic set by controller -->
+    <Button fx:id="btnBack"
+            styleClass="icon-btn"
             onAction="#onBack"
             focusTraversable="false">
         <tooltip><Tooltip text="Back to timer"/></tooltip>
-        <graphic>
-            <ImageView fitWidth="26" fitHeight="26" preserveRatio="true">
-                <image><Image url="@icons/10-device-access-time.png"/></image>
-            </ImageView>
-        </graphic>
     </Button>
 
     <!-- Scrollable settings -->
@@ -85,26 +81,20 @@
                            promptText="Pomodoro" prefWidth="160"/>
             </GridPane>
 
-            <Button styleClass="icon-btn" onAction="#onTestGCal"
+            <!-- Test GCal button – graphic set by controller -->
+            <Button fx:id="btnTestGCal"
+                    styleClass="icon-btn" onAction="#onTestGCal"
                     focusTraversable="false">
                 <tooltip><Tooltip text="Test: open Google Calendar"/></tooltip>
-                <graphic>
-                    <ImageView fitWidth="22" fitHeight="22" preserveRatio="true">
-                        <image><Image url="@icons/4-collections-go-to-today.png"/></image>
-                    </ImageView>
-                </graphic>
             </Button>
 
             <!-- Sound settings -->
             <Separator orientation="VERTICAL" prefHeight="30"/>
-            <Button styleClass="icon-btn" onAction="#onSoundSettings"
+            <!-- Sound settings button – graphic set by controller -->
+            <Button fx:id="btnSoundSettings"
+                    styleClass="icon-btn" onAction="#onSoundSettings"
                     focusTraversable="false">
                 <tooltip><Tooltip text="Sound settings"/></tooltip>
-                <graphic>
-                    <ImageView fitWidth="22" fitHeight="22" preserveRatio="true">
-                        <image><Image url="@icons/10-device-access-volume-on.png"/></image>
-                    </ImageView>
-                </graphic>
             </Button>
 
         </HBox>
@@ -116,5 +106,4 @@
            HBox.hgrow="NEVER"/>
 
 </HBox>
-
 

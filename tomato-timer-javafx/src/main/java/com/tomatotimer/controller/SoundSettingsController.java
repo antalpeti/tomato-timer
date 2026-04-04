@@ -1,9 +1,12 @@
 package com.tomatotimer.controller;
 
 import com.tomatotimer.AppSettings;
+import com.tomatotimer.IconFactory;
 import com.tomatotimer.SoundType;
 import javafx.fxml.FXML;
+import javafx.scene.Group;
 import javafx.scene.control.Button;
+import javafx.scene.layout.HBox;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.stage.FileChooser;
@@ -14,6 +17,10 @@ import java.io.File;
  * Controller for sound_settings.fxml – equivalent to Page_SoundSettings.xaml.cs.
  */
 public class SoundSettingsController {
+
+    // Back navigation
+    @FXML private HBox   rootBox;
+    @FXML private Button btnBack;
 
     // Resume row
     @FXML private Button btnResumePlay;
@@ -43,6 +50,9 @@ public class SoundSettingsController {
     private AppSettings    settings = AppSettings.getInstance();
     private MediaPlayer    mediaPlayer;
 
+    // ── SVG icon references ───────────────────────────────────────────────────
+    private Group iconBack;
+
     /** buttons[soundType.index] = { play, stop, mute, openFile } */
     private Button[][] buttons;
 
@@ -50,6 +60,15 @@ public class SoundSettingsController {
 
     @FXML
     public void initialize() {
+        // ── Assign vivid SVG icon for back button ─────────────────────────────
+        iconBack = IconFactory.create(IconFactory.PATH_CLOCK, IconFactory.COLOR_BACK);
+        btnBack.setGraphic(iconBack);
+
+        // Resize icon once laid out, and whenever the pane height changes
+        rootBox.heightProperty().addListener((obs, ov, nv) ->
+            IconFactory.resize(iconBack, IconFactory.iconSizeForHeight(Math.max(nv.doubleValue(), 44.0))));
+        javafx.application.Platform.runLater(() ->
+            IconFactory.resize(iconBack, IconFactory.iconSizeForHeight(Math.max(rootBox.getHeight(), 44.0))));
         // Deferred – see ensureButtons()
     }
 

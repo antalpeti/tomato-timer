@@ -1,24 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.image.*?>
 <?import javafx.geometry.*?>
 
+<!--
+  sound_settings.fxml – sound configuration page.
+  Icons are assigned programmatically by SoundSettingsController (SVGPath via IconFactory).
+-->
 <HBox xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.tomatotimer.controller.SoundSettingsController"
+      fx:id="rootBox"
       prefHeight="44" maxWidth="Infinity"
       alignment="CENTER_LEFT"
       styleClass="page-root">
 
-    <Button styleClass="icon-btn"
+    <!-- Back button – graphic set by controller -->
+    <Button fx:id="btnBack"
+            styleClass="icon-btn"
             onAction="#onBack"
             focusTraversable="false">
         <tooltip><Tooltip text="Back to settings"/></tooltip>
-        <graphic>
-            <ImageView fitWidth="26" fitHeight="26" preserveRatio="true">
-                <image><Image url="@icons/10-device-access-time.png"/></image>
-            </ImageView>
-        </graphic>
     </Button>
 
     <ScrollPane HBox.hgrow="ALWAYS"

@@ -2,12 +2,12 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.geometry.*?>
-<?import javafx.scene.image.*?>
 
 <!--
   main.fxml – outermost shell.
   Hosts the content pane (where pages are swapped in) and the always-visible
   window controls (always-on-top toggle + close menu).
+  Window-control icons are assigned programmatically by MainController (SVGPath via IconFactory).
 -->
 <StackPane xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="com.tomatotimer.controller.MainController"
@@ -25,30 +25,21 @@
           pickOnBounds="false"
           StackPane.alignment="TOP_RIGHT">
 
-        <!-- Always-on-top toggle -->
+        <!-- Always-on-top toggle – graphic set by controller -->
         <ToggleButton fx:id="btnAlwaysOnTop"
                       styleClass="win-ctrl-btn"
                       onAction="#handleAlwaysOnTop"
                       prefWidth="20" prefHeight="20"
                       focusTraversable="false">
             <tooltip><Tooltip text="Always On Top"/></tooltip>
-            <graphic>
-                <ImageView fitWidth="14" fitHeight="14" preserveRatio="true">
-                    <image><Image url="@icons/9-av-make-available-offline.png"/></image>
-                </ImageView>
-            </graphic>
         </ToggleButton>
 
-        <!-- Close menu button -->
-        <MenuButton styleClass="win-ctrl-btn"
+        <!-- Close menu button – graphic set by controller -->
+        <MenuButton fx:id="btnClose"
+                    styleClass="win-ctrl-btn"
                     prefWidth="20" prefHeight="20"
                     focusTraversable="false">
             <tooltip><Tooltip text="Close"/></tooltip>
-            <graphic>
-                <ImageView fitWidth="14" fitHeight="14" preserveRatio="true">
-                    <image><Image url="@icons/1-navigation-cancel.png"/></image>
-                </ImageView>
-            </graphic>
             <items>
                 <MenuItem text="Close (save state)"        onAction="#handleClose"/>
                 <MenuItem text="Close (don't save state)"  onAction="#handleCloseNoSave"/>
@@ -56,5 +47,3 @@
         </MenuButton>
     </HBox>
 </StackPane>
-
-

@@ -1,9 +1,11 @@
 package com.tomatotimer.controller;
 
+import com.tomatotimer.IconFactory;
 import com.tomatotimer.TimerMode;
 import javafx.animation.FadeTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -11,6 +13,8 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
+
+import java.util.List;
 
 /**
  * Controller for buttons.fxml – the main timer face.
@@ -37,6 +41,14 @@ public class ButtonsController {
     private boolean mouseDown      = false;
     private long    mouseDownEpoch = 0;
 
+    // ── SVG icon references (kept for proportional resize) ───────────────────
+    private Group iconSettings;
+    private Group iconReset;
+    private Group iconPlay;
+    private Group iconPause;
+    private Group iconWork;
+    private Group iconRelax;
+
     // =========================================================================
     //  Setup
     // =========================================================================
@@ -45,6 +57,21 @@ public class ButtonsController {
 
     @FXML
     public void initialize() {
+        // ── Assign vivid SVG icons ────────────────────────────────────────────
+        iconSettings = IconFactory.create(IconFactory.PATH_SETTINGS, IconFactory.COLOR_SETTINGS);
+        iconReset    = IconFactory.create(IconFactory.PATH_RESET,    IconFactory.COLOR_RESET);
+        iconPlay     = IconFactory.create(IconFactory.PATH_PLAY,     IconFactory.COLOR_PLAY);
+        iconPause    = IconFactory.create(IconFactory.PATH_PAUSE,    IconFactory.COLOR_PAUSE);
+        iconWork     = IconFactory.create(IconFactory.PATH_WORK,     IconFactory.COLOR_WORK);
+        iconRelax    = IconFactory.create(IconFactory.PATH_RELAX,    IconFactory.COLOR_RELAX);
+
+        btnSettings.setGraphic(iconSettings);
+        btnReset.setGraphic(iconReset);
+        btnPlay.setGraphic(iconPlay);
+        btnPause.setGraphic(iconPause);
+        btnWork.setGraphic(iconWork);
+        btnRelax.setGraphic(iconRelax);
+
         // Controls are hidden until the mouse enters
         setOpacity(0, buttonsBox, btnSettings, labelTimeSmall);
 
@@ -89,16 +116,15 @@ public class ButtonsController {
     public void updateUI(TimerMode mode, boolean isPaused, boolean isOverTime,
                          double progressPct, String timeStr, String infoStr) {
 
-        // ---- Progress bar ---------------------------------------------------
-        progressBar.setProgress(progressPct / 100.0);
+        // ---- Progress bar accent colour (matches icon palette) ---------------
         if (isPaused)
-            progressBar.setStyle("-fx-accent: #4CAF50;");
+            progressBar.setStyle("-fx-accent: " + IconFactory.COLOR_SETTINGS + ";");
         else if (isOverTime)
-            progressBar.setStyle("-fx-accent: #f44336;");
+            progressBar.setStyle("-fx-accent: " + IconFactory.COLOR_WORK + ";");
         else if (progressPct > 80)
-            progressBar.setStyle("-fx-accent: #FFEB3B;");
+            progressBar.setStyle("-fx-accent: " + IconFactory.COLOR_PAUSE + ";");
         else
-            progressBar.setStyle("-fx-accent: #4CAF50;");
+            progressBar.setStyle("-fx-accent: " + IconFactory.COLOR_PLAY + ";");
 
         // ---- Labels ---------------------------------------------------------
         labelTime.setText(timeStr);
@@ -129,17 +155,23 @@ public class ButtonsController {
     }
 
     private void updateDynamicSizing() {
-        double width = rootPane.getWidth();
-        double height = rootPane.getHeight();
+        final double width  = rootPane.getWidth();
+        final double height = rootPane.getHeight();
         if (width <= 0 || height <= 0) return;
 
-        double mainFont = clamp(Math.min(height * 0.42, width * 0.095), 18, 72);
-        double smallFont = clamp(mainFont * 0.58, 11, 42);
-        double infoFont = clamp(mainFont * 0.50, 9, 30);
+        final double mainFont  = clamp(Math.min(height * 0.42, width * 0.095), 18, 72);
+        final double smallFont = clamp(mainFont * 0.58, 11, 42);
+        final double infoFont  = clamp(mainFont * 0.50,  9, 30);
 
         labelTime.setStyle(String.format("-fx-font-size: %.1fpx;", mainFont));
         labelTimeSmall.setStyle(String.format("-fx-font-size: %.1fpx;", smallFont));
         labelInfo.setStyle(String.format("-fx-font-size: %.1fpx;", infoFont));
+
+        // ── Proportional icon scaling ─────────────────────────────────────────
+        final double iconSize = clamp(Math.min(height * 0.52, width * 0.09), 16, 52);
+        for (final var icon : List.of(iconSettings, iconReset, iconPlay, iconPause, iconWork, iconRelax)) {
+            IconFactory.resize(icon, iconSize);
+        }
     }
 
     private static double clamp(double value, double min, double max) {
@@ -172,4 +204,3 @@ public class ButtonsController {
     @FXML
     private void onMouseReleased() { mouseDown = false; }
 }
-

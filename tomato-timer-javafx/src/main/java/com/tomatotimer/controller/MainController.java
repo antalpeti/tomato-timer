@@ -1,6 +1,7 @@
 package com.tomatotimer.controller;
 
 import com.tomatotimer.AppSettings;
+import com.tomatotimer.IconFactory;
 import com.tomatotimer.SoundType;
 import com.tomatotimer.TimerMode;
 import javafx.animation.FadeTransition;
@@ -10,7 +11,10 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Cursor;
+import javafx.scene.Group;
 import javafx.scene.Node;
+import javafx.scene.control.MenuButton;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.HBox;
@@ -32,9 +36,11 @@ import java.time.format.DateTimeFormatter;
  */
 public class MainController {
 
-    @FXML private StackPane rootPane;
-    @FXML private Pane      contentPane;
-    @FXML private HBox      windowControlPane;
+    @FXML private StackPane    rootPane;
+    @FXML private Pane         contentPane;
+    @FXML private HBox         windowControlPane;
+    @FXML private ToggleButton btnAlwaysOnTop;
+    @FXML private MenuButton   btnClose;
 
     private Stage        stage;
     private AppSettings  settings = AppSettings.getInstance();
@@ -73,6 +79,10 @@ public class MainController {
     // ---- window-controls fade -----------------------------------------------
     private FadeTransition controlsFadeIn;
     private FadeTransition controlsFadeOut;
+
+    // ── SVG icon references for window controls ───────────────────────────────
+    private Group iconPin;
+    private Group iconClose;
 
     // ---- one-second clock ---------------------------------------------------
     private Timeline clock;
@@ -128,6 +138,33 @@ public class MainController {
         windowControlPane.setOpacity(0);
         controlsFadeIn  = createFade(windowControlPane, 0, 1, 150);
         controlsFadeOut = createFade(windowControlPane, 1, 0, 150);
+
+        // ── SVG icons for window controls ─────────────────────────────────────
+        iconPin   = IconFactory.create(IconFactory.PATH_PIN,   IconFactory.COLOR_PIN);
+        iconClose = IconFactory.create(IconFactory.PATH_CLOSE, IconFactory.COLOR_CLOSE);
+
+        // Sync initial selected state and pin colour
+        btnAlwaysOnTop.setSelected(settings.isAlwaysOnTop());
+        final String initialPinColor = settings.isAlwaysOnTop()
+                ? IconFactory.COLOR_PIN_ON : IconFactory.COLOR_PIN;
+        IconFactory.recolor(iconPin, initialPinColor);
+
+        btnAlwaysOnTop.setGraphic(iconPin);
+        btnClose.setGraphic(iconClose);
+
+        // Update pin colour whenever toggle state changes
+        btnAlwaysOnTop.selectedProperty().addListener((obs, ov, selected) ->
+            IconFactory.recolor(iconPin, selected ? IconFactory.COLOR_PIN_ON : IconFactory.COLOR_PIN));
+
+        // Scale window-control icons with window height
+        final double initWcSize = clampWCtrl(stage.getHeight());
+        IconFactory.resize(iconPin,   initWcSize);
+        IconFactory.resize(iconClose, initWcSize);
+        rootPane.heightProperty().addListener((obs, ov, nv) -> {
+            final double sz = clampWCtrl(nv.doubleValue());
+            IconFactory.resize(iconPin,   sz);
+            IconFactory.resize(iconClose, sz);
+        });
 
         // Mouse-enter / leave → show / hide window controls
         rootPane.setOnMouseEntered(e -> { controlsFadeOut.stop(); controlsFadeIn.playFromStart(); });
@@ -445,6 +482,11 @@ public class MainController {
         ft.setFromValue(from);
         ft.setToValue(to);
         return ft;
+    }
+
+    /** Derives window-control icon size (px) from the stage height, clamped to [10, 14]. */
+    private static double clampWCtrl(double stageHeight) {
+        return Math.max(10.0, Math.min(14.0, stageHeight * 0.28));
     }
 
     private ResizeZone detectResizeZone(double x, double y) {
