@@ -18,6 +18,22 @@ import javafx.scene.paint.Color;
  *   <li>{@link #NIGHT_RUNNER} – retrowave/synthwave night-racing atmosphere:
  *       warm sunset oranges and deep teals on an ultra-dark background with
  *       soft atmospheric sheen and medium-radius glow halos.</li>
+ *   <li>{@link #SOLAR_FLARE} – stellar-fire palette of fiery oranges, amber and
+ *       solar gold with an aggressive bloom centre and hot glowing bar.</li>
+ *   <li>{@link #ARCTIC_PULSE} – crisp polar-ice blues and cold whites on a
+ *       near-black background with delicate frosty sheen.</li>
+ *   <li>{@link #TOXIC_LIME} – radioactive acid-green and chartreuse hazard
+ *       colours with a high-contrast industrial glow.</li>
+ *   <li>{@link #SYNTH_SUNSET} – 80s synthwave with hot neon-pink, deep electric
+ *       purple and warm peach on a very dark dusk background.</li>
+ *   <li>{@link #DEEP_OCEAN} – bioluminescent deep-sea palette of electric blue,
+ *       aquamarine and indigo on an ultra-dark abyss background.</li>
+ *   <li>{@link #CRIMSON_REACTOR} – nuclear-reactor danger theme with deep
+ *       crimson, hot coral and amber warning tones.</li>
+ *   <li>{@link #MONOCHROME_PLASMA} – minimalist silver-white plasma on dark,
+ *       soft bloom and low-saturation accent colours.</li>
+ *   <li>{@link #AURORA_DRIFT} – aurora borealis shifting greens, soft cyan and
+ *       violet on a midnight-dark sky background.</li>
  * </ul>
  */
 public enum NeonPreset {
@@ -98,6 +114,206 @@ public enum NeonPreset {
             0.64, 0.11,             // BAR_LIGHTEN / BAR_DARKEN
             0.36,                   // BAR_INNER_SHEEN
             22.0, 0.68, 0.88, 0.28  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND
+    ),
+
+    // ── SOLAR_FLARE ───────────────────────────────────────────────────────────
+    /**
+     * Stellar-fire palette: blazing oranges, amber and solar gold.
+     * Aggressive bloom centre and a hot, wide glow halo around the progress bar.
+     */
+    SOLAR_FLARE(
+            "Solar Flare",
+            // ── Accent colours – stellar combustion palette ───────────────────
+            Color.web("#FF4500"),   // WORK normal  – deep solar orange-red
+            Color.web("#FF9500"),   // RELAX normal – warm amber-orange
+            Color.web("#FFD700"),   // RELAX_LONG   – solar gold
+            Color.web("#FFFF33"),   // WARNING      – bright solar white-yellow
+            Color.web("#FF2200"),   // OVERTIME     – fire-engine red
+            Color.web("#FF6600"),   // PAUSED       – tangerine
+            // ── Root gradient – hot bright core, near-black corona ────────────
+            0.90, 0.32,             // ROOT_DARK_EDGE / ROOT_DARK_MID
+            0.44, 0.88,             // ROOT_GLOW_ALPHA_MIN / MAX
+            0.40,                   // ROOT_SHEEN_ALPHA
+            0.50, 0.02,             // ROOT_GLOW_WHITE_BLEND / ROOT_GLOW_BLACK_BLEND
+            // ── Bar tuning – bright, wide, hot-tube flare ─────────────────────
+            0.75, 0.07,             // BAR_LIGHTEN / BAR_DARKEN
+            0.50,                   // BAR_INNER_SHEEN
+            24.0, 0.78, 0.95, 0.45  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND
+    ),
+
+    // ── ARCTIC_PULSE ──────────────────────────────────────────────────────────
+    /**
+     * Polar-ice atmosphere: crystal deep-sky blues and cold whites on a
+     * near-black background with a delicate frosty sheen and restrained glow.
+     */
+    ARCTIC_PULSE(
+            "Arctic Pulse",
+            // ── Accent colours – polar ice and frozen sky ─────────────────────
+            Color.web("#00BFFF"),   // WORK normal  – deep sky blue
+            Color.web("#87CEEB"),   // RELAX normal – ice sky blue
+            Color.web("#AAFFF0"),   // RELAX_LONG   – glacier mint
+            Color.web("#FFE4B5"),   // WARNING      – distant ice-sun cream
+            Color.web("#FF6688"),   // OVERTIME     – cold alarm rose
+            Color.web("#B0E0FF"),   // PAUSED       – powder blue
+            // ── Root gradient – crisp dark edges, cool frosty centre ──────────
+            0.92, 0.40,             // ROOT_DARK_EDGE / ROOT_DARK_MID
+            0.30, 0.65,             // ROOT_GLOW_ALPHA_MIN / MAX
+            0.25,                   // ROOT_SHEEN_ALPHA
+            0.45, 0.04,             // ROOT_GLOW_WHITE_BLEND / ROOT_GLOW_BLACK_BLEND
+            // ── Bar tuning – crisp, medium halo, icy glass effect ─────────────
+            0.65, 0.10,             // BAR_LIGHTEN / BAR_DARKEN
+            0.38,                   // BAR_INNER_SHEEN
+            20.0, 0.65, 0.82, 0.40  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND
+    ),
+
+    // ── TOXIC_LIME ────────────────────────────────────────────────────────────
+    /**
+     * Radioactive industrial hazard theme: acid chartreuse and neon-green
+     * with a high-contrast toxic glow and warning-yellow danger tones.
+     */
+    TOXIC_LIME(
+            "Toxic Lime",
+            // ── Accent colours – radioactive acid palette ─────────────────────
+            Color.web("#AAFF00"),   // WORK normal  – chartreuse-lime
+            Color.web("#00FF44"),   // RELAX normal – pure neon green
+            Color.web("#CCFF33"),   // RELAX_LONG   – radioactive yellow-green
+            Color.web("#FFFF00"),   // WARNING      – hazard yellow
+            Color.web("#FF4400"),   // OVERTIME     – toxic-spill hot orange-red
+            Color.web("#66FF00"),   // PAUSED       – bright lime
+            // ── Root gradient – near-black base, toxic bloom centre ───────────
+            0.89, 0.25,             // ROOT_DARK_EDGE / ROOT_DARK_MID
+            0.45, 0.90,             // ROOT_GLOW_ALPHA_MIN / MAX
+            0.35,                   // ROOT_SHEEN_ALPHA
+            0.40, 0.02,             // ROOT_GLOW_WHITE_BLEND / ROOT_GLOW_BLACK_BLEND
+            // ── Bar tuning – high-intensity halo, sharp glass highlight ───────
+            0.72, 0.06,             // BAR_LIGHTEN / BAR_DARKEN
+            0.48,                   // BAR_INNER_SHEEN
+            20.0, 0.75, 0.94, 0.38  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND
+    ),
+
+    // ── SYNTH_SUNSET ──────────────────────────────────────────────────────────
+    /**
+     * 80s synthwave sunset: hot neon-pink, deep electric purple and warm
+     * peach on a very dark dusk background with a dreamy glow halo.
+     */
+    SYNTH_SUNSET(
+            "Synth Sunset",
+            // ── Accent colours – synthwave dusk palette ───────────────────────
+            Color.web("#FF2D78"),   // WORK normal  – hot neon-pink
+            Color.web("#A020F0"),   // RELAX normal – deep electric purple
+            Color.web("#FF8C55"),   // RELAX_LONG   – warm peach-orange
+            Color.web("#FFD700"),   // WARNING      – sunset gold
+            Color.web("#FF0033"),   // OVERTIME     – vivid danger red
+            Color.web("#D040FF"),   // PAUSED       – neon violet
+            // ── Root gradient – very dark dusk edges, warm glowing core ───────
+            0.91, 0.30,             // ROOT_DARK_EDGE / ROOT_DARK_MID
+            0.35, 0.78,             // ROOT_GLOW_ALPHA_MIN / MAX
+            0.30,                   // ROOT_SHEEN_ALPHA
+            0.42, 0.04,             // ROOT_GLOW_WHITE_BLEND / ROOT_GLOW_BLACK_BLEND
+            // ── Bar tuning – dreamy medium-wide glow, warm neon-tube feel ─────
+            0.70, 0.09,             // BAR_LIGHTEN / BAR_DARKEN
+            0.44,                   // BAR_INNER_SHEEN
+            22.0, 0.72, 0.91, 0.38  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND
+    ),
+
+    // ── DEEP_OCEAN ────────────────────────────────────────────────────────────
+    /**
+     * Bioluminescent deep-sea palette: electric blue, aquamarine and deep
+     * indigo on an ultra-dark abyss background with a cool restrained glow.
+     */
+    DEEP_OCEAN(
+            "Deep Ocean",
+            // ── Accent colours – abyssal bioluminescence palette ──────────────
+            Color.web("#0055FF"),   // WORK normal  – electric deep-sea blue
+            Color.web("#00E5CC"),   // RELAX normal – bioluminescent teal
+            Color.web("#00FFD0"),   // RELAX_LONG   – aquamarine glow
+            Color.web("#33DDFF"),   // WARNING      – bright aqua-cyan
+            Color.web("#7700FF"),   // OVERTIME     – deep indigo-violet
+            Color.web("#0099DD"),   // PAUSED       – ocean cobalt
+            // ── Root gradient – near-black abyss, cool restrained centre ──────
+            0.95, 0.22,             // ROOT_DARK_EDGE / ROOT_DARK_MID
+            0.25, 0.72,             // ROOT_GLOW_ALPHA_MIN / MAX
+            0.20,                   // ROOT_SHEEN_ALPHA
+            0.35, 0.06,             // ROOT_GLOW_WHITE_BLEND / ROOT_GLOW_BLACK_BLEND
+            // ── Bar tuning – moderate depth-glow, cool submarine glass ────────
+            0.62, 0.12,             // BAR_LIGHTEN / BAR_DARKEN
+            0.32,                   // BAR_INNER_SHEEN
+            21.0, 0.66, 0.85, 0.30  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND
+    ),
+
+    // ── CRIMSON_REACTOR ───────────────────────────────────────────────────────
+    /**
+     * Nuclear-reactor danger theme: deep crimson, hot coral-red and amber
+     * warning tones on a dark background with a pulsing danger glow.
+     */
+    CRIMSON_REACTOR(
+            "Crimson Reactor",
+            // ── Accent colours – reactor danger palette ───────────────────────
+            Color.web("#CC0022"),   // WORK normal  – deep reactor crimson
+            Color.web("#FF4455"),   // RELAX normal – hot coral-red
+            Color.web("#FF6600"),   // RELAX_LONG   – reactor orange
+            Color.web("#FF9900"),   // WARNING      – nuclear amber
+            Color.web("#FF0000"),   // OVERTIME     – pure danger red
+            Color.web("#880033"),   // PAUSED       – deep blood red
+            // ── Root gradient – dark edges, hot danger core ───────────────────
+            0.90, 0.28,             // ROOT_DARK_EDGE / ROOT_DARK_MID
+            0.40, 0.85,             // ROOT_GLOW_ALPHA_MIN / MAX
+            0.38,                   // ROOT_SHEEN_ALPHA
+            0.48, 0.03,             // ROOT_GLOW_WHITE_BLEND / ROOT_GLOW_BLACK_BLEND
+            // ── Bar tuning – pulsing danger halo, hot neon-tube glass ─────────
+            0.73, 0.08,             // BAR_LIGHTEN / BAR_DARKEN
+            0.46,                   // BAR_INNER_SHEEN
+            23.0, 0.76, 0.93, 0.42  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND
+    ),
+
+    // ── MONOCHROME_PLASMA ─────────────────────────────────────────────────────
+    /**
+     * Minimalist silver-white plasma on dark: low-saturation cool-white accent
+     * colours, soft bloom and a refined glass-tube bar effect.
+     */
+    MONOCHROME_PLASMA(
+            "Monochrome Plasma",
+            // ── Accent colours – desaturated cool-white plasma palette ────────
+            Color.web("#DDDDFF"),   // WORK normal  – cool white-lavender
+            Color.web("#AABBCC"),   // RELAX normal – steel blue-grey
+            Color.web("#CCEEEE"),   // RELAX_LONG   – soft ice-white
+            Color.web("#FFFF88"),   // WARNING      – pale mellow yellow
+            Color.web("#FF7788"),   // OVERTIME     – soft alarm rose
+            Color.web("#BBBBCC"),   // PAUSED       – neutral grey-lavender
+            // ── Root gradient – dark edges, bright diffuse centre bloom ───────
+            0.86, 0.34,             // ROOT_DARK_EDGE / ROOT_DARK_MID
+            0.36, 0.74,             // ROOT_GLOW_ALPHA_MIN / MAX
+            0.28,                   // ROOT_SHEEN_ALPHA
+            0.55, 0.03,             // ROOT_GLOW_WHITE_BLEND / ROOT_GLOW_BLACK_BLEND
+            // ── Bar tuning – subtle wide bloom, polished glass highlight ──────
+            0.60, 0.14,             // BAR_LIGHTEN / BAR_DARKEN
+            0.35,                   // BAR_INNER_SHEEN
+            18.0, 0.60, 0.80, 0.50  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND
+    ),
+
+    // ── AURORA_DRIFT ──────────────────────────────────────────────────────────
+    /**
+     * Aurora borealis atmosphere: shifting neon-greens, soft cyan and violet
+     * curtains on a midnight-dark sky with a gentle atmospheric bloom.
+     */
+    AURORA_DRIFT(
+            "Aurora Drift",
+            // ── Accent colours – aurora curtain palette ───────────────────────
+            Color.web("#00FF99"),   // WORK normal  – aurora green
+            Color.web("#44DDFF"),   // RELAX normal – aurora cyan-blue
+            Color.web("#88FFCC"),   // RELAX_LONG   – pale aurora mint
+            Color.web("#BBFF44"),   // WARNING      – aurora yellow-green
+            Color.web("#FF55AA"),   // OVERTIME     – magenta aurora flare
+            Color.web("#AA44FF"),   // PAUSED       – aurora violet
+            // ── Root gradient – midnight-dark sky, gentle drifting glow ───────
+            0.91, 0.26,             // ROOT_DARK_EDGE / ROOT_DARK_MID
+            0.32, 0.76,             // ROOT_GLOW_ALPHA_MIN / MAX
+            0.27,                   // ROOT_SHEEN_ALPHA
+            0.38, 0.05,             // ROOT_GLOW_WHITE_BLEND / ROOT_GLOW_BLACK_BLEND
+            // ── Bar tuning – soft wide curtain glow, gentle aurora tube ───────
+            0.66, 0.10,             // BAR_LIGHTEN / BAR_DARKEN
+            0.40,                   // BAR_INNER_SHEEN
+            22.0, 0.70, 0.88, 0.33  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND
     );
 
     // ── Fields ────────────────────────────────────────────────────────────────
