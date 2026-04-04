@@ -1,83 +1,82 @@
 # TomatoTimer JavaFX
 
-Maven-alapú JavaFX átírása az eredeti C# WPF **TomatoTimerWPF** projektnek.
+A Maven-based JavaFX rewrite of the original C# WPF **TomatoTimerWPF** project.
 
-## Funkciók
+## Features
 
-| Funkció | Leírás |
+| Feature | Description |
 |---|---|
-| **Munka / Pihenő / Hosszú pihenő** | Három időzítő mód, egyénileg beállítható perc-értékekkel |
-| **Szünet / Folytatás** | A munka időzítő szüneteltethető |
-| **Visszaállítás** | Az aktuális mód újraindítása |
-| **Kompakt ablak** | Keret nélküli, átlátszó háttérrel, fogódézható |
-| **Mindig felül** | Ablak tetején tartása (jobb felső sarok gombja) |
-| **Állapot mentése** | Bezáráskor a timer állapota megmarad |
-| **Hangok** | Egyéni hangfájl rendelhetű minden eseményhez (mp3/wav/ogg) |
-| **Google Calendar** | Automatikusan megnyitja az eseménykészítő oldalt munka után |
+| **Work / Break / Long Break** | Three timer modes with individually configurable durations |
+| **Pause / Resume** | The work timer can be paused |
+| **Reset** | Restart the current mode |
+| **Compact window** | Borderless, transparent background, draggable |
+| **Always on Top** | Keep the window above all others (top-right corner button) |
+| **State persistence** | Timer state is saved and restored on close/reopen |
+| **Sounds** | Custom sound file assignable to each event (mp3/wav/ogg) |
+| **Google Calendar** | Automatically opens the event-creation page after a work session |
 
-## Kezelés
+## Usage
 
-- **Hover az ablakra** → megjelennek a vezérlő gombok
-- **Relax gomb (⏱ 2 mp lenyomva tartva)** → Hosszú pihenő mód
-- **Jobb felső ✕** → Mentés és bezárás
-- **Beállítások ⚙** → Időzítő beállítások oldal
-- **🔊 gomb** → Hang beállítások oldal
+- **Hover over the window** → control buttons appear
+- **Relax button (hold 2 s)** → Long Break mode
+- **Top-right ✕** → Save state and close
+- **Settings ⚙** → Timer settings page
+- **🔊 button** → Sound settings page
 
-## Indítás
+## Running the App
 
-### Fejlesztői módban (Maven)
+### Development mode (Maven)
 
 ```bash
 cd tomato-timer-javafx
 mvn javafx:run
 ```
 
-### Fat-JAR készítése
+### Build a fat JAR
 
 ```bash
 mvn package
 java -jar target/tomato-timer-1.0.0-fat.jar
 ```
 
-## Előfeltételek
+## Requirements
 
 - Java 21+
 - Maven 3.8+
 
-## Projekt struktúra
+## Project structure
 
 ```
 tomato-timer-javafx/
 ├── pom.xml
 └── src/main/
     ├── java/com/tomatotimer/
-    │   ├── App.java                    # JavaFX Application belépési pont
-    │   ├── Launcher.java               # Standalone launcher
-    │   ├── TimerMode.java              # WORK / RELAX / RELAX_LONG enum
-    │   ├── SoundType.java              # RESUME / PAUSE / WORK_DONE / REST_TIMEOUT enum
-    │   ├── AppSettings.java            # java.util.prefs beállítás-kezelő
+    │   ├── App.java                         # JavaFX Application entry point
+    │   ├── Launcher.java                    # Standalone launcher (fat-jar helper)
+    │   ├── TimerMode.java                   # WORK / RELAX / RELAX_LONG enum
+    │   ├── SoundType.java                   # RESUME / PAUSE / WORK_DONE / REST_TIMEOUT enum
+    │   ├── AppSettings.java                 # Settings backed by java.util.prefs
     │   └── controller/
-    │       ├── MainController.java     # Fő vezérlő (timer logika, navigáció)
-    │       ├── ButtonsController.java  # Fő időzítő nézet
-    │       ├── SettingsController.java # Beállítások oldal
-    │       └── SoundSettingsController.java  # Hang beállítások oldal
+    │       ├── MainController.java          # Central controller (timer logic, navigation)
+    │       ├── ButtonsController.java       # Main timer view
+    │       ├── SettingsController.java      # Settings page
+    │       └── SoundSettingsController.java # Sound settings page
     └── resources/com/tomatotimer/
-        ├── main.fxml                   # Fő ablak shell
-        ├── buttons.fxml                # Timer nézet (progress bar + gombok)
-        ├── settings.fxml               # Beállítások oldal
-        ├── sound_settings.fxml         # Hang beállítások oldal
-        ├── style.css                   # Sötét téma stílusok
-        └── icons/                      # PNG ikonok (Android Jelly Bean)
+        ├── main.fxml                        # Outer window shell
+        ├── buttons.fxml                     # Timer view (progress bar + buttons)
+        ├── settings.fxml                    # Settings page
+        ├── sound_settings.fxml              # Sound settings page
+        ├── style.css                        # Dark theme styles
+        └── icons/                           # PNG icons (Android Jelly Bean set)
 ```
 
-## Beállítások tárolása
+## Settings storage
 
-Az alkalmazás a `java.util.prefs.Preferences` API-t használja a beállítások perzisztálásához.
-Windows rendszeren ez a registry-ben tárolódik:
+The application uses the `java.util.prefs.Preferences` API for persistent settings.  
+On Windows this is stored in the registry at:  
 `HKCU\Software\JavaSoft\Prefs\com\tomatotimer`
 
-## Attribúció
+## Attribution
 
-Az ikonok az eredeti WPF projektből származnak –
+Icons are taken from the original WPF project –
 [Android 4.1 Jelly Bean Icon Set](http://palhaiz.deviantart.com/art/Android-4-1-Jelly-Bean-Icon-Set-311741892).
-
