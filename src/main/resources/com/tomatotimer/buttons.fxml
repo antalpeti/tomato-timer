@@ -97,6 +97,14 @@
                     <tooltip><Tooltip text="Go to work"/></tooltip>
                 </Button>
 
+                <!-- Finish Work + Short Break – creates GCal event (if enabled), then short rest -->
+                <Button fx:id="btnFinishWork"
+                        styleClass="icon-btn"
+                        onAction="#onFinishWork"
+                        focusTraversable="false">
+                    <tooltip><Tooltip text="Finish work and start short break (creates calendar event)"/></tooltip>
+                </Button>
+
                 <!-- Relax – hold 2 s for Long Rest -->
                 <Button fx:id="btnRelax"
                         styleClass="icon-btn"

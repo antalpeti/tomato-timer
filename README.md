@@ -1,38 +1,40 @@
 # TomatoTimer JavaFX
 
-A Maven-based JavaFX rewrite of the original C# WPF **TomatoTimerWPF** project.
+A Maven-based JavaFX Pomodoro timer, rewritten from the original C# WPF **TomatoTimerWPF** project.
 
 ## Features
 
 | Feature | Description |
 |---|---|
-| **Work / Break / Long Break** | Three timer modes with individually configurable durations |
-| **Pause / Resume** | The work timer can be paused |
-| **Reset** | Restart the current mode |
-| **Compact window** | Borderless, transparent background, draggable |
-| **Always on Top** | Keep the window above all others (top-right corner button) |
-| **State persistence** | Timer state is saved and restored on close/reopen |
-| **Sounds** | Custom sound file assignable to each event (mp3/wav/ogg) |
-| **Google Calendar** | Automatically opens the event-creation page after a work session |
+| **Work / Break / Long Break** | Three timer modes with configurable durations |
+| **Pause / Resume / Reset** | Full timer control during work mode |
+| **Resizable UI** | Window can be resized; fonts, icons, and controls scale dynamically |
+| **Dynamic time display** | Main time text scales with window size |
+| **Neon visual presets** | `Neon Balanced`, `Ultra Neon`, and `Night Runner` selectable in Settings |
+| **Animated background** | Progress-aware gradient + glow changes over time and mode |
+| **Vector icon set** | Modern, vivid SVG-based icons rendered in JavaFX (scalable) |
+| **Always on Top** | Toggle pin button in the top-right controls |
+| **State persistence** | Window and timer state are restored on next start |
+| **Sounds** | Custom sound file per event (`mp3`, `wav`, `ogg`) |
+| **Google Calendar** | Opens event creation after work session timeout |
 
 ## Usage
 
-- **Hover over the window** → control buttons appear
-- **Relax button (hold 2 s)** → Long Break mode
-- **Top-right ✕** → Save state and close
-- **Settings ⚙** → Timer settings page
-- **🔊 button** → Sound settings page
+- Hover over the timer to reveal controls.
+- Hold the **Relax** button for ~2 seconds to start **Long Break**.
+- Open **Settings** to configure durations and switch neon preset.
+- Open **Sound Settings** to assign custom notification sounds.
+- Use top-right **Close** menu to exit with or without saving timer state.
 
-## Running the App
+## Run
 
-### Development mode (Maven)
+### Development
 
 ```bash
-cd tomato-timer-javafx
 mvn javafx:run
 ```
 
-### Build a fat JAR
+### Build fat JAR
 
 ```bash
 mvn package
@@ -44,39 +46,42 @@ java -jar target/tomato-timer-1.0.0-fat.jar
 - Java 21+
 - Maven 3.8+
 
-## Project structure
+## Project Structure
 
-```
-tomato-timer-javafx/
+```text
+tomato-timer/
 ├── pom.xml
-└── src/main/
-    ├── java/com/tomatotimer/
-    │   ├── App.java                         # JavaFX Application entry point
-    │   ├── Launcher.java                    # Standalone launcher (fat-jar helper)
-    │   ├── TimerMode.java                   # WORK / RELAX / RELAX_LONG enum
-    │   ├── SoundType.java                   # RESUME / PAUSE / WORK_DONE / REST_TIMEOUT enum
-    │   ├── AppSettings.java                 # Settings backed by java.util.prefs
-    │   └── controller/
-    │       ├── MainController.java          # Central controller (timer logic, navigation)
-    │       ├── ButtonsController.java       # Main timer view
-    │       ├── SettingsController.java      # Settings page
-    │       └── SoundSettingsController.java # Sound settings page
-    └── resources/com/tomatotimer/
-        ├── main.fxml                        # Outer window shell
-        ├── buttons.fxml                     # Timer view (progress bar + buttons)
-        ├── settings.fxml                    # Settings page
-        ├── sound_settings.fxml              # Sound settings page
-        ├── style.css                        # Dark theme styles
-        └── icons/                           # PNG icons (Android Jelly Bean set)
+├── src/main/java/com/tomatotimer/
+│   ├── App.java                          # JavaFX application entry point
+│   ├── Launcher.java                     # Fat JAR launcher class
+│   ├── AppSettings.java                  # Persistent settings (java.util.prefs)
+│   ├── TimerMode.java                    # WORK / RELAX / RELAX_LONG
+│   ├── SoundType.java                    # Notification sound event types
+│   ├── NeonPreset.java                   # Neon theme presets and tuning parameters
+│   ├── TimerBackgroundHelper.java        # Gradient / glow / accent color generation
+│   ├── UiScaleHelper.java                # Central dynamic UI scaling calculations
+│   ├── IconFactory.java                  # Scalable SVG icon factory
+│   └── controller/
+│       ├── MainController.java           # Main coordinator (timer, navigation, window)
+│       ├── ButtonsController.java        # Timer page (controls + progress + dynamic styling)
+│       ├── SettingsController.java       # Timer + theme + Google Calendar settings
+│       └── SoundSettingsController.java  # Sound assignment UI and preview
+└── src/main/resources/com/tomatotimer/
+    ├── main.fxml                         # Main shell layout
+    ├── buttons.fxml                      # Timer view
+    ├── settings.fxml                     # Settings view
+    ├── sound_settings.fxml               # Sound settings view
+    ├── style.css                         # Base JavaFX styles
+    └── icons/                            # Bitmap assets (legacy/app icon resources)
 ```
 
-## Settings storage
+## Settings Storage
 
-The application uses the `java.util.prefs.Preferences` API for persistent settings.  
-On Windows this is stored in the registry at:  
+The app uses `java.util.prefs.Preferences` for persistence.  
+On Windows, values are stored under:  
 `HKCU\Software\JavaSoft\Prefs\com\tomatotimer`
 
-## Attribution
+## Notes
 
-Icons are taken from the original WPF project –
-[Android 4.1 Jelly Bean Icon Set](http://palhaiz.deviantart.com/art/Android-4-1-Jelly-Bean-Icon-Set-311741892).
+- The active in-app icon system is vector-based (`IconFactory`) and scales with UI size.
+- The `archive/` folder contains the original WPF solution and historical assets.

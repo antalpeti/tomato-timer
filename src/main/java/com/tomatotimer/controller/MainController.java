@@ -317,13 +317,31 @@ public class MainController {
 
     public void startRelax(boolean longBreak) {
         triggerGCalIfNeeded();
-        timerStartTime    = LocalDateTime.now();
-        pauseStartTime    = LocalDateTime.now();
-        pausedMillisTotal = 0;
+        applyRelaxState(longBreak);
+    }
+
+    /**
+     * Finishes the current WORK session early: always creates a Google Calendar
+     * event (when GCal is enabled) regardless of whether overtime has been reached,
+     * then immediately switches to a short REST.
+     * <p>Safe to call at any point during WORK mode – even before the timer expires.</p>
+     */
+    public void finishWork() {
+        if (mode == TimerMode.WORK && settings.isGCalEnable()) {
+            openGoogleCalendar(timerStartTime, LocalDateTime.now());
+        }
+        applyRelaxState(false);
+    }
+
+    /** Shared state-reset for all relax transitions (avoids duplicating reset logic). */
+    private void applyRelaxState(boolean longBreak) {
+        timerStartTime         = LocalDateTime.now();
+        pauseStartTime         = LocalDateTime.now();
+        pausedMillisTotal      = 0;
         timerElapsedWhenPaused = 0;
-        mode     = longBreak ? TimerMode.RELAX_LONG : TimerMode.RELAX;
-        isPaused = false;
-        isOverTime = false;
+        mode                   = longBreak ? TimerMode.RELAX_LONG : TimerMode.RELAX;
+        isPaused               = false;
+        isOverTime             = false;
         updateUI();
     }
 

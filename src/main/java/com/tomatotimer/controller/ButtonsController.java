@@ -37,6 +37,7 @@ public class ButtonsController {
     @FXML private Button     btnPlay;
     @FXML private Button     btnPause;
     @FXML private Button     btnWork;
+    @FXML private Button     btnFinishWork;
     @FXML private Button     btnRelax;
 
     private MainController mainController;
@@ -51,6 +52,7 @@ public class ButtonsController {
     private Group iconPlay;
     private Group iconPause;
     private Group iconWork;
+    private Group iconFinishWork;
     private Group iconRelax;
 
     // =========================================================================
@@ -62,18 +64,20 @@ public class ButtonsController {
     @FXML
     public void initialize() {
         // ── Assign vivid SVG icons ────────────────────────────────────────────
-        iconSettings = IconFactory.create(IconFactory.PATH_SETTINGS, IconFactory.COLOR_SETTINGS);
-        iconReset    = IconFactory.create(IconFactory.PATH_RESET,    IconFactory.COLOR_RESET);
-        iconPlay     = IconFactory.create(IconFactory.PATH_PLAY,     IconFactory.COLOR_PLAY);
-        iconPause    = IconFactory.create(IconFactory.PATH_PAUSE,    IconFactory.COLOR_PAUSE);
-        iconWork     = IconFactory.create(IconFactory.PATH_WORK,     IconFactory.COLOR_WORK);
-        iconRelax    = IconFactory.create(IconFactory.PATH_RELAX,    IconFactory.COLOR_RELAX);
+        iconSettings  = IconFactory.create(IconFactory.PATH_SETTINGS, IconFactory.COLOR_SETTINGS);
+        iconReset     = IconFactory.create(IconFactory.PATH_RESET,    IconFactory.COLOR_RESET);
+        iconPlay      = IconFactory.create(IconFactory.PATH_PLAY,     IconFactory.COLOR_PLAY);
+        iconPause     = IconFactory.create(IconFactory.PATH_PAUSE,    IconFactory.COLOR_PAUSE);
+        iconWork      = IconFactory.create(IconFactory.PATH_WORK,     IconFactory.COLOR_WORK);
+        iconFinishWork= IconFactory.create(IconFactory.PATH_CALENDAR, IconFactory.COLOR_CALENDAR);
+        iconRelax     = IconFactory.create(IconFactory.PATH_RELAX,    IconFactory.COLOR_RELAX);
 
         btnSettings.setGraphic(iconSettings);
         btnReset.setGraphic(iconReset);
         btnPlay.setGraphic(iconPlay);
         btnPause.setGraphic(iconPause);
         btnWork.setGraphic(iconWork);
+        btnFinishWork.setGraphic(iconFinishWork);
         btnRelax.setGraphic(iconRelax);
 
         // Controls are hidden until the mouse enters
@@ -162,7 +166,7 @@ public class ButtonsController {
         // ---- Button visibility ----------------------------------------------
         if (mode == TimerMode.WORK) {
             setVisible(false, btnWork);
-            setVisible(true,  btnRelax);
+            setVisible(true,  btnFinishWork, btnRelax);
             if (isPaused) {
                 setVisible(false, btnPause);
                 setVisible(true,  btnPlay);
@@ -172,7 +176,7 @@ public class ButtonsController {
             }
         } else {
             setVisible(true,  btnWork);
-            setVisible(false, btnRelax, btnPause, btnPlay);
+            setVisible(false, btnFinishWork, btnRelax, btnPause, btnPlay);
         }
     }
 
@@ -195,7 +199,7 @@ public class ButtonsController {
 
         // ── Proportional icon scaling ─────────────────────────────────────────
         final double iconSize = UiScaleHelper.mainIconPx(width, height);
-        for (final var icon : List.of(iconSettings, iconReset, iconPlay, iconPause, iconWork, iconRelax)) {
+        for (final var icon : List.of(iconSettings, iconReset, iconPlay, iconPause, iconWork, iconFinishWork, iconRelax)) {
             IconFactory.resize(icon, iconSize);
         }
     }
@@ -210,6 +214,9 @@ public class ButtonsController {
     @FXML private void onPlay()     { mainController.resume(); }
     @FXML private void onPause()    { mainController.pause(); }
     @FXML private void onWork()     { mainController.startWork(); }
+
+    /** Finishes WORK early: creates a GCal event (when enabled) and starts a short REST. */
+    @FXML private void onFinishWork() { mainController.finishWork(); }
 
     @FXML
     private void onRelaxPressed() {
