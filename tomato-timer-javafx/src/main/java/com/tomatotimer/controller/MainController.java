@@ -9,6 +9,7 @@ import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
@@ -58,6 +59,16 @@ public class MainController {
     // ---- drag support -------------------------------------------------------
     private double dragBaseX, dragBaseY;
     private boolean dragging = false;
+
+    // ---- resize support for transparent stage -------------------------------
+    private static final double RESIZE_MARGIN = 6.0;
+    private ResizeZone activeResizeZone = ResizeZone.NONE;
+    private double resizeStartScreenX;
+    private double resizeStartScreenY;
+    private double resizeStartStageX;
+    private double resizeStartStageY;
+    private double resizeStartStageWidth;
+    private double resizeStartStageHeight;
 
     // ---- window-controls fade -----------------------------------------------
     private FadeTransition controlsFadeIn;
@@ -120,15 +131,40 @@ public class MainController {
 
         // Mouse-enter / leave → show / hide window controls
         rootPane.setOnMouseEntered(e -> { controlsFadeOut.stop(); controlsFadeIn.playFromStart(); });
-        rootPane.setOnMouseExited (e -> { controlsFadeIn.stop();  controlsFadeOut.playFromStart(); });
+        rootPane.setOnMouseExited (e -> {
+            controlsFadeIn.stop();
+            controlsFadeOut.playFromStart();
+            if (activeResizeZone == ResizeZone.NONE) {
+                rootPane.setCursor(Cursor.DEFAULT);
+            }
+        });
+
+        rootPane.setOnMouseMoved(e -> {
+            if (activeResizeZone != ResizeZone.NONE) return;
+            rootPane.setCursor(detectResizeZone(e.getX(), e.getY()).cursor);
+        });
 
         // Drag to move window
         rootPane.setOnMousePressed(e -> {
+            activeResizeZone = detectResizeZone(e.getX(), e.getY());
+
+            resizeStartScreenX = e.getScreenX();
+            resizeStartScreenY = e.getScreenY();
+            resizeStartStageX = stage.getX();
+            resizeStartStageY = stage.getY();
+            resizeStartStageWidth = stage.getWidth();
+            resizeStartStageHeight = stage.getHeight();
+
             dragBaseX = e.getScreenX() - stage.getX();
             dragBaseY = e.getScreenY() - stage.getY();
             dragging  = false;
         });
         rootPane.setOnMouseDragged(e -> {
+            if (activeResizeZone != ResizeZone.NONE) {
+                resizeWindow(e.getScreenX(), e.getScreenY());
+                return;
+            }
+
             double dx = e.getScreenX() - dragBaseX - stage.getX();
             double dy = e.getScreenY() - dragBaseY - stage.getY();
             if (!dragging && (Math.abs(dx) > 5 || Math.abs(dy) > 5)) dragging = true;
@@ -136,6 +172,10 @@ public class MainController {
                 stage.setX(e.getScreenX() - dragBaseX);
                 stage.setY(e.getScreenY() - dragBaseY);
             }
+        });
+        rootPane.setOnMouseReleased(e -> {
+            activeResizeZone = ResizeZone.NONE;
+            rootPane.setCursor(detectResizeZone(e.getX(), e.getY()).cursor);
         });
 
         // Close-request: save state
@@ -285,8 +325,6 @@ public class MainController {
 
     public void showButtons() {
         contentPane.getChildren().setAll(buttonsView);
-        // make content pane same size as the stage
-        buttonsView.prefWidth(stage != null ? stage.getWidth() : 260);
     }
 
     public void showSettings() {
@@ -407,6 +445,87 @@ public class MainController {
         ft.setFromValue(from);
         ft.setToValue(to);
         return ft;
+    }
+
+    private ResizeZone detectResizeZone(double x, double y) {
+        if (!stage.isResizable()) return ResizeZone.NONE;
+
+        double w = rootPane.getWidth();
+        double h = rootPane.getHeight();
+
+        boolean left = x <= RESIZE_MARGIN;
+        boolean right = x >= w - RESIZE_MARGIN;
+        boolean top = y <= RESIZE_MARGIN;
+        boolean bottom = y >= h - RESIZE_MARGIN;
+
+        if (top && left) return ResizeZone.TOP_LEFT;
+        if (top && right) return ResizeZone.TOP_RIGHT;
+        if (bottom && left) return ResizeZone.BOTTOM_LEFT;
+        if (bottom && right) return ResizeZone.BOTTOM_RIGHT;
+        if (left) return ResizeZone.LEFT;
+        if (right) return ResizeZone.RIGHT;
+        if (top) return ResizeZone.TOP;
+        if (bottom) return ResizeZone.BOTTOM;
+        return ResizeZone.NONE;
+    }
+
+    private void resizeWindow(double screenX, double screenY) {
+        double dx = screenX - resizeStartScreenX;
+        double dy = screenY - resizeStartScreenY;
+
+        double minW = stage.getMinWidth();
+        double minH = stage.getMinHeight();
+
+        double newX = resizeStartStageX;
+        double newY = resizeStartStageY;
+        double newW = resizeStartStageWidth;
+        double newH = resizeStartStageHeight;
+
+        if (activeResizeZone.left) {
+            newW = Math.max(minW, resizeStartStageWidth - dx);
+            newX = resizeStartStageX + (resizeStartStageWidth - newW);
+        }
+        if (activeResizeZone.right) {
+            newW = Math.max(minW, resizeStartStageWidth + dx);
+        }
+        if (activeResizeZone.top) {
+            newH = Math.max(minH, resizeStartStageHeight - dy);
+            newY = resizeStartStageY + (resizeStartStageHeight - newH);
+        }
+        if (activeResizeZone.bottom) {
+            newH = Math.max(minH, resizeStartStageHeight + dy);
+        }
+
+        stage.setX(newX);
+        stage.setY(newY);
+        stage.setWidth(newW);
+        stage.setHeight(newH);
+    }
+
+    private enum ResizeZone {
+        NONE(false, false, false, false, Cursor.DEFAULT),
+        LEFT(false, false, true, false, Cursor.W_RESIZE),
+        RIGHT(false, false, false, true, Cursor.E_RESIZE),
+        TOP(true, false, false, false, Cursor.N_RESIZE),
+        BOTTOM(false, true, false, false, Cursor.S_RESIZE),
+        TOP_LEFT(true, false, true, false, Cursor.NW_RESIZE),
+        TOP_RIGHT(true, false, false, true, Cursor.NE_RESIZE),
+        BOTTOM_LEFT(false, true, true, false, Cursor.SW_RESIZE),
+        BOTTOM_RIGHT(false, true, false, true, Cursor.SE_RESIZE);
+
+        private final boolean top;
+        private final boolean bottom;
+        private final boolean left;
+        private final boolean right;
+        private final Cursor cursor;
+
+        ResizeZone(boolean top, boolean bottom, boolean left, boolean right, Cursor cursor) {
+            this.top = top;
+            this.bottom = bottom;
+            this.left = left;
+            this.right = right;
+            this.cursor = cursor;
+        }
     }
 }
 

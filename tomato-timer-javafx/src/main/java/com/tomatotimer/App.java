@@ -23,6 +23,7 @@ public class App extends Application {
         primaryStage.setTitle("TomatoTimer");
         primaryStage.initStyle(StageStyle.TRANSPARENT);
         primaryStage.setScene(scene);
+        primaryStage.setResizable(true);
         primaryStage.setMinWidth(160);
         primaryStage.setMinHeight(44);
 

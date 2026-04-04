@@ -2,6 +2,7 @@ package com.tomatotimer.controller;
 
 import com.tomatotimer.TimerMode;
 import javafx.animation.FadeTransition;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -49,6 +50,10 @@ public class ButtonsController {
 
         rootPane.setOnMouseEntered(e -> showControls());
         rootPane.setOnMouseExited (e -> hideControls());
+
+        rootPane.widthProperty().addListener((obs, oldV, newV) -> updateDynamicSizing());
+        rootPane.heightProperty().addListener((obs, oldV, newV) -> updateDynamicSizing());
+        Platform.runLater(this::updateDynamicSizing);
     }
 
     // =========================================================================
@@ -121,6 +126,24 @@ public class ButtonsController {
 
     private void setVisible(boolean v, Node... nodes) {
         for (Node n : nodes) { n.setVisible(v); n.setManaged(v); }
+    }
+
+    private void updateDynamicSizing() {
+        double width = rootPane.getWidth();
+        double height = rootPane.getHeight();
+        if (width <= 0 || height <= 0) return;
+
+        double mainFont = clamp(Math.min(height * 0.42, width * 0.095), 18, 72);
+        double smallFont = clamp(mainFont * 0.58, 11, 42);
+        double infoFont = clamp(mainFont * 0.50, 9, 30);
+
+        labelTime.setStyle(String.format("-fx-font-size: %.1fpx;", mainFont));
+        labelTimeSmall.setStyle(String.format("-fx-font-size: %.1fpx;", smallFont));
+        labelInfo.setStyle(String.format("-fx-font-size: %.1fpx;", infoFont));
+    }
+
+    private static double clamp(double value, double min, double max) {
+        return Math.max(min, Math.min(max, value));
     }
 
     // =========================================================================

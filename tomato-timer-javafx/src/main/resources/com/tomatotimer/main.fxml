@@ -17,7 +17,7 @@
            minWidth="160" minHeight="44">
 
     <!-- Page content fills the whole pane -->
-    <Pane fx:id="contentPane" maxWidth="Infinity" maxHeight="Infinity" />
+    <StackPane fx:id="contentPane" maxWidth="Infinity" maxHeight="Infinity" />
 
     <!-- Window controls – overlaid top-right; fade in/out on mouse-enter/leave -->
     <HBox fx:id="windowControlPane"
