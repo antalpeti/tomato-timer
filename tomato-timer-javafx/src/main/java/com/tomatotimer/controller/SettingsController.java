@@ -2,6 +2,7 @@ package com.tomatotimer.controller;
 
 import com.tomatotimer.AppSettings;
 import com.tomatotimer.IconFactory;
+import com.tomatotimer.NeonPreset;
 import com.tomatotimer.UiScaleHelper;
 import javafx.fxml.FXML;
 import javafx.scene.Group;
@@ -27,6 +28,8 @@ public class SettingsController {
     @FXML private Label            lblWork;
     @FXML private Label            lblRest;
     @FXML private Label            lblLong;
+    @FXML private Label            lblPreset;
+    @FXML private ComboBox<NeonPreset> cbNeonPreset;
     @FXML private CheckBox         cbEnableGCal;
     @FXML private CheckBox         cbCopyToClipboard;
     @FXML private TextField        tfGCalSrc;
@@ -64,6 +67,17 @@ public class SettingsController {
         spRelaxTime.valueProperty().addListener((o, ov, nv) -> settings.setRelaxTime(nv));
         spLongRelaxTime.valueProperty().addListener((o, ov, nv) -> settings.setRelaxTimeLong(nv));
 
+        // Neon preset ComboBox – populate, set current value, apply immediately on change
+        cbNeonPreset.getItems().addAll(NeonPreset.values());
+        cbNeonPreset.setValue(settings.getNeonPreset());
+        cbNeonPreset.valueProperty().addListener((obs, ov, nv) -> {
+            if (nv != null) {
+                settings.setNeonPreset(nv);
+                // Trigger an immediate re-render so the timer face updates in the background
+                if (mainController != null) mainController.updateUI();
+            }
+        });
+
         String ver = getClass().getPackage().getImplementationVersion();
         if (labelVersion != null)
             labelVersion.setText("v" + (ver != null ? ver : "1.0.0"));
@@ -82,12 +96,13 @@ public class SettingsController {
         IconFactory.resize(iconCalendar, navSz * 0.88);
         IconFactory.resize(iconVolume,   navSz * 0.88);
 
-        // ── Setting labels (Work / Rest / Long) ───────────────────────────────
+        // ── Setting labels (Work / Rest / Long / Theme) ───────────────────────────
         final String lblStyle = String.format("-fx-font-size: %.1fpx;",
                 UiScaleHelper.settingLabelFontPx(eff));
         lblWork.setStyle(lblStyle);
         lblRest.setStyle(lblStyle);
         lblLong.setStyle(lblStyle);
+        lblPreset.setStyle(lblStyle);
 
         // ── CheckBox labels ───────────────────────────────────────────────────
         cbEnableGCal.setStyle(lblStyle);
@@ -103,6 +118,9 @@ public class SettingsController {
         spRelaxTime.setPrefWidth(spinW);
         spLongRelaxTime.setPrefWidth(spinW);
 
+        // ── Preset ComboBox – proportional width, min 90 px ──────────────────
+        cbNeonPreset.setPrefWidth(UiScaleHelper.clamp(spinW * 2.2, 90.0, 140.0));
+
         // ── Row spacing and padding ───────────────────────────────────────────
         settingsRow.setSpacing(UiScaleHelper.settingsSpacingPx(eff));
         settingsRow.setStyle(UiScaleHelper.rowPaddingStyle(eff));
@@ -113,6 +131,8 @@ public class SettingsController {
         spWorkTime.getValueFactory().setValue(settings.getWorkTime());
         spRelaxTime.getValueFactory().setValue(settings.getRelaxTime());
         spLongRelaxTime.getValueFactory().setValue(settings.getRelaxTimeLong());
+
+        cbNeonPreset.setValue(settings.getNeonPreset());
 
         tfGCalSrc.setText(settings.getGCalSrc());
         tfGCalText.setText(settings.getGCalText());
@@ -126,6 +146,7 @@ public class SettingsController {
         settings.setWorkTime(spWorkTime.getValue());
         settings.setRelaxTime(spRelaxTime.getValue());
         settings.setRelaxTimeLong(spLongRelaxTime.getValue());
+        if (cbNeonPreset.getValue() != null) settings.setNeonPreset(cbNeonPreset.getValue());
         settings.setGCalSrc(tfGCalSrc.getText());
         settings.setGCalText(tfGCalText.getText());
         settings.setGCalEnable(cbEnableGCal.isSelected());

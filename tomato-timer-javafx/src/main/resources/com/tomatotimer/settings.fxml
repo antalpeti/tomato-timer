@@ -56,6 +56,13 @@
                 </valueFactory>
             </Spinner>
 
+            <!-- Neon theme preset -->
+            <Separator orientation="VERTICAL" prefHeight="30"/>
+            <Label fx:id="lblPreset" text="Theme:" styleClass="setting-label"/>
+            <ComboBox fx:id="cbNeonPreset" prefWidth="120" focusTraversable="false">
+                <tooltip><Tooltip text="Neon visual theme preset"/></tooltip>
+            </ComboBox>
+
             <!-- Google Calendar -->
             <Separator orientation="VERTICAL" prefHeight="30"/>
             <VBox alignment="CENTER_LEFT" spacing="2">

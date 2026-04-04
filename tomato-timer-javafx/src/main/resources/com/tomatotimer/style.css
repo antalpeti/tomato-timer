@@ -1,14 +1,15 @@
 /* ============================================================
    TomatoTimer JavaFX – style.css
    Compact, dark-themed, transparent window skin.
-   Icon colours & accent palette live in IconFactory.java.
-   Gradient background logic lives in TimerBackgroundHelper.java.
+   Cyberpunk / neon palette — accent colours & gradients live
+   in TimerBackgroundHelper.java; icon colours in IconFactory.java.
    ============================================================ */
 
 /* ---- Root / window ---------------------------------------- */
 .root-pane {
     -fx-background-color: transparent;
-    -fx-border-color: rgba(149,149,149,0.68);
+    /* Neon purple window border — visible against any OS background */
+    -fx-border-color: rgba(160,80,255,0.65);
     -fx-border-width: 1;
     -fx-border-radius: 2;
 }
@@ -17,7 +18,7 @@
 /* Initial fallback colour; overridden every tick by            */
 /* TimerBackgroundHelper.computeRootGradientCss() via Java.    */
 .buttons-root {
-    -fx-background-color: #0D1117;
+    -fx-background-color: #06000F;
 }
 
 /* ---- Progress bar fills entire window height -------------- */
@@ -46,21 +47,22 @@
     -fx-font-weight: bold;
     -fx-text-fill: white;
     -fx-alignment: center;
-    /* Stronger shadow keeps white text legible against the brighter neon background. */
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.95), 6, 0.15, 0, 1);
+    /* Neon glow: purple halo around the time text for cyberpunk feel.
+       The dark shadow offset keeps legibility against bright backgrounds. */
+    -fx-effect: dropshadow(gaussian, rgba(180,80,255,0.90), 14, 0.40, 0, 0);
 }
 
 .label-time-small {
     -fx-font-size: 11px;
-    -fx-text-fill: white;
+    -fx-text-fill: #F0F0FF;
     -fx-alignment: center-right;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.92), 3, 0.10, 0, 1);
+    -fx-effect: dropshadow(gaussian, rgba(150,60,255,0.75), 8, 0.30, 0, 0);
 }
 
 .label-info {
     -fx-font-size: 9px;
-    -fx-text-fill: #dddddd;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.85), 3, 0.10, 0, 1);
+    -fx-text-fill: #D0D0FF;
+    -fx-effect: dropshadow(gaussian, rgba(120,50,200,0.60), 4, 0.15, 0, 0);
 }
 
 .label-version {
@@ -79,12 +81,16 @@
     -fx-min-height: 34;
 }
 .icon-btn:hover {
-    -fx-background-color: rgba(255,255,255,0.12);
+    /* Neon purple tinted ghost background + radiant glow on hover */
+    -fx-background-color: rgba(140,60,255,0.22);
     -fx-background-radius: 4;
+    -fx-effect: dropshadow(gaussian, rgba(140,60,255,0.60), 10, 0.30, 0, 0);
 }
 .icon-btn:pressed {
-    -fx-background-color: rgba(255,255,255,0.28);
+    /* Intense neon bloom on press */
+    -fx-background-color: rgba(180,80,255,0.42);
     -fx-background-radius: 4;
+    -fx-effect: dropshadow(gaussian, rgba(200,100,255,0.85), 16, 0.50, 0, 0);
 }
 
 /* ---- Small icon buttons (sound settings) ------------------ */

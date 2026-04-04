@@ -295,7 +295,8 @@ public class MainController {
         }
 
         if (buttonsController != null)
-            buttonsController.updateUI(mode, isPaused, isOverTime, progressPct, timeStr, infoStr);
+            buttonsController.updateUI(settings.getNeonPreset(),
+                    mode, isPaused, isOverTime, progressPct, timeStr, infoStr);
     }
 
     // =========================================================================

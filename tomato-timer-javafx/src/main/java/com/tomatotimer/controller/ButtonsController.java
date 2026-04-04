@@ -1,6 +1,7 @@
 package com.tomatotimer.controller;
 
 import com.tomatotimer.IconFactory;
+import com.tomatotimer.NeonPreset;
 import com.tomatotimer.TimerBackgroundHelper;
 import com.tomatotimer.TimerMode;
 import com.tomatotimer.UiScaleHelper;
@@ -116,19 +117,15 @@ public class ButtonsController {
     //  UI update (called from MainController every second)
     // =========================================================================
 
-    public void updateUI(TimerMode mode, boolean isPaused, boolean isOverTime,
+    public void updateUI(NeonPreset preset, TimerMode mode, boolean isPaused, boolean isOverTime,
                          double progressPct, String timeStr, String infoStr) {
 
-        // ---- Root-pane ambient gradient (state + mode aware) ----------------
-        // Covers the entire window background with a smooth three-stop
-        // linear gradient that shifts continuously with progress and mode.
-        // The gradient is always dark enough to keep text and icons legible.
+        // ---- Root-pane ambient gradient (preset + state + mode aware) --------
         rootPane.setStyle("-fx-background-color: " +
                 TimerBackgroundHelper.computeRootGradientCss(
-                        mode, progressPct, isPaused, isOverTime) + ";");
+                        preset, mode, progressPct, isPaused, isOverTime) + ";");
 
         // ---- Progress bar value ---------------------------------------------
-        // WPF: paused → indeterminate; overtime → 100 %; otherwise → current %
         if (isPaused) {
             progressBar.setProgress(ProgressBar.INDETERMINATE_PROGRESS);
         } else if (isOverTime) {
@@ -139,21 +136,17 @@ public class ButtonsController {
 
         // ---- Progress-bar fallback accent (used before sub-node lookup succeeds)
         final Color accent = TimerBackgroundHelper.computeAccentColor(
-                mode, progressPct, isPaused, isOverTime);
+                preset, mode, progressPct, isPaused, isOverTime);
         progressBar.setStyle("-fx-accent: " + TimerBackgroundHelper.toCssHex(accent) + ";");
 
         // ---- .bar sub-node: vertical 3-D gradient fill ----------------------
-        // Lighter-top → accent-mid → darker-bottom gives the filled bar
-        // a dimensional look without obscuring overlaid labels or icons.
         final Node bar = progressBar.lookup(".bar");
         if (bar != null) {
             bar.setStyle(TimerBackgroundHelper.computeBarCss(
-                    mode, progressPct, isPaused, isOverTime));
+                    preset, mode, progressPct, isPaused, isOverTime));
         }
 
         // ---- .track sub-node: near-transparent overlay ----------------------
-        // rgba(0,0,0,0.18) lets the root-pane ambient gradient show through
-        // the unfilled portion of the bar, completing the full-window effect.
         final Node track = progressBar.lookup(".track");
         if (track != null) {
             track.setStyle(TimerBackgroundHelper.computeTrackCss());

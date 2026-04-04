@@ -30,6 +30,7 @@ public class AppSettings {
     private static final String KEY_SOUND_PAUSE        = "sound_pause";
     private static final String KEY_SOUND_WORK_DONE    = "sound_work_done";
     private static final String KEY_SOUND_REST_TIMEOUT = "sound_rest_timeout";
+    private static final String KEY_NEON_PRESET        = "neon_preset";
 
     private AppSettings() {}
 
@@ -98,6 +99,15 @@ public class AppSettings {
             case WORK_DONE    -> prefs.put(KEY_SOUND_WORK_DONE, path);
             case REST_TIMEOUT -> prefs.put(KEY_SOUND_REST_TIMEOUT, path);
         }
+    }
+
+    // ---- neon theme preset --------------------------------------------------
+    public NeonPreset getNeonPreset() {
+        return NeonPreset.fromName(prefs.get(KEY_NEON_PRESET, NeonPreset.NEON_BALANCED.name()));
+    }
+
+    public void setNeonPreset(NeonPreset preset) {
+        prefs.put(KEY_NEON_PRESET, preset.name());
     }
 
     // ---- flush --------------------------------------------------------------

@@ -50,128 +50,23 @@ public final class TimerBackgroundHelper {
      */
     public static final double WARNING_THRESHOLD_PCT = 80.0;
 
-    // ── Accent colours ────────────────────────────────────────────────────────
-
-    /** WORK normal phase accent (0 – 80 %): blue-violet. */
-    private static final Color WORK_NORMAL       = Color.web("#5B8DEF");
-
-    /** RELAX normal phase accent (0 – 80 %): teal (matches IconFactory.COLOR_PLAY). */
-    private static final Color RELAX_NORMAL      = Color.web("#4ECDC4");
-
-    /** RELAX_LONG normal phase accent (0 – 80 %): mint-green. */
-    private static final Color RELAX_LONG_NORMAL = Color.web("#00B894");
-
-    /** Warning phase target colour (> 80 %): warm yellow – mirrors WPF {@code Brushes.Yellow}. */
-    private static final Color WARNING_COLOR     = Color.web("#FFDE57");
-
-    /** Overtime accent: coral-red – mirrors WPF {@code Brushes.Red}. */
-    private static final Color OVER_COLOR        = Color.web("#FF6B6B");
-
-    /** Paused accent: muted lavender – mirrors WPF {@code Brushes.Green} indeterminate. */
-    private static final Color PAUSED_COLOR      = Color.web("#A29BFE");
-
     // ── Track (background of the unfilled bar area) colours ──────────────────
     // Kept for backward-compatibility; gradient API is preferred.
 
-    /** Track colour for WORK mode: very dark blue-black. */
-    public static final String TRACK_WORK       = "#0D1117";
+    /** Track colour for WORK mode: near-black deep violet. */
+    public static final String TRACK_WORK       = "#06000F";
 
-    /** Track colour for RELAX mode: very dark teal-black. */
-    public static final String TRACK_RELAX      = "#0D1A19";
+    /** Track colour for RELAX mode: near-black deep cyan. */
+    public static final String TRACK_RELAX      = "#001820";
 
-    /** Track colour for RELAX_LONG mode: very dark mint-black. */
-    public static final String TRACK_RELAX_LONG = "#0A1A15";
+    /** Track colour for RELAX_LONG mode: near-black deep neon-green. */
+    public static final String TRACK_RELAX_LONG = "#001810";
 
-    /** Track colour when paused: dark navy. */
-    public static final String TRACK_PAUSED     = "#1A1A2E";
+    /** Track colour when paused: deep dark purple. */
+    public static final String TRACK_PAUSED     = "#0F0022";
 
-    /** Track colour when overtime: dark red tint. */
-    public static final String TRACK_OVER       = "#1A0D0D";
-
-    // ── Gradient tuning constants ─────────────────────────────────────────────
-
-    /**
-     * Blend-to-black factor for the top and bottom edges of the root ambient gradient
-     * (0 = pure accent colour, 1 = pure black).  Higher values keep the background
-     * very dark so text and icons remain fully legible.
-     */
-    private static final double ROOT_DARK_EDGE = 0.82;
-
-    /**
-     * Blend-to-black factor for the centre stop of the root ambient gradient.
-     * Significantly lower than {@link #ROOT_DARK_EDGE} so the midpoint emits an
-     * intense, neon-like glow band while the edges remain comfortably dark.
-     */
-    private static final double ROOT_DARK_MID  = 0.52;
-
-    /**
-     * Minimum opacity of the coloured ambient glow layered over the base gradient.
-     * Raised so even an idle timer shows a clearly visible ambient glow.
-     */
-    private static final double ROOT_GLOW_ALPHA_MIN = 0.25;
-
-    /**
-     * Maximum opacity of the coloured ambient glow layered over the base gradient.
-     * Raised for a vivid, neon-quality peak intensity.
-     */
-    private static final double ROOT_GLOW_ALPHA_MAX = 0.55;
-
-    /**
-     * Opacity of the glossy top sheen that adds a brighter, more dimensional look.
-     */
-    private static final double ROOT_SHEEN_ALPHA = 0.20;
-
-    /**
-     * How much white to blend into the accent for the <em>strong highlight</em>
-     * stop of the root ambient glow band.  Higher values push the centre glow
-     * closer to pure white, intensifying the neon impression.
-     */
-    private static final double ROOT_GLOW_WHITE_BLEND = 0.28;
-
-    /**
-     * How much black to blend into the accent for the <em>soft edge</em> stops of
-     * the root ambient glow band.  Lower values preserve accent saturation so the
-     * glow colour stays vivid at the shoulders of the band.
-     */
-    private static final double ROOT_GLOW_BLACK_BLEND = 0.08;
-
-    /**
-     * How much white to blend into the accent for the <em>top</em> highlight
-     * stop of the progress-bar fill gradient.  Raised to create a bright,
-     * neon-tube-like highlight at the leading edge of the fill.
-     */
-    private static final double BAR_LIGHTEN    = 0.55;
-
-    /**
-     * How much black to blend into the accent for the <em>bottom</em> shadow
-     * stop of the progress-bar fill gradient.
-     */
-    private static final double BAR_DARKEN     = 0.16;
-
-    /**
-     * Blur radius (px) of the neon drop-shadow glow applied to the progress-bar fill.
-     * Larger values produce a wider, softer halo around the filled portion.
-     */
-    private static final double BAR_GLOW_RADIUS = 10.0;
-
-    /**
-     * Spread factor (0–1) of the neon drop-shadow glow.
-     * Higher values keep more of the halo at full opacity before it fades out,
-     * giving a saturated neon bloom rather than a diffuse blur.
-     */
-    private static final double BAR_GLOW_SPREAD = 0.55;
-
-    /**
-     * Opacity of the neon drop-shadow halo colour around the progress-bar fill.
-     */
-    private static final double BAR_GLOW_OPACITY = 0.90;
-
-    /**
-     * How much white to blend into the accent to form the neon halo colour
-     * around the progress-bar fill.  A small white shift keeps the glow
-     * vivid without washing out the colour identity.
-     */
-    private static final double BAR_GLOW_WHITE_BLEND = 0.20;
+    /** Track colour when overtime: deep dark magenta. */
+    public static final String TRACK_OVER       = "#1A0020";
 
     private TimerBackgroundHelper() { /* utility class – no instances */ }
 
@@ -180,121 +75,113 @@ public final class TimerBackgroundHelper {
     // ---- Gradient helpers (preferred) ----------------------------------------
 
     /**
-     * Returns the CSS colour <em>value</em> (no property name) for the timer root
-     * pane's {@code -fx-background-color} inline style.
+     * Returns the CSS colour value for the timer root pane's
+     * {@code -fx-background-color} inline style, rendered using the supplied
+     * {@link NeonPreset}.
      *
-     * <p>The result is a layered background assembled from:
-     * <ol>
-     *   <li>a deep base vertical gradient,</li>
-     *   <li>a stronger coloured ambient band through the middle, and</li>
-     *   <li>a subtle glossy top sheen.</li>
-     * </ol>
-     * This makes the timer face feel more alive and visibly gradient-driven while
-     * keeping the overall luminance dark enough for white text and icons.
-     *
-     * <p>Contrast ratios are preserved: the gradient is always dark enough (luma
-     * below 15 %) to keep white text and SVG icons fully legible.
-     *
-     * <p>Example usage:
-     * <pre>{@code
-     *   rootPane.setStyle("-fx-background-color: "
-     *       + TimerBackgroundHelper.computeRootGradientCss(mode, pct, paused, over) + ";");
-     * }</pre>
-     *
+     * @param preset      the active neon visual-theme preset
      * @param mode        current {@link TimerMode}
      * @param progressPct elapsed percentage in [0, 100]
      * @param isPaused    whether the timer is paused
      * @param isOverTime  whether the allocated time has fully elapsed
      * @return a comma-separated CSS background value string (no semicolon)
      */
-    public static String computeRootGradientCss(TimerMode mode, double progressPct,
+    public static String computeRootGradientCss(NeonPreset preset,
+                                                TimerMode mode, double progressPct,
                                                 boolean isPaused, boolean isOverTime) {
-        final Color accent = computeAccentColor(mode, progressPct, isPaused, isOverTime);
+        final Color accent = computeAccentColor(preset, mode, progressPct, isPaused, isOverTime);
         final double progress01 = clamp(progressPct / 100.0, 0.0, 1.0);
         final double glowAlpha = isOverTime
-                ? ROOT_GLOW_ALPHA_MAX
+                ? preset.getRootGlowAlphaMax()
                 : isPaused
                 ? 0.20
-                : ROOT_GLOW_ALPHA_MIN + (ROOT_GLOW_ALPHA_MAX - ROOT_GLOW_ALPHA_MIN) * progress01;
+                : preset.getRootGlowAlphaMin()
+                        + (preset.getRootGlowAlphaMax() - preset.getRootGlowAlphaMin()) * progress01;
 
         // Deep base layer
-        final Color top    = accent.interpolate(Color.BLACK, ROOT_DARK_EDGE);
-        final Color mid    = accent.interpolate(Color.BLACK, ROOT_DARK_MID);
-        final Color bottom = accent.interpolate(Color.BLACK, ROOT_DARK_EDGE + 0.06);
+        final Color top    = accent.interpolate(Color.BLACK, preset.getRootDarkEdge());
+        final Color mid    = accent.interpolate(Color.BLACK, preset.getRootDarkMid());
+        final Color bottom = accent.interpolate(Color.BLACK, preset.getRootDarkEdge() + 0.06);
 
         // Coloured atmospheric glow through the middle band
-        // ROOT_GLOW_WHITE_BLEND pushes the highlight toward white for a neon-bright peak;
-        // ROOT_GLOW_BLACK_BLEND keeps the shoulders saturated without blackening them.
-        final Color glowStrong = accent.interpolate(Color.WHITE, ROOT_GLOW_WHITE_BLEND);
-        final Color glowSoft   = accent.interpolate(Color.BLACK, ROOT_GLOW_BLACK_BLEND);
+        final Color glowStrong = accent.interpolate(Color.WHITE, preset.getRootGlowWhiteBlend());
+        final Color glowSoft   = accent.interpolate(Color.BLACK, preset.getRootGlowBlackBlend());
 
-        // Subtle glossy sheen near the top to make the gradient more readable
+        // Subtle glossy sheen near the top
         final Color sheen = accent.interpolate(Color.WHITE, 0.35);
+
         return String.format(
-                "linear-gradient(to bottom, %s 0%%, %s 18%%, rgba(255,255,255,0.00) 52%%),"
-              + "linear-gradient(to bottom, rgba(0,0,0,0.00) 0%%, %s 16%%, %s 48%%, %s 78%%, rgba(0,0,0,0.00) 100%%),"
+                "linear-gradient(to bottom, %s 0%%, %s 20%%, rgba(255,255,255,0.00) 55%%),"
+              + "linear-gradient(to top,    %s 0%%, %s 25%%, rgba(0,0,0,0.00) 65%%),"
+              + "linear-gradient(to bottom, rgba(0,0,0,0.00) 0%%, %s 15%%, %s 45%%, %s 80%%, rgba(0,0,0,0.00) 100%%),"
               + "linear-gradient(to bottom, %s 0%%, %s 42%%, %s 100%%)",
-                toCssRgba(sheen, ROOT_SHEEN_ALPHA),
-                toCssRgba(sheen, ROOT_SHEEN_ALPHA * 0.45),
-                toCssRgba(glowSoft, glowAlpha * 0.45),
+                toCssRgba(sheen, preset.getRootSheenAlpha()),
+                toCssRgba(sheen, preset.getRootSheenAlpha() * 0.40),
+                toCssRgba(glowSoft,   glowAlpha * 0.50),
+                toCssRgba(glowStrong, glowAlpha * 0.40),
+                toCssRgba(glowSoft,   glowAlpha * 0.40),
                 toCssRgba(glowStrong, glowAlpha),
-                toCssRgba(glowSoft, glowAlpha * 0.55),
+                toCssRgba(glowSoft,   glowAlpha * 0.50),
                 toCssHex(top),
                 toCssHex(mid),
                 toCssHex(bottom));
     }
 
     /**
+     * Backward-compatible overload that delegates to {@link NeonPreset#NEON_BALANCED}.
+     *
+     * @see #computeRootGradientCss(NeonPreset, TimerMode, double, boolean, boolean)
+     */
+    public static String computeRootGradientCss(TimerMode mode, double progressPct,
+                                                boolean isPaused, boolean isOverTime) {
+        return computeRootGradientCss(NeonPreset.NEON_BALANCED, mode, progressPct, isPaused, isOverTime);
+    }
+
+    /**
      * Returns the complete CSS style string for the progress-bar {@code .bar}
-     * sub-node (the filled portion).
+     * sub-node, rendered using the supplied {@link NeonPreset}.
      *
-     * <p>Produces a top-to-bottom vertical gradient:
-     * <ol>
-     *   <li>Top highlight – accent blended {@value #BAR_LIGHTEN} toward white.</li>
-     *   <li>Mid accent – pure accent colour at 55 %.</li>
-     *   <li>Bottom shadow – accent blended {@value #BAR_DARKEN} toward black.</li>
-     * </ol>
-     * The gradient gives the fill a subtle 3-D dimension without sacrificing
-     * the legibility of overlaid text.
-     *
-     * <p>Example usage:
-     * <pre>{@code
-     *   Node bar = progressBar.lookup(".bar");
-     *   if (bar != null) bar.setStyle(
-     *       TimerBackgroundHelper.computeBarCss(mode, pct, paused, over));
-     * }</pre>
-     *
+     * @param preset      the active neon visual-theme preset
      * @param mode        current {@link TimerMode}
      * @param progressPct elapsed percentage in [0, 100]
      * @param isPaused    whether the timer is paused
      * @param isOverTime  whether the allocated time has fully elapsed
      * @return CSS style string ready to pass to {@link javafx.scene.Node#setStyle(String)}
      */
+    public static String computeBarCss(NeonPreset preset,
+                                       TimerMode mode, double progressPct,
+                                       boolean isPaused, boolean isOverTime) {
+        final Color accent    = computeAccentColor(preset, mode, progressPct, isPaused, isOverTime);
+        final Color lighter   = accent.interpolate(Color.WHITE, preset.getBarLighten());
+        final Color darker    = accent.interpolate(Color.BLACK, preset.getBarDarken());
+        final Color glowColor = accent.interpolate(Color.WHITE, preset.getBarGlowWhiteBlend());
+
+        return String.format(
+                "-fx-background-color:"
+                + " linear-gradient(to bottom, rgba(255,255,255,%.3f) 0%%, rgba(255,255,255,0.000) 38%%),"
+                + " linear-gradient(to bottom, %s 0%%, %s 55%%, %s 100%%);"
+                + "-fx-background-radius: 0, 0;"
+                + "-fx-background-insets: 0, 0;"
+                + "-fx-effect: dropshadow(gaussian, %s, %.0f, %.2f, 0, 0);",
+                preset.getBarInnerSheen(),
+                toCssHex(lighter), toCssHex(accent), toCssHex(darker),
+                toCssRgba(glowColor, preset.getBarGlowOpacity()),
+                preset.getBarGlowRadius(), preset.getBarGlowSpread());
+    }
+
+    /**
+     * Backward-compatible overload that delegates to {@link NeonPreset#NEON_BALANCED}.
+     *
+     * @see #computeBarCss(NeonPreset, TimerMode, double, boolean, boolean)
+     */
     public static String computeBarCss(TimerMode mode, double progressPct,
                                        boolean isPaused, boolean isOverTime) {
-        final Color accent    = computeAccentColor(mode, progressPct, isPaused, isOverTime);
-        final Color lighter   = accent.interpolate(Color.WHITE, BAR_LIGHTEN);
-        final Color darker    = accent.interpolate(Color.BLACK, BAR_DARKEN);
-        // Glow halo colour: accent shifted slightly toward white for a vivid neon bloom.
-        final Color glowColor = accent.interpolate(Color.WHITE, BAR_GLOW_WHITE_BLEND);
-        return String.format(
-                "-fx-background-color: linear-gradient(to bottom, %s 0%%, %s 55%%, %s 100%%);" +
-                "-fx-background-radius: 0;" +
-                "-fx-background-insets: 0;" +
-                "-fx-effect: dropshadow(gaussian, %s, %.0f, %.2f, 0, 0);",
-                toCssHex(lighter), toCssHex(accent), toCssHex(darker),
-                toCssRgba(glowColor, BAR_GLOW_OPACITY), BAR_GLOW_RADIUS, BAR_GLOW_SPREAD);
+        return computeBarCss(NeonPreset.NEON_BALANCED, mode, progressPct, isPaused, isOverTime);
     }
 
     /**
      * Returns the complete CSS style string for the progress-bar {@code .track}
      * sub-node (the unfilled portion).
-     *
-     * <p>The track is rendered as a near-transparent dark overlay
-     * ({@code rgba(0,0,0,0.18)}) so that the root-pane ambient gradient
-     * ({@link #computeRootGradientCss}) shows through the unfilled area.
-     * This creates a seamless visual where the filled bar "emerges" from
-     * the dark ambient background as the timer progresses.
      *
      * @return CSS style string ready to pass to {@link javafx.scene.Node#setStyle(String)}
      */
@@ -307,39 +194,41 @@ public final class TimerBackgroundHelper {
     // ---- Legacy solid-colour helpers (kept for backward-compatibility) --------
 
     /**
-     * Computes the progress-bar <em>accent</em> (filled bar) colour for the given state.
+     * Computes the progress-bar accent colour for the given state using the
+     * supplied {@link NeonPreset}.
      *
-     * <p>Colour zones (WPF-aligned):
-     * <ol>
-     *   <li><b>Paused</b> → {@link #PAUSED_COLOR} (lavender).</li>
-     *   <li><b>OverTime</b> → {@link #OVER_COLOR} (red).</li>
-     *   <li><b>0 – {@link #WARNING_THRESHOLD_PCT} %</b> → mode-specific base colour,
-     *       constant (matches WPF green staying constant in this zone).</li>
-     *   <li><b>{@link #WARNING_THRESHOLD_PCT} – 100 %</b> → continuous interpolation
-     *       from the base colour toward {@link #WARNING_COLOR} (yellow).</li>
-     * </ol>
-     *
+     * @param preset      the active neon visual-theme preset
      * @param mode        current {@link TimerMode}
      * @param progressPct elapsed percentage in [0, 100]
-     * @param isPaused    whether the timer is paused (only possible in WORK mode)
+     * @param isPaused    whether the timer is paused
      * @param isOverTime  whether the allocated time has fully elapsed
      * @return a JavaFX {@link Color} suitable for {@code -fx-accent}
      */
-    public static Color computeAccentColor(TimerMode mode, double progressPct,
+    public static Color computeAccentColor(NeonPreset preset,
+                                           TimerMode mode, double progressPct,
                                            boolean isPaused, boolean isOverTime) {
-        if (isPaused)   return PAUSED_COLOR;
-        if (isOverTime) return OVER_COLOR;
+        if (isPaused)   return preset.getPausedColor();
+        if (isOverTime) return preset.getOverColor();
 
-        final Color baseColor = normalColorFor(mode);
+        final Color baseColor = preset.normalColorFor(mode);
 
         if (progressPct <= WARNING_THRESHOLD_PCT) {
             return baseColor;
         }
 
-        // Smooth, continuous interpolation in the warning zone (80 → 100 %)
         final double t = Math.min(1.0,
                 (progressPct - WARNING_THRESHOLD_PCT) / (100.0 - WARNING_THRESHOLD_PCT));
-        return baseColor.interpolate(WARNING_COLOR, t);
+        return baseColor.interpolate(preset.getWarningColor(), t);
+    }
+
+    /**
+     * Backward-compatible overload that delegates to {@link NeonPreset#NEON_BALANCED}.
+     *
+     * @see #computeAccentColor(NeonPreset, TimerMode, double, boolean, boolean)
+     */
+    public static Color computeAccentColor(TimerMode mode, double progressPct,
+                                           boolean isPaused, boolean isOverTime) {
+        return computeAccentColor(NeonPreset.NEON_BALANCED, mode, progressPct, isPaused, isOverTime);
     }
 
     /**
@@ -393,14 +282,6 @@ public final class TimerBackgroundHelper {
 
     private static double clamp(double value, double min, double max) {
         return Math.max(min, Math.min(max, value));
-    }
-
-    private static Color normalColorFor(TimerMode mode) {
-        return switch (mode) {
-            case WORK       -> WORK_NORMAL;
-            case RELAX      -> RELAX_NORMAL;
-            case RELAX_LONG -> RELAX_LONG_NORMAL;
-        };
     }
 }
 
