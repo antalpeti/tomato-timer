@@ -21,6 +21,8 @@ import javafx.scene.control.MenuButton;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
+import javafx.scene.image.Image;
+import javafx.scene.image.PixelFormat;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
@@ -29,6 +31,8 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.awt.Desktop;
+import java.awt.Taskbar;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -360,6 +364,7 @@ public class MainController {
 
         final var image = TaskbarIconRenderer.render(iconText, accentColor);
         stage.getIcons().setAll(image);
+        pushAwtTaskbarIcon(image);
     }
 
     /** Returns the current remaining milliseconds (positive = time left, negative = overtime). */
@@ -374,6 +379,55 @@ public class MainController {
         }
         long elapsed = java.time.Duration.between(timerStartTime, java.time.LocalDateTime.now()).toMillis();
         return modeDurationMs - elapsed;
+    }
+
+    // =========================================================================
+    //  AWT Taskbar helper (robust Windows taskbar refresh)
+    // =========================================================================
+
+    /**
+     * Pushes {@code fxImage} to the native AWT {@link Taskbar} so that Windows
+     * actually refreshes the taskbar-button image on every tick.
+     *
+     * <p>{@link javafx.stage.Stage#getIcons()} alone is not enough on Windows –
+     * the native taskbar only picks up the icon change when it is also set
+     * through the AWT {@link Taskbar} API.  This method performs that second
+     * push and silently no-ops when the feature is unavailable (macOS app-dock
+     * badge path, headless CI, etc.).</p>
+     *
+     * @param fxImage the {@link Image} already placed in {@code stage.getIcons()}
+     */
+    private static void pushAwtTaskbarIcon(Image fxImage) {
+        if (!Taskbar.isTaskbarSupported()) return;
+        final var taskbar = Taskbar.getTaskbar();
+        if (!taskbar.isSupported(Taskbar.Feature.ICON_IMAGE)) return;
+        try {
+            taskbar.setIconImage(fxImageToBufferedImage(fxImage));
+        } catch (UnsupportedOperationException | SecurityException ignored) {
+            // Platform does not support dynamic icon update – silently skip
+        }
+    }
+
+    /**
+     * Converts a JavaFX {@link Image} to an AWT {@link BufferedImage} by copying
+     * pixels through a {@link javafx.scene.image.PixelReader}.
+     *
+     * <p>This is functionally equivalent to {@code SwingFXUtils.fromFXImage} but
+     * does not require the {@code javafx-swing} module, keeping the dependency
+     * set unchanged.</p>
+     *
+     * @param fxImage source JavaFX image; must not be {@code null}
+     * @return an ARGB {@link BufferedImage} with identical pixel data
+     */
+    private static BufferedImage fxImageToBufferedImage(Image fxImage) {
+        final int w = (int) fxImage.getWidth();
+        final int h = (int) fxImage.getHeight();
+        final var argbPixels = new int[w * h];
+        fxImage.getPixelReader().getPixels(0, 0, w, h,
+                PixelFormat.getIntArgbInstance(), argbPixels, 0, w);
+        final var bim = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+        bim.setRGB(0, 0, w, h, argbPixels, 0, w);
+        return bim;
     }
 
     // =========================================================================
