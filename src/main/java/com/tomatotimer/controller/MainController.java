@@ -39,6 +39,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 /**
  * Controller for main.fxml – central coordinator, equivalent to MainWindow.xaml.cs.
@@ -362,9 +363,13 @@ public class MainController {
         lastIconText  = iconText;
         lastIconColor = accentColor;
 
-        final var image = TaskbarIconRenderer.render(iconText, accentColor);
-        stage.getIcons().setAll(image);
-        pushAwtTaskbarIcon(image);
+        // Render at all standard sizes so Windows picks the best resolution
+        // for taskbar, alt-tab thumbnail, jump-list, etc.
+        final List<Image> icons = TaskbarIconRenderer.renderAllSizes(iconText, accentColor);
+        stage.getIcons().setAll(icons);
+
+        // AWT Taskbar push: use the 32 px image (index 2 in [16,24,32,48,64])
+        pushAwtTaskbarIcon(icons.get(2));
     }
 
     /** Returns the current remaining milliseconds (positive = time left, negative = overtime). */

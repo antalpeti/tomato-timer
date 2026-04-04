@@ -13,6 +13,11 @@ public class App extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        // Register an explicit Windows AppUserModelID before any window appears so
+        // that the taskbar associates this process with TomatoTimer instead of javaw.
+        // No-op on non-Windows and safe when JNA is absent.
+        WindowsAppIdHelper.apply();
+
         FXMLLoader loader = new FXMLLoader(getClass().getResource("main.fxml"));
         StackPane root = loader.load();
 

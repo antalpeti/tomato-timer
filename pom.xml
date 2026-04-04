@@ -35,6 +35,14 @@
             <artifactId>javafx-media</artifactId>
             <version>${javafx.version}</version>
         </dependency>
+
+        <!-- JNA – used by WindowsAppIdHelper to set the Windows AppUserModelID
+             so the taskbar associates the window with TomatoTimer, not javaw. -->
+        <dependency>
+            <groupId>net.java.dev.jna</groupId>
+            <artifactId>jna-platform</artifactId>
+            <version>5.14.0</version>
+        </dependency>
     </dependencies>
 
     <build>
