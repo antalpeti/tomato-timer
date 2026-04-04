@@ -3,10 +3,14 @@ package com.tomatotimer.controller;
 import com.tomatotimer.AppSettings;
 import com.tomatotimer.IconFactory;
 import com.tomatotimer.SoundType;
+import com.tomatotimer.UiScaleHelper;
 import javafx.fxml.FXML;
 import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.stage.FileChooser;
@@ -20,7 +24,14 @@ public class SoundSettingsController {
 
     // Back navigation
     @FXML private HBox   rootBox;
+    @FXML private HBox   soundRow;
     @FXML private Button btnBack;
+
+    // Section labels
+    @FXML private Label lblResume;
+    @FXML private Label lblPause;
+    @FXML private Label lblWorkDone;
+    @FXML private Label lblRestEnd;
 
     // Resume row
     @FXML private Button btnResumePlay;
@@ -64,11 +75,9 @@ public class SoundSettingsController {
         iconBack = IconFactory.create(IconFactory.PATH_CLOCK, IconFactory.COLOR_BACK);
         btnBack.setGraphic(iconBack);
 
-        // Resize icon once laid out, and whenever the pane height changes
-        rootBox.heightProperty().addListener((obs, ov, nv) ->
-            IconFactory.resize(iconBack, IconFactory.iconSizeForHeight(Math.max(nv.doubleValue(), 44.0))));
-        javafx.application.Platform.runLater(() ->
-            IconFactory.resize(iconBack, IconFactory.iconSizeForHeight(Math.max(rootBox.getHeight(), 44.0))));
+        // Resize all scalable elements once laid out, and whenever height changes
+        rootBox.heightProperty().addListener((obs, ov, nv) -> updateDynamicSizing(nv.doubleValue()));
+        javafx.application.Platform.runLater(() -> updateDynamicSizing(rootBox.getHeight()));
         // Deferred – see ensureButtons()
     }
 
@@ -81,6 +90,54 @@ public class SoundSettingsController {
                 { btnRestPlay,   btnRestStop,   btnRestMute,   btnRestOpenFile   }
             };
             for (SoundType t : SoundType.values()) syncUIForType(t);
+        }
+    }
+
+    /**
+     * Applies all dynamic scaling for the sound-settings page based on the current
+     * container height. Called on every height change and once after first layout.
+     */
+    private void updateDynamicSizing(double height) {
+        final double eff = Math.max(height, UiScaleHelper.REF_HEIGHT);
+
+        // ── Back icon ─────────────────────────────────────────────────────────
+        IconFactory.resize(iconBack, UiScaleHelper.navIconPx(eff));
+
+        // ── Section labels ────────────────────────────────────────────────────
+        final String lblStyle = String.format("-fx-font-size: %.1fpx;",
+                UiScaleHelper.soundLabelFontPx(eff));
+        lblResume.setStyle(lblStyle);
+        lblPause.setStyle(lblStyle);
+        lblWorkDone.setStyle(lblStyle);
+        lblRestEnd.setStyle(lblStyle);
+
+        // ── Small buttons (font + min-size) ───────────────────────────────────
+        ensureButtons();
+        final String btnStyle = String.format(
+                "-fx-font-size: %.1fpx; -fx-min-width: %.1f; -fx-min-height: %.1f;",
+                UiScaleHelper.smallBtnFontPx(eff),
+                UiScaleHelper.smallBtnMinWidthPx(eff),
+                UiScaleHelper.smallBtnMinHeightPx(eff));
+        for (final Button[] row : buttons) {
+            for (final Button btn : row) {
+                btn.setStyle(btnStyle);
+            }
+        }
+
+        // ── Row spacing / padding ─────────────────────────────────────────────
+        soundRow.setSpacing(UiScaleHelper.soundGroupSpacingPx(eff));
+        soundRow.setStyle(UiScaleHelper.rowPaddingStyle(eff));
+
+        // ── VBox and inner-HBox spacing ───────────────────────────────────────
+        for (final Node child : soundRow.getChildren()) {
+            if (child instanceof VBox vbox) {
+                vbox.setSpacing(UiScaleHelper.soundVboxSpacingPx(eff));
+                for (final Node vchild : vbox.getChildren()) {
+                    if (vchild instanceof HBox hbox) {
+                        hbox.setSpacing(UiScaleHelper.soundBtnRowSpacingPx(eff));
+                    }
+                }
+            }
         }
     }
 

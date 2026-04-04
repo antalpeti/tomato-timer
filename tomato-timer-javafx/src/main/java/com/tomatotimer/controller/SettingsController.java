@@ -2,6 +2,7 @@ package com.tomatotimer.controller;
 
 import com.tomatotimer.AppSettings;
 import com.tomatotimer.IconFactory;
+import com.tomatotimer.UiScaleHelper;
 import javafx.fxml.FXML;
 import javafx.scene.Group;
 import javafx.scene.control.*;
@@ -16,12 +17,16 @@ import java.time.LocalDateTime;
 public class SettingsController {
 
     @FXML private HBox             rootBox;
+    @FXML private HBox             settingsRow;
     @FXML private Button           btnBack;
     @FXML private Button           btnTestGCal;
     @FXML private Button           btnSoundSettings;
     @FXML private Spinner<Integer> spWorkTime;
     @FXML private Spinner<Integer> spRelaxTime;
     @FXML private Spinner<Integer> spLongRelaxTime;
+    @FXML private Label            lblWork;
+    @FXML private Label            lblRest;
+    @FXML private Label            lblLong;
     @FXML private CheckBox         cbEnableGCal;
     @FXML private CheckBox         cbCopyToClipboard;
     @FXML private TextField        tfGCalSrc;
@@ -50,9 +55,9 @@ public class SettingsController {
         btnTestGCal.setGraphic(iconCalendar);
         btnSoundSettings.setGraphic(iconVolume);
 
-        // Resize icons once laid out, and whenever the pane height changes
-        rootBox.heightProperty().addListener((obs, ov, nv) -> resizeIcons(nv.doubleValue()));
-        javafx.application.Platform.runLater(() -> resizeIcons(rootBox.getHeight()));
+        // Resize all scalable elements once laid out, and whenever height changes
+        rootBox.heightProperty().addListener((obs, ov, nv) -> updateDynamicSizing(nv.doubleValue()));
+        javafx.application.Platform.runLater(() -> updateDynamicSizing(rootBox.getHeight()));
 
         // Spinners: value-factory is defined in FXML; hook change-listeners here
         spWorkTime.valueProperty().addListener((o, ov, nv) -> settings.setWorkTime(nv));
@@ -64,11 +69,43 @@ public class SettingsController {
             labelVersion.setText("v" + (ver != null ? ver : "1.0.0"));
     }
 
-    private void resizeIcons(double containerHeight) {
-        final double sz = IconFactory.iconSizeForHeight(Math.max(containerHeight, 44.0));
-        IconFactory.resize(iconBack,     sz);
-        IconFactory.resize(iconCalendar, sz * 0.88);  // calendar slightly smaller
-        IconFactory.resize(iconVolume,   sz * 0.88);
+    /**
+     * Applies all dynamic scaling for the settings page based on the current
+     * container height. Called on every height change and once after first layout.
+     */
+    private void updateDynamicSizing(double height) {
+        final double eff = Math.max(height, UiScaleHelper.REF_HEIGHT);
+
+        // ── Icons ─────────────────────────────────────────────────────────────
+        final double navSz = UiScaleHelper.navIconPx(eff);
+        IconFactory.resize(iconBack,     navSz);
+        IconFactory.resize(iconCalendar, navSz * 0.88);
+        IconFactory.resize(iconVolume,   navSz * 0.88);
+
+        // ── Setting labels (Work / Rest / Long) ───────────────────────────────
+        final String lblStyle = String.format("-fx-font-size: %.1fpx;",
+                UiScaleHelper.settingLabelFontPx(eff));
+        lblWork.setStyle(lblStyle);
+        lblRest.setStyle(lblStyle);
+        lblLong.setStyle(lblStyle);
+
+        // ── CheckBox labels ───────────────────────────────────────────────────
+        cbEnableGCal.setStyle(lblStyle);
+        cbCopyToClipboard.setStyle(lblStyle);
+
+        // ── Version label ─────────────────────────────────────────────────────
+        labelVersion.setStyle(String.format("-fx-font-size: %.1fpx;",
+                UiScaleHelper.versionLabelFontPx(eff)));
+
+        // ── Spinners ──────────────────────────────────────────────────────────
+        final double spinW = UiScaleHelper.spinnerWidthPx(eff);
+        spWorkTime.setPrefWidth(spinW);
+        spRelaxTime.setPrefWidth(spinW);
+        spLongRelaxTime.setPrefWidth(spinW);
+
+        // ── Row spacing and padding ───────────────────────────────────────────
+        settingsRow.setSpacing(UiScaleHelper.settingsSpacingPx(eff));
+        settingsRow.setStyle(UiScaleHelper.rowPaddingStyle(eff));
     }
 
     /** Load current settings into UI controls. */
@@ -130,4 +167,3 @@ public class SettingsController {
                 LocalDateTime.now());
     }
 }
-

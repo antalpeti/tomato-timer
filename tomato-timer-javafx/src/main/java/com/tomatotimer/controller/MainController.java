@@ -4,6 +4,7 @@ import com.tomatotimer.AppSettings;
 import com.tomatotimer.IconFactory;
 import com.tomatotimer.SoundType;
 import com.tomatotimer.TimerMode;
+import com.tomatotimer.UiScaleHelper;
 import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -484,9 +485,9 @@ public class MainController {
         return ft;
     }
 
-    /** Derives window-control icon size (px) from the stage height, clamped to [10, 14]. */
+    /** Derives window-control icon size (px) from the stage height – delegated to UiScaleHelper. */
     private static double clampWCtrl(double stageHeight) {
-        return Math.max(10.0, Math.min(14.0, stageHeight * 0.28));
+        return UiScaleHelper.winCtrlIconPx(stageHeight);
     }
 
     private ResizeZone detectResizeZone(double x, double y) {

@@ -2,6 +2,7 @@ package com.tomatotimer.controller;
 
 import com.tomatotimer.IconFactory;
 import com.tomatotimer.TimerMode;
+import com.tomatotimer.UiScaleHelper;
 import javafx.animation.FadeTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -159,24 +160,21 @@ public class ButtonsController {
         final double height = rootPane.getHeight();
         if (width <= 0 || height <= 0) return;
 
-        final double mainFont  = clamp(Math.min(height * 0.42, width * 0.095), 18, 72);
-        final double smallFont = clamp(mainFont * 0.58, 11, 42);
-        final double infoFont  = clamp(mainFont * 0.50,  9, 30);
-
-        labelTime.setStyle(String.format("-fx-font-size: %.1fpx;", mainFont));
-        labelTimeSmall.setStyle(String.format("-fx-font-size: %.1fpx;", smallFont));
-        labelInfo.setStyle(String.format("-fx-font-size: %.1fpx;", infoFont));
+        // ── Font sizes via UiScaleHelper ──────────────────────────────────────
+        labelTime.setStyle(String.format("-fx-font-size: %.1fpx;",
+                UiScaleHelper.mainTimeFontPx(width, height)));
+        labelTimeSmall.setStyle(String.format("-fx-font-size: %.1fpx;",
+                UiScaleHelper.smallTimeFontPx(width, height)));
+        labelInfo.setStyle(String.format("-fx-font-size: %.1fpx;",
+                UiScaleHelper.infoFontPx(width, height)));
 
         // ── Proportional icon scaling ─────────────────────────────────────────
-        final double iconSize = clamp(Math.min(height * 0.52, width * 0.09), 16, 52);
+        final double iconSize = UiScaleHelper.mainIconPx(width, height);
         for (final var icon : List.of(iconSettings, iconReset, iconPlay, iconPause, iconWork, iconRelax)) {
             IconFactory.resize(icon, iconSize);
         }
     }
 
-    private static double clamp(double value, double min, double max) {
-        return Math.max(min, Math.min(max, value));
-    }
 
     // =========================================================================
     //  Button handlers

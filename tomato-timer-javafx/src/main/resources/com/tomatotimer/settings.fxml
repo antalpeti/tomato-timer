@@ -30,10 +30,10 @@
                 hbarPolicy="AS_NEEDED"
                 style="-fx-background-color: transparent; -fx-background: transparent;">
 
-        <HBox alignment="CENTER_LEFT" spacing="6" style="-fx-padding: 2 4 2 4;">
+        <HBox fx:id="settingsRow" alignment="CENTER_LEFT" spacing="6" style="-fx-padding: 2 4 2 4;">
 
             <!-- Work time -->
-            <Label text="Work:" styleClass="setting-label"/>
+            <Label fx:id="lblWork" text="Work:" styleClass="setting-label"/>
             <Spinner fx:id="spWorkTime" prefWidth="60" editable="true" focusTraversable="false">
                 <valueFactory>
                     <SpinnerValueFactory.IntegerSpinnerValueFactory min="1" max="120" initialValue="30"/>
@@ -41,7 +41,7 @@
             </Spinner>
 
             <!-- Short rest time -->
-            <Label text="Rest:" styleClass="setting-label"/>
+            <Label fx:id="lblRest" text="Rest:" styleClass="setting-label"/>
             <Spinner fx:id="spRelaxTime" prefWidth="60" editable="true" focusTraversable="false">
                 <valueFactory>
                     <SpinnerValueFactory.IntegerSpinnerValueFactory min="1" max="60" initialValue="5"/>
@@ -49,7 +49,7 @@
             </Spinner>
 
             <!-- Long rest time -->
-            <Label text="Long:" styleClass="setting-label"/>
+            <Label fx:id="lblLong" text="Long:" styleClass="setting-label"/>
             <Spinner fx:id="spLongRelaxTime" prefWidth="60" editable="true" focusTraversable="false">
                 <valueFactory>
                     <SpinnerValueFactory.IntegerSpinnerValueFactory min="1" max="120" initialValue="15"/>

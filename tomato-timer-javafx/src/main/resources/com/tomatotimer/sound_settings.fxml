@@ -28,11 +28,11 @@
                 hbarPolicy="AS_NEEDED"
                 style="-fx-background-color: transparent; -fx-background: transparent;">
 
-        <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 2 4 2 4;">
+        <HBox fx:id="soundRow" alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 2 4 2 4;">
 
             <!-- Resume -->
             <VBox alignment="CENTER" spacing="1">
-                <Label text="Resume" styleClass="sound-label"/>
+                <Label fx:id="lblResume" text="Resume" styleClass="sound-label"/>
                 <HBox spacing="2">
                     <Button fx:id="btnResumePlay"     styleClass="icon-btn-sm" onAction="#onResumePlay"     focusTraversable="false" text="▶"/>
                     <Button fx:id="btnResumeStop"     styleClass="icon-btn-sm" onAction="#onResumeStop"     focusTraversable="false" text="⏹" visible="false" managed="false"/>
@@ -43,7 +43,7 @@
 
             <!-- Pause -->
             <VBox alignment="CENTER" spacing="1">
-                <Label text="Pause" styleClass="sound-label"/>
+                <Label fx:id="lblPause" text="Pause" styleClass="sound-label"/>
                 <HBox spacing="2">
                     <Button fx:id="btnPausePlay"     styleClass="icon-btn-sm" onAction="#onPausePlay"     focusTraversable="false" text="▶"/>
                     <Button fx:id="btnPauseStop"     styleClass="icon-btn-sm" onAction="#onPauseStop"     focusTraversable="false" text="⏹" visible="false" managed="false"/>
@@ -54,7 +54,7 @@
 
             <!-- Work Done -->
             <VBox alignment="CENTER" spacing="1">
-                <Label text="Work Done" styleClass="sound-label"/>
+                <Label fx:id="lblWorkDone" text="Work Done" styleClass="sound-label"/>
                 <HBox spacing="2">
                     <Button fx:id="btnWorkPlay"     styleClass="icon-btn-sm" onAction="#onWorkPlay"     focusTraversable="false" text="▶"/>
                     <Button fx:id="btnWorkStop"     styleClass="icon-btn-sm" onAction="#onWorkStop"     focusTraversable="false" text="⏹" visible="false" managed="false"/>
@@ -65,7 +65,7 @@
 
             <!-- Rest Timeout -->
             <VBox alignment="CENTER" spacing="1">
-                <Label text="Rest End" styleClass="sound-label"/>
+                <Label fx:id="lblRestEnd" text="Rest End" styleClass="sound-label"/>
                 <HBox spacing="2">
                     <Button fx:id="btnRestPlay"     styleClass="icon-btn-sm" onAction="#onRestPlay"     focusTraversable="false" text="▶"/>
                     <Button fx:id="btnRestStop"     styleClass="icon-btn-sm" onAction="#onRestStop"     focusTraversable="false" text="⏹" visible="false" managed="false"/>
