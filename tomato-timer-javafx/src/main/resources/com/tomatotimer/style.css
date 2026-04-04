@@ -46,20 +46,21 @@
     -fx-font-weight: bold;
     -fx-text-fill: white;
     -fx-alignment: center;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.85), 4, 0, 0, 1);
+    /* Stronger shadow keeps white text legible against the brighter neon background. */
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.95), 6, 0.15, 0, 1);
 }
 
 .label-time-small {
     -fx-font-size: 11px;
     -fx-text-fill: white;
     -fx-alignment: center-right;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.85), 2, 0, 0, 1);
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.92), 3, 0.10, 0, 1);
 }
 
 .label-info {
     -fx-font-size: 9px;
     -fx-text-fill: #dddddd;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.7), 2, 0, 0, 1);
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.85), 3, 0.10, 0, 1);
 }
 
 .label-version {

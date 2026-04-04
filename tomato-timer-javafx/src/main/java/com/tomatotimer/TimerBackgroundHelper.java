@@ -99,37 +99,79 @@ public final class TimerBackgroundHelper {
 
     /**
      * Blend-to-black factor for the centre stop of the root ambient gradient.
-     * Lower than {@link #ROOT_DARK_EDGE} so the midpoint glows slightly more,
-     * giving the view a subtle three-dimensional depth.
+     * Significantly lower than {@link #ROOT_DARK_EDGE} so the midpoint emits an
+     * intense, neon-like glow band while the edges remain comfortably dark.
      */
-    private static final double ROOT_DARK_MID  = 0.70;
+    private static final double ROOT_DARK_MID  = 0.52;
 
     /**
      * Minimum opacity of the coloured ambient glow layered over the base gradient.
+     * Raised so even an idle timer shows a clearly visible ambient glow.
      */
-    private static final double ROOT_GLOW_ALPHA_MIN = 0.14;
+    private static final double ROOT_GLOW_ALPHA_MIN = 0.25;
 
     /**
      * Maximum opacity of the coloured ambient glow layered over the base gradient.
+     * Raised for a vivid, neon-quality peak intensity.
      */
-    private static final double ROOT_GLOW_ALPHA_MAX = 0.32;
+    private static final double ROOT_GLOW_ALPHA_MAX = 0.55;
 
     /**
-     * Opacity of the subtle top sheen that adds a glossier, more dimensional look.
+     * Opacity of the glossy top sheen that adds a brighter, more dimensional look.
      */
-    private static final double ROOT_SHEEN_ALPHA = 0.12;
+    private static final double ROOT_SHEEN_ALPHA = 0.20;
+
+    /**
+     * How much white to blend into the accent for the <em>strong highlight</em>
+     * stop of the root ambient glow band.  Higher values push the centre glow
+     * closer to pure white, intensifying the neon impression.
+     */
+    private static final double ROOT_GLOW_WHITE_BLEND = 0.28;
+
+    /**
+     * How much black to blend into the accent for the <em>soft edge</em> stops of
+     * the root ambient glow band.  Lower values preserve accent saturation so the
+     * glow colour stays vivid at the shoulders of the band.
+     */
+    private static final double ROOT_GLOW_BLACK_BLEND = 0.08;
 
     /**
      * How much white to blend into the accent for the <em>top</em> highlight
-     * stop of the progress-bar fill gradient.
+     * stop of the progress-bar fill gradient.  Raised to create a bright,
+     * neon-tube-like highlight at the leading edge of the fill.
      */
-    private static final double BAR_LIGHTEN    = 0.30;
+    private static final double BAR_LIGHTEN    = 0.55;
 
     /**
      * How much black to blend into the accent for the <em>bottom</em> shadow
      * stop of the progress-bar fill gradient.
      */
-    private static final double BAR_DARKEN     = 0.22;
+    private static final double BAR_DARKEN     = 0.16;
+
+    /**
+     * Blur radius (px) of the neon drop-shadow glow applied to the progress-bar fill.
+     * Larger values produce a wider, softer halo around the filled portion.
+     */
+    private static final double BAR_GLOW_RADIUS = 10.0;
+
+    /**
+     * Spread factor (0–1) of the neon drop-shadow glow.
+     * Higher values keep more of the halo at full opacity before it fades out,
+     * giving a saturated neon bloom rather than a diffuse blur.
+     */
+    private static final double BAR_GLOW_SPREAD = 0.55;
+
+    /**
+     * Opacity of the neon drop-shadow halo colour around the progress-bar fill.
+     */
+    private static final double BAR_GLOW_OPACITY = 0.90;
+
+    /**
+     * How much white to blend into the accent to form the neon halo colour
+     * around the progress-bar fill.  A small white shift keeps the glow
+     * vivid without washing out the colour identity.
+     */
+    private static final double BAR_GLOW_WHITE_BLEND = 0.20;
 
     private TimerBackgroundHelper() { /* utility class – no instances */ }
 
@@ -181,8 +223,10 @@ public final class TimerBackgroundHelper {
         final Color bottom = accent.interpolate(Color.BLACK, ROOT_DARK_EDGE + 0.06);
 
         // Coloured atmospheric glow through the middle band
-        final Color glowStrong = accent.interpolate(Color.WHITE, 0.12);
-        final Color glowSoft   = accent.interpolate(Color.BLACK, 0.18);
+        // ROOT_GLOW_WHITE_BLEND pushes the highlight toward white for a neon-bright peak;
+        // ROOT_GLOW_BLACK_BLEND keeps the shoulders saturated without blackening them.
+        final Color glowStrong = accent.interpolate(Color.WHITE, ROOT_GLOW_WHITE_BLEND);
+        final Color glowSoft   = accent.interpolate(Color.BLACK, ROOT_GLOW_BLACK_BLEND);
 
         // Subtle glossy sheen near the top to make the gradient more readable
         final Color sheen = accent.interpolate(Color.WHITE, 0.35);
@@ -228,14 +272,18 @@ public final class TimerBackgroundHelper {
      */
     public static String computeBarCss(TimerMode mode, double progressPct,
                                        boolean isPaused, boolean isOverTime) {
-        final Color accent  = computeAccentColor(mode, progressPct, isPaused, isOverTime);
-        final Color lighter = accent.interpolate(Color.WHITE, BAR_LIGHTEN);
-        final Color darker  = accent.interpolate(Color.BLACK, BAR_DARKEN);
+        final Color accent    = computeAccentColor(mode, progressPct, isPaused, isOverTime);
+        final Color lighter   = accent.interpolate(Color.WHITE, BAR_LIGHTEN);
+        final Color darker    = accent.interpolate(Color.BLACK, BAR_DARKEN);
+        // Glow halo colour: accent shifted slightly toward white for a vivid neon bloom.
+        final Color glowColor = accent.interpolate(Color.WHITE, BAR_GLOW_WHITE_BLEND);
         return String.format(
                 "-fx-background-color: linear-gradient(to bottom, %s 0%%, %s 55%%, %s 100%%);" +
                 "-fx-background-radius: 0;" +
-                "-fx-background-insets: 0;",
-                toCssHex(lighter), toCssHex(accent), toCssHex(darker));
+                "-fx-background-insets: 0;" +
+                "-fx-effect: dropshadow(gaussian, %s, %.0f, %.2f, 0, 0);",
+                toCssHex(lighter), toCssHex(accent), toCssHex(darker),
+                toCssRgba(glowColor, BAR_GLOW_OPACITY), BAR_GLOW_RADIUS, BAR_GLOW_SPREAD);
     }
 
     /**
