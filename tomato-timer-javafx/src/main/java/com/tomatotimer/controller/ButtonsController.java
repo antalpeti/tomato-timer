@@ -1,6 +1,7 @@
 package com.tomatotimer.controller;
 
 import com.tomatotimer.IconFactory;
+import com.tomatotimer.TimerBackgroundHelper;
 import com.tomatotimer.TimerMode;
 import com.tomatotimer.UiScaleHelper;
 import javafx.animation.FadeTransition;
@@ -13,6 +14,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
 import javafx.util.Duration;
 
 import java.util.List;
@@ -117,15 +119,34 @@ public class ButtonsController {
     public void updateUI(TimerMode mode, boolean isPaused, boolean isOverTime,
                          double progressPct, String timeStr, String infoStr) {
 
-        // ---- Progress bar accent colour (matches icon palette) ---------------
-        if (isPaused)
-            progressBar.setStyle("-fx-accent: " + IconFactory.COLOR_SETTINGS + ";");
-        else if (isOverTime)
-            progressBar.setStyle("-fx-accent: " + IconFactory.COLOR_WORK + ";");
-        else if (progressPct > 80)
-            progressBar.setStyle("-fx-accent: " + IconFactory.COLOR_PAUSE + ";");
-        else
-            progressBar.setStyle("-fx-accent: " + IconFactory.COLOR_PLAY + ";");
+        // ---- Progress bar value ---------------------------------------------
+        // WPF: paused → indeterminate; overtime → 100 %; otherwise → current %
+        if (isPaused) {
+            progressBar.setProgress(ProgressBar.INDETERMINATE_PROGRESS);
+        } else if (isOverTime) {
+            progressBar.setProgress(1.0);
+        } else {
+            progressBar.setProgress(progressPct / 100.0);
+        }
+
+        // ---- Progress bar accent colour (continuous interpolation) ----------
+        // Implements the WPF logic (green → yellow at 80 % → red at overtime)
+        // with mode-aware base colours and smooth blending via TimerBackgroundHelper.
+        final Color accent = TimerBackgroundHelper.computeAccentColor(
+                mode, progressPct, isPaused, isOverTime);
+        progressBar.setStyle("-fx-accent: " + TimerBackgroundHelper.toCssHex(accent) + ";");
+
+        // ---- Track (background) colour – mode-specific dark tint ------------
+        // Look up the .track sub-node (available after the first layout pass).
+        final String trackHex = TimerBackgroundHelper.computeTrackColor(
+                mode, isPaused, isOverTime);
+        final Node track = progressBar.lookup(".track");
+        if (track != null) {
+            track.setStyle(
+                    "-fx-background-color: " + trackHex + ";" +
+                    "-fx-background-radius: 0;" +
+                    "-fx-background-insets: 0;");
+        }
 
         // ---- Labels ---------------------------------------------------------
         labelTime.setText(timeStr);
@@ -134,7 +155,7 @@ public class ButtonsController {
 
         if (isPaused) labelTime.setOpacity(0.5); else labelTime.setOpacity(1.0);
 
-        // ---- Button visibility ---------------------------------------------
+        // ---- Button visibility ----------------------------------------------
         if (mode == TimerMode.WORK) {
             setVisible(false, btnWork);
             setVisible(true,  btnRelax);
