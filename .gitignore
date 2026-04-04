@@ -186,7 +186,7 @@ $RECYCLE.BIN/
 # =========================
 
 # Maven build output
-**/target/**
+**/target/**/*
 
 # Maven release/backup files
 pom.xml.tag
