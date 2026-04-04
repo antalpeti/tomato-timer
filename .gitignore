@@ -179,14 +179,14 @@ Desktop.ini
 
 # Recycle Bin used on file shares
 $RECYCLE.BIN/
-/tomato-timer-javafx/target/
+/target/
 
 # =========================
 # Java / Maven / JVM
 # =========================
 
 # Maven build output
-**/target/**/*
+target/**/*
 
 # Maven release/backup files
 pom.xml.tag
