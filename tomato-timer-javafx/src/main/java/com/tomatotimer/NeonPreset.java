@@ -15,6 +15,9 @@ import javafx.scene.paint.Color;
  *       with moderate glow intensity (default).</li>
  *   <li>{@link #ULTRA_NEON} – maximum-intensity mode: purer accent colours,
  *       wider halos, stronger bloom, and higher contrast base gradient.</li>
+ *   <li>{@link #NIGHT_RUNNER} – retrowave/synthwave night-racing atmosphere:
+ *       warm sunset oranges and deep teals on an ultra-dark background with
+ *       soft atmospheric sheen and medium-radius glow halos.</li>
  * </ul>
  */
 public enum NeonPreset {
@@ -65,9 +68,36 @@ public enum NeonPreset {
             0.48,                   // ROOT_SHEEN_ALPHA – stronger sheen
             0.62, 0.01,             // ROOT_GLOW_WHITE_BLEND (aggressive bloom) / ROOT_GLOW_BLACK_BLEND
             // ── Bar tuning – brighter, wider, more intense ────────────────────
-            0.78, 0.05,             // BAR_LIGHTEN (brighter top) / BAR_DARKEN (shallower shadow)
-            0.58,                   // BAR_INNER_SHEEN – strong neon-tube glass effect
-            26.0, 0.82, 1.0, 0.50   // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND
+             0.78, 0.05,             // BAR_LIGHTEN (brighter top) / BAR_DARKEN (shallower shadow)
+             0.58,                   // BAR_INNER_SHEEN – strong neon-tube glass effect
+             26.0, 0.82, 1.0, 0.50   // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND
+     ),
+
+    // ── NIGHT_RUNNER ──────────────────────────────────────────────────────────
+    /**
+     * Retrowave / synthwave night-racing atmosphere.
+     * Warm sunset oranges and deep teals on an ultra-dark background with
+     * a soft atmospheric sheen and medium-radius glow halos – a clearly
+     * distinct mood from both {@link #NEON_BALANCED} and {@link #ULTRA_NEON}.
+     */
+    NIGHT_RUNNER(
+            "Night Runner",
+            // ── Accent colours – retrowave sunset palette ─────────────────────
+            Color.web("#FF6B35"),   // WORK normal  – warm retro sunset-orange
+            Color.web("#00CED1"),   // RELAX normal – deep dark-turquoise teal
+            Color.web("#3DFFD0"),   // RELAX_LONG   – electric mint-teal
+            Color.web("#FF8C00"),   // WARNING      – deep amber
+            Color.web("#DC143C"),   // OVERTIME     – classic crimson
+            Color.web("#FF69B4"),   // PAUSED       – hot-pink rose
+            // ── Root gradient – ultra-dark edges, deep atmospheric centre ─────
+            0.93, 0.28,             // ROOT_DARK_EDGE (near-black edges) / ROOT_DARK_MID
+            0.28, 0.70,             // ROOT_GLOW_ALPHA_MIN / MAX – softer, more atmospheric glow
+            0.22,                   // ROOT_SHEEN_ALPHA – subtle sheen suits the "night" feel
+            0.38, 0.05,             // ROOT_GLOW_WHITE_BLEND / ROOT_GLOW_BLACK_BLEND
+            // ── Bar tuning – medium radius, warm soft-tube glass effect ───────
+            0.64, 0.11,             // BAR_LIGHTEN / BAR_DARKEN
+            0.36,                   // BAR_INNER_SHEEN
+            22.0, 0.68, 0.88, 0.28  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND
     );
 
     // ── Fields ────────────────────────────────────────────────────────────────
