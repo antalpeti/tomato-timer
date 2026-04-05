@@ -14,9 +14,10 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
+import java.nio.file.StandardOpenOption;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.CRC32;
 
 /**
  * Pushes a JavaFX {@link Image} directly to the Windows native window as {@code HICON},
@@ -32,20 +33,21 @@ import java.util.logging.Logger;
  *       The first visible top-level window belonging to this process is used.
  *       This approach is robust regardless of the stage title at the time of the call.</li>
  *   <li>Converts the JavaFX {@link Image} to BMP-in-ICO bytes (32-bit ARGB, single entry).
- *       A hash of these bytes is computed and cached; file I/O only occurs if the data
- *       has changed since the last call, significantly reducing SSD writes during repeated
- *       icon updates (e.g., taskbar timer display).</li>
- *   <li>Loads the ICO file as an {@code HICON} via {@code LoadImageW(LR_LOADFROMFILE)}.</li>
+ *       A CRC32 of these bytes is computed and compared against the cached value; file I/O
+ *       only occurs when the data has changed since the last call, significantly reducing
+ *       SSD writes during repeated icon updates (e.g., taskbar timer display).</li>
+ *   <li>Writes the ICO bytes to a single process-lifetime temporary file (created once,
+ *       reused on every update, deleted on JVM shutdown via {@code deleteOnExit}).</li>
+ *   <li>Loads the ICO file as an {@code HICON} via {@code LoadImageW(IMAGE_ICON, LR_LOADFROMFILE)}.</li>
  *   <li>Sends {@code WM_SETICON} for {@code ICON_SMALL} (0), {@code ICON_BIG} (1),
  *       and {@code ICON_SMALL2} (2) via {@code SendMessageW}.</li>
  *   <li>Destroys the previously loaded {@code HICON} to prevent GDI handle leaks.</li>
- *   <li>Deletes the temporary ICO file immediately after {@code LoadImageW} returns
- *       (the call is synchronous).</li>
  * </ol>
  *
- * <p><strong>Key optimization:</strong> Icon byte data is cached; hash comparison prevents
- * unnecessary file I/O. For a timer that updates every 1 second but changes only once per
- * minute (e.g., countdown display), this reduces SSD writes by ~98%.</p>
+ * <p><strong>Key optimization:</strong> Icon byte data is hashed with CRC32; the cached
+ * checksum prevents unnecessary file I/O. For a timer that updates every 1 second but
+ * changes only once per minute (e.g., countdown display), this reduces SSD writes by ~98%.
+ * The temp file is reused across calls (no repeated create/delete churn).</p>
  *
  * <p>All operations fail silently on non-Windows platforms or when JNA is unavailable.
  * Must be called on the JavaFX Application Thread (pixel extraction requires it).</p>
@@ -64,6 +66,10 @@ public final class WindowsNativeWindowIconHelper {
     private static final int ICON_BIG        = 1;
     /** {@code ICON_SMALL2} – secondary small icon maintained by the shell (Vista+). */
     private static final int ICON_SMALL2     = 2;
+    /** {@code IMAGE_ICON}  – image type constant for {@code LoadImageW}: load as icon. */
+    private static final int IMAGE_ICON      = 1;
+    /** {@code LR_LOADFROMFILE} – {@code LoadImageW} flag: load the image from a file path. */
+    private static final int LR_LOADFROMFILE = 0x0010;
 
     // ── State ─────────────────────────────────────────────────────────────────
     /**
@@ -76,13 +82,41 @@ public final class WindowsNativeWindowIconHelper {
     private static volatile WinDef.HICON previousHIcon = null;
 
     /**
-     * Cache of the last icon byte data hash to prevent redundant file writes.
-     * When {@code applyUnsafe()} is called, the new ICO bytes are hashed and
-     * compared against this value. If unchanged, no file I/O occurs.
-     * For a 1-second timer update cycle with minute-level display precision,
-     * this reduces SSD writes by ~98% (59 skips per 60 calls).
+     * Guards against a false cache-hit on the very first call when the CRC
+     * of the first icon payload happens to equal the zero-initialised
+     * {@link #lastIcoCrc}.  Once the first icon has been applied successfully
+     * this is set to {@code true} and never flipped back.
      */
-    private static volatile int lastIcoHash = 0;
+    private static volatile boolean cacheInitialized = false;
+
+    /**
+     * CRC32 checksum of the last ICO byte payload written to disk.
+     * Compared on every call; file I/O is skipped when the checksum is unchanged.
+     * Only meaningful when {@link #cacheInitialized} is {@code true}.
+     */
+    private static volatile long lastIcoCrc = 0L;
+
+    /**
+     * Single process-lifetime temporary {@code .ico} file.  Created once on first
+     * class load, reused on every subsequent update (bytes are overwritten with
+     * {@link StandardOpenOption#TRUNCATE_EXISTING}), and deleted on JVM shutdown
+     * via {@link java.io.File#deleteOnExit()}.  May be {@code null} if the temp file could
+     * not be created (e.g., no write permission in the system temp directory).
+     */
+    private static final Path TEMP_ICO_PATH = createTempIcoPath();
+
+    private static Path createTempIcoPath() {
+        try {
+            final Path p = Files.createTempFile("tomato-icon-", ".ico");
+            p.toFile().deleteOnExit();
+            return p;
+        } catch (IOException e) {
+            Logger.getLogger(WindowsNativeWindowIconHelper.class.getName())
+                    .log(Level.WARNING, "Failed to allocate process-lifetime temp ICO file – "
+                            + "native icon updates will be unavailable: {0}", e.getMessage());
+            return null;
+        }
+    }
 
     // ── Minimal JNA interface ─────────────────────────────────────────────────
 
@@ -224,48 +258,46 @@ public final class WindowsNativeWindowIconHelper {
         // ── Step 3: build ICO bytes (BMP-in-ICO, 32-bit ARGB, single entry) ───
         final byte[] icoBytes = buildBmpIco(argb, w, h);
 
-        // ── Step 4: compute hash and check cache ─────────────────────────────
-        final int currentHash = computeHash(icoBytes);
-        if (currentHash == lastIcoHash) {
+        // ── Step 4: compute CRC32 and check cache ────────────────────────────
+        final long currentCrc = computeCrc32(icoBytes);
+        if (cacheInitialized && currentCrc == lastIcoCrc) {
             // Icon data unchanged – skip file I/O and re-registration
             LOG.finest("Icon data unchanged – skipping SSD write and WM_SETICON");
             return;
         }
-        lastIcoHash = currentHash;
+        lastIcoCrc = currentCrc;
+        cacheInitialized = true;
 
-        // ── Steps 5-8: write temp file → LoadImage → SendMessage → cleanup ────
-        final Path tmp = Files.createTempFile("tomato-icon-", ".ico");
-        try {
-            Files.write(tmp, icoBytes);
+        // ── Step 5: write bytes to the reusable process-lifetime temp file ────
+        if (TEMP_ICO_PATH == null) {
+            LOG.warning("Temp ICO path unavailable – WM_SETICON skipped");
+            return;
+        }
+        Files.write(TEMP_ICO_PATH, icoBytes,
+                StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE);
 
-            // Step 5: load HICON from the temp ICO file
-            final WinDef.HICON hIcon = User32Icon.INSTANCE.LoadImageW(
-                    null, tmp.toString(), 1, 0, 0, 0x0010);
+        // ── Step 6: load HICON from the temp ICO file ────────────────────────
+        final WinDef.HICON hIcon = User32Icon.INSTANCE.LoadImageW(
+                null, TEMP_ICO_PATH.toString(), IMAGE_ICON, 0, 0, LR_LOADFROMFILE);
 
-            if (hIcon == null || isNullHandle(hIcon)) {
-                LOG.warning("LoadImageW returned a null/invalid HICON – WM_SETICON skipped");
-                return;
-            }
+        if (hIcon == null || isNullHandle(hIcon)) {
+            LOG.warning("LoadImageW returned a null/invalid HICON – WM_SETICON skipped");
+            return;
+        }
 
-            // Step 6: broadcast WM_SETICON for all three icon slots
-            final WinDef.LPARAM hIconLParam =
-                    new WinDef.LPARAM(Pointer.nativeValue(hIcon.getPointer()));
-            for (final int slot : new int[]{ ICON_SMALL, ICON_BIG, ICON_SMALL2 }) {
-                User32Icon.INSTANCE.SendMessageW(
-                        hwnd, WM_SETICON, new WinDef.WPARAM(slot), hIconLParam);
-            }
+        // ── Step 7: broadcast WM_SETICON for all three icon slots ─────────────
+        final WinDef.LPARAM hIconLParam =
+                new WinDef.LPARAM(Pointer.nativeValue(hIcon.getPointer()));
+        for (final int slot : new int[]{ ICON_SMALL, ICON_BIG, ICON_SMALL2 }) {
+            User32Icon.INSTANCE.SendMessageW(
+                    hwnd, WM_SETICON, new WinDef.WPARAM(slot), hIconLParam);
+        }
 
-            // Step 7: rotate out stale handle to release the GDI object
-            final WinDef.HICON stale = previousHIcon;
-            previousHIcon = hIcon;
-            if (stale != null && !isNullHandle(stale)) {
-                User32Icon.INSTANCE.DestroyIcon(stale);
-            }
-
-        } finally {
-            // Step 8: LoadImageW reads synchronously – temp file can be deleted now
-            try { Files.deleteIfExists(tmp); }
-            catch (IOException ignored) { /* cleanup is best-effort */ }
+        // ── Step 8: rotate out stale handle to release the GDI object ─────────
+        final WinDef.HICON stale = previousHIcon;
+        previousHIcon = hIcon;
+        if (stale != null && !isNullHandle(stale)) {
+            User32Icon.INSTANCE.DestroyIcon(stale);
         }
     }
 
@@ -289,7 +321,8 @@ public final class WindowsNativeWindowIconHelper {
      * @param argb   row-major pixels in {@code 0xAARRGGBB} format (top-to-bottom)
      * @param width  image width in pixels
      * @param height image height in pixels
-     * @return raw ICO file bytes to be loaded directly via {@code CreateIconFromResourceEx}
+     * @return raw ICO file bytes suitable for writing to disk and loading via
+     *         {@code LoadImageW(IMAGE_ICON, LR_LOADFROMFILE)}
      */
     private static byte[] buildBmpIco(final int[] argb, final int width, final int height) {
         // AND mask: 1-bit per pixel, each row padded up to a 4-byte boundary
@@ -363,13 +396,18 @@ public final class WindowsNativeWindowIconHelper {
     }
 
     /**
-     * Computes a hash of the entire icon byte data for cache validation.
-     * Uses Java's built-in Arrays.hashCode() which is optimized for byte arrays.
-     * This ensures that any change in the icon pixels (e.g., time text update)
-     * is detected and triggers a re-rendering cycle.
+     * Computes a CRC32 checksum of the entire icon byte payload for cache validation.
+     * CRC32 is lightweight (hardware-accelerated on x86) and has sufficient collision
+     * resistance for this use-case (small, structurally similar payloads with single-pixel
+     * differences, e.g., one digit changing in a countdown timer).
+     *
+     * @return unsigned 32-bit CRC value in the range [0, 2³²−1], returned as {@code long}
+     *         to avoid sign-extension ambiguity
      */
-    private static int computeHash(final byte[] data) {
-        return Arrays.hashCode(data);
+    private static long computeCrc32(final byte[] data) {
+        final CRC32 crc32 = new CRC32();
+        crc32.update(data);
+        return crc32.getValue();
     }
 
     private static boolean isWindows() {
