@@ -157,13 +157,13 @@ public enum NeonPreset {
             Color.web("#FF7C7C"),   // PAUSED       – soft rose-pink
             // ── Root gradient – near-black edges, volcanic glowing core ───────
             0.91, 0.30,             // ROOT_DARK_EDGE / ROOT_DARK_MID
-            0.32, 0.72,             // ROOT_GLOW_ALPHA_MIN / MAX
-            0.28,                   // ROOT_SHEEN_ALPHA
-            0.42, 0.04,             // ROOT_GLOW_WHITE_BLEND / ROOT_GLOW_BLACK_BLEND
-            // ── Bar tuning – medium-wide halo, warm neon-tube glass ───────────
-            0.66, 0.10,             // BAR_LIGHTEN / BAR_DARKEN
-            0.40,                   // BAR_INNER_SHEEN
-            21.0, 0.70, 0.88, 0.35  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND
+            0.13, 0.34,             // ROOT_GLOW_ALPHA_MIN / MAX
+            0.13,                   // ROOT_SHEEN_ALPHA
+            0.40, 0.04,             // ROOT_GLOW_WHITE_BLEND / ROOT_GLOW_BLACK_BLEND
+            // ── Bar tuning – flat profile, warm neon-tube glass ───────────────
+            0.65, 0.10,             // BAR_LIGHTEN / BAR_DARKEN
+            0.28,                   // BAR_INNER_SHEEN
+            11.0, 0.44, 0.56, 0.22  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND
     ),
 
     // ── AMBER_DUNE ────────────────────────────────────────────────────────────
@@ -182,13 +182,13 @@ public enum NeonPreset {
             Color.web("#D4A017"),   // PAUSED       – muted amber-tan
             // ── Root gradient – dark desert edges, warm ember core ────────────
             0.90, 0.32,             // ROOT_DARK_EDGE / ROOT_DARK_MID
-            0.30, 0.70,             // ROOT_GLOW_ALPHA_MIN / MAX
-            0.26,                   // ROOT_SHEEN_ALPHA
-            0.40, 0.04,             // ROOT_GLOW_WHITE_BLEND / ROOT_GLOW_BLACK_BLEND
-            // ── Bar tuning – warm soft-tube glass, medium halo ────────────────
-            0.65, 0.10,             // BAR_LIGHTEN / BAR_DARKEN
-            0.38,                   // BAR_INNER_SHEEN
-            20.0, 0.68, 0.86, 0.33  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND
+            0.12, 0.33,             // ROOT_GLOW_ALPHA_MIN / MAX
+            0.12,                   // ROOT_SHEEN_ALPHA
+            0.38, 0.04,             // ROOT_GLOW_WHITE_BLEND / ROOT_GLOW_BLACK_BLEND
+            // ── Bar tuning – flat profile, warm soft-tube glass ───────────────
+            0.64, 0.10,             // BAR_LIGHTEN / BAR_DARKEN
+            0.27,                   // BAR_INNER_SHEEN
+            10.5, 0.43, 0.54, 0.21  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND
     ),
 
     // ── SOLAR_CANARY ──────────────────────────────────────────────────────────
@@ -207,13 +207,13 @@ public enum NeonPreset {
             Color.web("#E8C000"),   // PAUSED       – muted gold
             // ── Root gradient – dark edges, radiant sunny core ────────────────
             0.89, 0.34,             // ROOT_DARK_EDGE / ROOT_DARK_MID
-            0.28, 0.68,             // ROOT_GLOW_ALPHA_MIN / MAX
-            0.25,                   // ROOT_SHEEN_ALPHA
-            0.38, 0.04,             // ROOT_GLOW_WHITE_BLEND / ROOT_GLOW_BLACK_BLEND
-            // ── Bar tuning – sunshine bloom, warm glass highlight ─────────────
-            0.64, 0.11,             // BAR_LIGHTEN / BAR_DARKEN
-            0.38,                   // BAR_INNER_SHEEN
-            19.0, 0.66, 0.84, 0.30  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND
+            0.11, 0.31,             // ROOT_GLOW_ALPHA_MIN / MAX
+            0.11,                   // ROOT_SHEEN_ALPHA
+            0.36, 0.04,             // ROOT_GLOW_WHITE_BLEND / ROOT_GLOW_BLACK_BLEND
+            // ── Bar tuning – flat profile, sunshine bloom glass ───────────────
+            0.63, 0.11,             // BAR_LIGHTEN / BAR_DARKEN
+            0.26,                   // BAR_INNER_SHEEN
+            10.0, 0.41, 0.52, 0.20  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND
     ),
 
     // ── EMERALD_BLOOM ─────────────────────────────────────────────────────────
@@ -232,13 +232,13 @@ public enum NeonPreset {
             Color.web("#44AA66"),   // PAUSED       – sage muted green
             // ── Root gradient – midnight-dark edges, lush glowing core ────────
             0.92, 0.32,             // ROOT_DARK_EDGE / ROOT_DARK_MID
-            0.28, 0.70,             // ROOT_GLOW_ALPHA_MIN / MAX
-            0.24,                   // ROOT_SHEEN_ALPHA
-            0.38, 0.05,             // ROOT_GLOW_WHITE_BLEND / ROOT_GLOW_BLACK_BLEND
-            // ── Bar tuning – lush halo, cool glass highlight ──────────────────
-            0.65, 0.10,             // BAR_LIGHTEN / BAR_DARKEN
-            0.36,                   // BAR_INNER_SHEEN
-            20.0, 0.67, 0.85, 0.32  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND
+            0.11, 0.30,             // ROOT_GLOW_ALPHA_MIN / MAX
+            0.11,                   // ROOT_SHEEN_ALPHA
+            0.37, 0.05,             // ROOT_GLOW_WHITE_BLEND / ROOT_GLOW_BLACK_BLEND
+            // ── Bar tuning – flat profile, cool glass highlight ───────────────
+            0.64, 0.10,             // BAR_LIGHTEN / BAR_DARKEN
+            0.25,                   // BAR_INNER_SHEEN
+            10.0, 0.40, 0.50, 0.20  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND
     ),
 
     // ── AZURE_WAVE ────────────────────────────────────────────────────────────
@@ -257,13 +257,13 @@ public enum NeonPreset {
             Color.web("#66AEDD"),   // PAUSED       – soft steel blue
             // ── Root gradient – deep dark edges, cool ocean core ──────────────
             0.92, 0.38,             // ROOT_DARK_EDGE / ROOT_DARK_MID
-            0.28, 0.68,             // ROOT_GLOW_ALPHA_MIN / MAX
-            0.24,                   // ROOT_SHEEN_ALPHA
-            0.42, 0.04,             // ROOT_GLOW_WHITE_BLEND / ROOT_GLOW_BLACK_BLEND
-            // ── Bar tuning – cool wave halo, icy glass highlight ──────────────
-            0.65, 0.10,             // BAR_LIGHTEN / BAR_DARKEN
-            0.38,                   // BAR_INNER_SHEEN
-            21.0, 0.68, 0.86, 0.38  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND
+            0.11, 0.30,             // ROOT_GLOW_ALPHA_MIN / MAX
+            0.11,                   // ROOT_SHEEN_ALPHA
+            0.40, 0.04,             // ROOT_GLOW_WHITE_BLEND / ROOT_GLOW_BLACK_BLEND
+            // ── Bar tuning – flat profile, icy glass highlight ────────────────
+            0.64, 0.10,             // BAR_LIGHTEN / BAR_DARKEN
+            0.25,                   // BAR_INNER_SHEEN
+            10.0, 0.39, 0.49, 0.20  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND
     ),
 
     // ── INDIGO_ORBIT ──────────────────────────────────────────────────────────
@@ -282,13 +282,13 @@ public enum NeonPreset {
             Color.web("#8855BB"),   // PAUSED       – soft medium indigo
             // ── Root gradient – near-black void, mysterious orbital core ──────
             0.93, 0.35,             // ROOT_DARK_EDGE / ROOT_DARK_MID
-            0.30, 0.72,             // ROOT_GLOW_ALPHA_MIN / MAX
-            0.24,                   // ROOT_SHEEN_ALPHA
-            0.38, 0.05,             // ROOT_GLOW_WHITE_BLEND / ROOT_GLOW_BLACK_BLEND
-            // ── Bar tuning – deep-space halo, refined glass highlight ─────────
-            0.68, 0.09,             // BAR_LIGHTEN / BAR_DARKEN
-            0.38,                   // BAR_INNER_SHEEN
-            20.0, 0.68, 0.88, 0.30  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND
+            0.12, 0.31,             // ROOT_GLOW_ALPHA_MIN / MAX
+            0.12,                   // ROOT_SHEEN_ALPHA
+            0.36, 0.05,             // ROOT_GLOW_WHITE_BLEND / ROOT_GLOW_BLACK_BLEND
+            // ── Bar tuning – flat profile, refined glass highlight ────────────
+            0.67, 0.09,             // BAR_LIGHTEN / BAR_DARKEN
+            0.24,                   // BAR_INNER_SHEEN
+            10.5, 0.38, 0.48, 0.18  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND
     ),
 
     // ── VIOLET_NOVA ───────────────────────────────────────────────────────────
@@ -307,13 +307,13 @@ public enum NeonPreset {
             Color.web("#CC88FF"),   // PAUSED       – soft lilac
             // ── Root gradient – dark cosmos edges, nova bloom core ────────────
             0.91, 0.28,             // ROOT_DARK_EDGE / ROOT_DARK_MID
-            0.30, 0.74,             // ROOT_GLOW_ALPHA_MIN / MAX
-            0.26,                   // ROOT_SHEEN_ALPHA
-            0.40, 0.04,             // ROOT_GLOW_WHITE_BLEND / ROOT_GLOW_BLACK_BLEND
-            // ── Bar tuning – nova bloom halo, vivid glass highlight ───────────
-            0.66, 0.10,             // BAR_LIGHTEN / BAR_DARKEN
-            0.40,                   // BAR_INNER_SHEEN
-            21.0, 0.70, 0.88, 0.35  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND
+            0.13, 0.34,             // ROOT_GLOW_ALPHA_MIN / MAX
+            0.13,                   // ROOT_SHEEN_ALPHA
+            0.38, 0.04,             // ROOT_GLOW_WHITE_BLEND / ROOT_GLOW_BLACK_BLEND
+            // ── Bar tuning – flat profile, vivid glass highlight ─────────────
+            0.65, 0.10,             // BAR_LIGHTEN / BAR_DARKEN
+            0.26,                   // BAR_INNER_SHEEN
+            11.0, 0.42, 0.52, 0.22  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND
     );
 
     // ── Fields ────────────────────────────────────────────────────────────────
