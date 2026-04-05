@@ -107,6 +107,61 @@ Sample output when everything is ready:
 - If no fat JAR is found, a popup explains to run `mvn package`.
 - If `javaw` is not on `PATH`, a popup instructs you to install Java 21+.
 
+### Windows EXE wrapper (jpackage)
+
+`BuildTomatoTimerExe.bat` uses `jpackage` (bundled with JDK 14+) to produce a
+self-contained **app-image** — a folder with a native `TomatoTimer.exe` and a
+bundled JRE.  No Java installation is required on the target machine.
+
+**Prerequisites**
+
+- JDK 14+ (provides `jpackage`) — its `bin\` directory must be on `PATH`.
+- A fat JAR must already exist under `target\` (run `mvn package` first).
+
+**Steps**
+
+1. Build the fat JAR:
+   ```bat
+   mvn package
+   ```
+2. Verify the environment without building (dry-run):
+   ```bat
+   BuildTomatoTimerExe.bat --dry-run
+   ```
+3. Build the app-image:
+   ```bat
+   BuildTomatoTimerExe.bat
+   ```
+
+The resulting executable is placed at:
+
+```text
+target\exe-image\TomatoTimer\TomatoTimer.exe
+```
+
+> **Tip — Pin to Taskbar:** `TomatoTimer.exe` is the best candidate to pin to
+> the Windows Taskbar.  Right-click the EXE in File Explorer and choose
+> **"Pin to taskbar"**.
+
+Sample dry-run output when everything is ready:
+
+```text
+[DRY-RUN] JAR        : C:\...\target\tomato-timer-1.0.0-fat.jar
+[DRY-RUN] JAR name   : tomato-timer-1.0.0-fat.jar
+[DRY-RUN] JPACKAGE   : C:\Program Files\Eclipse Adoptium\jdk-21...\bin\jpackage.exe
+[DRY-RUN] DEST       : C:\...\target\exe-image
+[DRY-RUN] Output EXE : C:\...\target\exe-image\TomatoTimer\TomatoTimer.exe
+[DRY-RUN] Command:
+          "...\jpackage.exe"
+              --type app-image
+              --name TomatoTimer
+              --input "...\target"
+              --main-jar "tomato-timer-1.0.0-fat.jar"
+              --main-class com.tomatotimer.Launcher
+              --dest "...\target\exe-image"
+[DRY-RUN] OK -- environment looks good, no build was started.
+```
+
 ## Windows Taskbar Icon
 
 `WindowsNativeWindowIconHelper` sets the native taskbar and window icon on Windows by
