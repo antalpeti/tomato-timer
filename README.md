@@ -115,6 +115,28 @@ A CRC32-based cache prevents redundant SSD writes when the icon data has not cha
 
 ### Taskbar Icon Debug Mode
 
+#### Quick Start (IntelliJ)
+
+> Profiles are pre-versioned under `.run/` — IntelliJ IDEA detects them automatically when you open the project.
+
+1. Open the **Run / Debug** dropdown in the toolbar (top-right of the IDE).
+2. Select **`TomatoTimer Debug (App)`** *(recommended)* or `TomatoTimer Debug (Maven javafx:run)`.
+3. Click **Run ▶** or **Debug 🐛** and look for `FINE` log output from `com.tomatotimer.WindowsNativeWindowIconHelper`.
+
+#### Quick Start (Console)
+
+```bash
+# Maven — JAVA_TOOL_OPTIONS propagates to the forked child JVM spawned by javafx:run
+JAVA_TOOL_OPTIONS="-Dtomatotimer.icon.debug=true -Djava.util.logging.config.file=logging.properties" mvn javafx:run
+```
+
+```bash
+# Direct JAR
+java -Dtomatotimer.icon.debug=true -Djava.util.logging.config.file=logging.properties -jar target/tomato-timer-1.0.0-fat.jar
+```
+
+---
+
 Enable verbose trace logging by setting the JVM property `-Dtomatotimer.icon.debug=true`.
 
 **Direct JAR launch**
