@@ -47,14 +47,15 @@ public enum NeonPreset {
             Color.web("#FF55AA"),   // OVERTIME     – magenta aurora flare
             Color.web("#AA44FF"),   // PAUSED       – aurora violet
             // ── Root gradient – midnight-dark sky, gentle drifting glow ───────
+            // Tuned: bright cool green → moderate white-blend / opacity reduction
             0.91, 0.26,             // ROOT_DARK_EDGE / ROOT_DARK_MID
-            0.32, 0.76,             // ROOT_GLOW_ALPHA_MIN / MAX
-            0.27,                   // ROOT_SHEEN_ALPHA
-            0.38, 0.05,             // ROOT_GLOW_WHITE_BLEND / ROOT_GLOW_BLACK_BLEND
+            0.30, 0.73,             // ROOT_GLOW_ALPHA_MIN / MAX        (↓ 0.32/0.76)
+            0.24,                   // ROOT_SHEEN_ALPHA                 (↓ 0.27)
+            0.34, 0.05,             // ROOT_GLOW_WHITE_BLEND / BLACK    (↓ 0.38)
             // ── Bar tuning – soft wide curtain glow, gentle aurora tube ───────
-            0.66, 0.10,             // BAR_LIGHTEN / BAR_DARKEN
-            0.40,                   // BAR_INNER_SHEEN
-            22.0, 0.70, 0.88, 0.33  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND
+            0.64, 0.10,             // BAR_LIGHTEN / BAR_DARKEN         (↓ 0.66)
+            0.36,                   // BAR_INNER_SHEEN                  (↓ 0.40)
+            22.0, 0.68, 0.84, 0.28  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND  (↓)
     ),
 
     // ── SCARLET_SURGE ─────────────────────────────────────────────────────────
@@ -72,14 +73,15 @@ public enum NeonPreset {
             Color.web("#CC0022"),   // OVERTIME     – deep blood red alarm
             Color.web("#FF88AA"),   // PAUSED       – soft rose-pink
             // ── Root gradient – midnight-dark sky, warm red bloom ─────────────
+            // Tuned: medium-dark red → slight glow boost for better pop
             0.91, 0.26,             // ROOT_DARK_EDGE / ROOT_DARK_MID
-            0.30, 0.74,             // ROOT_GLOW_ALPHA_MIN / MAX
-            0.26,                   // ROOT_SHEEN_ALPHA
-            0.36, 0.05,             // ROOT_GLOW_WHITE_BLEND / ROOT_GLOW_BLACK_BLEND
+            0.31, 0.77,             // ROOT_GLOW_ALPHA_MIN / MAX        (↑ 0.30/0.74)
+            0.27,                   // ROOT_SHEEN_ALPHA                 (↑ 0.26)
+            0.38, 0.05,             // ROOT_GLOW_WHITE_BLEND / BLACK    (↑ 0.36)
             // ── Bar tuning – vivid warm tube glow ────────────────────────────
-            0.65, 0.11,             // BAR_LIGHTEN / BAR_DARKEN
-            0.38,                   // BAR_INNER_SHEEN
-            22.0, 0.68, 0.87, 0.30  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND
+            0.66, 0.11,             // BAR_LIGHTEN / BAR_DARKEN         (↑ 0.65)
+            0.40,                   // BAR_INNER_SHEEN                  (↑ 0.38)
+            22.0, 0.70, 0.89, 0.33  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND  (↑)
     ),
 
     // ── CITRUS_SPARK ──────────────────────────────────────────────────────────
@@ -97,14 +99,15 @@ public enum NeonPreset {
             Color.web("#CC2200"),   // OVERTIME     – deep ember red alarm
             Color.web("#FFAA33"),   // PAUSED       – warm amber
             // ── Root gradient – dark sky, warm amber-citrus bloom ─────────────
+            // Tuned: medium-bright warm orange → mild white-blend reduction
             0.91, 0.25,             // ROOT_DARK_EDGE / ROOT_DARK_MID
-            0.31, 0.75,             // ROOT_GLOW_ALPHA_MIN / MAX
-            0.26,                   // ROOT_SHEEN_ALPHA
-            0.37, 0.05,             // ROOT_GLOW_WHITE_BLEND / ROOT_GLOW_BLACK_BLEND
+            0.29, 0.72,             // ROOT_GLOW_ALPHA_MIN / MAX        (↓ 0.31/0.75)
+            0.23,                   // ROOT_SHEEN_ALPHA                 (↓ 0.26)
+            0.32, 0.05,             // ROOT_GLOW_WHITE_BLEND / BLACK    (↓ 0.37)
             // ── Bar tuning – bright warm citrus tube glow ─────────────────────
-            0.65, 0.11,             // BAR_LIGHTEN / BAR_DARKEN
-            0.39,                   // BAR_INNER_SHEEN
-            22.0, 0.69, 0.87, 0.32  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND
+            0.63, 0.11,             // BAR_LIGHTEN / BAR_DARKEN         (↓ 0.65)
+            0.36,                   // BAR_INNER_SHEEN                  (↓ 0.39)
+            22.0, 0.67, 0.84, 0.27  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND  (↓)
     ),
 
     // ── LIME_FLASH ────────────────────────────────────────────────────────────
@@ -122,14 +125,15 @@ public enum NeonPreset {
             Color.web("#FF2222"),   // OVERTIME     – red alarm
             Color.web("#AADD33"),   // PAUSED       – muted yellow-green
             // ── Root gradient – dark sky, yellow-green bloom ──────────────────
+            // Tuned: very bright lime-yellow → strongest white-blend / opacity reduction
             0.91, 0.26,             // ROOT_DARK_EDGE / ROOT_DARK_MID
-            0.31, 0.75,             // ROOT_GLOW_ALPHA_MIN / MAX
-            0.27,                   // ROOT_SHEEN_ALPHA
-            0.38, 0.05,             // ROOT_GLOW_WHITE_BLEND / ROOT_GLOW_BLACK_BLEND
+            0.27, 0.69,             // ROOT_GLOW_ALPHA_MIN / MAX        (↓ 0.31/0.75)
+            0.20,                   // ROOT_SHEEN_ALPHA                 (↓ 0.27)
+            0.28, 0.06,             // ROOT_GLOW_WHITE_BLEND / BLACK    (↓ 0.38)
             // ── Bar tuning – bright electric lime tube glow ───────────────────
-            0.66, 0.10,             // BAR_LIGHTEN / BAR_DARKEN
-            0.40,                   // BAR_INNER_SHEEN
-            22.0, 0.70, 0.88, 0.33  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND
+            0.60, 0.12,             // BAR_LIGHTEN / BAR_DARKEN         (↓ 0.66)
+            0.31,                   // BAR_INNER_SHEEN                  (↓ 0.40)
+            22.0, 0.64, 0.80, 0.22  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND  (↓↓)
     ),
 
     // ── JADE_MIST ─────────────────────────────────────────────────────────────
@@ -147,14 +151,15 @@ public enum NeonPreset {
             Color.web("#FF4466"),   // OVERTIME     – hot pink-red alarm
             Color.web("#33DDAA"),   // PAUSED       – sea green
             // ── Root gradient – midnight sky, cool green-cyan bloom ───────────
+            // Tuned: bright emerald green → moderate white-blend / opacity reduction
             0.91, 0.26,             // ROOT_DARK_EDGE / ROOT_DARK_MID
-            0.32, 0.76,             // ROOT_GLOW_ALPHA_MIN / MAX
-            0.27,                   // ROOT_SHEEN_ALPHA
-            0.38, 0.05,             // ROOT_GLOW_WHITE_BLEND / ROOT_GLOW_BLACK_BLEND
+            0.30, 0.73,             // ROOT_GLOW_ALPHA_MIN / MAX        (↓ 0.32/0.76)
+            0.24,                   // ROOT_SHEEN_ALPHA                 (↓ 0.27)
+            0.33, 0.05,             // ROOT_GLOW_WHITE_BLEND / BLACK    (↓ 0.38)
             // ── Bar tuning – lush jade tube glow ─────────────────────────────
-            0.66, 0.10,             // BAR_LIGHTEN / BAR_DARKEN
-            0.40,                   // BAR_INNER_SHEEN
-            22.0, 0.70, 0.88, 0.33  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND
+            0.64, 0.10,             // BAR_LIGHTEN / BAR_DARKEN         (↓ 0.66)
+            0.36,                   // BAR_INNER_SHEEN                  (↓ 0.40)
+            22.0, 0.68, 0.84, 0.27  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND  (↓)
     ),
 
     // ── OCEAN_GLOW ────────────────────────────────────────────────────────────
@@ -172,14 +177,15 @@ public enum NeonPreset {
             Color.web("#FF2244"),   // OVERTIME     – red alarm
             Color.web("#4499DD"),   // PAUSED       – steel blue
             // ── Root gradient – deep dark sky, cool ocean bloom ───────────────
+            // Tuned: bright cool cyan → moderate white-blend / opacity reduction
             0.92, 0.27,             // ROOT_DARK_EDGE / ROOT_DARK_MID
-            0.32, 0.76,             // ROOT_GLOW_ALPHA_MIN / MAX
-            0.27,                   // ROOT_SHEEN_ALPHA
-            0.40, 0.05,             // ROOT_GLOW_WHITE_BLEND / ROOT_GLOW_BLACK_BLEND
+            0.30, 0.73,             // ROOT_GLOW_ALPHA_MIN / MAX        (↓ 0.32/0.76)
+            0.24,                   // ROOT_SHEEN_ALPHA                 (↓ 0.27)
+            0.35, 0.05,             // ROOT_GLOW_WHITE_BLEND / BLACK    (↓ 0.40)
             // ── Bar tuning – cool oceanic tube glow ──────────────────────────
-            0.66, 0.10,             // BAR_LIGHTEN / BAR_DARKEN
-            0.40,                   // BAR_INNER_SHEEN
-            22.0, 0.70, 0.88, 0.34  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND
+            0.64, 0.10,             // BAR_LIGHTEN / BAR_DARKEN         (↓ 0.66)
+            0.36,                   // BAR_INNER_SHEEN                  (↓ 0.40)
+            22.0, 0.68, 0.84, 0.29  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND  (↓)
     ),
 
     // ── COSMOS_BLAZE ──────────────────────────────────────────────────────────
@@ -197,14 +203,15 @@ public enum NeonPreset {
             Color.web("#FF2266"),   // OVERTIME     – magenta-red alarm
             Color.web("#6633BB"),   // PAUSED       – medium indigo-violet
             // ── Root gradient – void-dark sky, deep blue-violet bloom ─────────
+            // Tuned: deep dark blue → strongest glow boost for neon pop
             0.92, 0.27,             // ROOT_DARK_EDGE / ROOT_DARK_MID
-            0.32, 0.76,             // ROOT_GLOW_ALPHA_MIN / MAX
-            0.27,                   // ROOT_SHEEN_ALPHA
-            0.38, 0.05,             // ROOT_GLOW_WHITE_BLEND / ROOT_GLOW_BLACK_BLEND
+            0.34, 0.81,             // ROOT_GLOW_ALPHA_MIN / MAX        (↑ 0.32/0.76)
+            0.31,                   // ROOT_SHEEN_ALPHA                 (↑ 0.27)
+            0.44, 0.05,             // ROOT_GLOW_WHITE_BLEND / BLACK    (↑ 0.38)
             // ── Bar tuning – deep cosmic tube glow ───────────────────────────
-            0.66, 0.10,             // BAR_LIGHTEN / BAR_DARKEN
-            0.40,                   // BAR_INNER_SHEEN
-            22.0, 0.70, 0.88, 0.33  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND
+            0.69, 0.10,             // BAR_LIGHTEN / BAR_DARKEN         (↑ 0.66)
+            0.46,                   // BAR_INNER_SHEEN                  (↑ 0.40)
+            22.0, 0.74, 0.93, 0.40  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND  (↑↑)
     ),
 
     // ── PRISM_VEIL ────────────────────────────────────────────────────────────
@@ -222,14 +229,15 @@ public enum NeonPreset {
             Color.web("#880066"),   // OVERTIME     – deep dark magenta alarm
             Color.web("#DD44AA"),   // PAUSED       – hot magenta-pink
             // ── Root gradient – midnight sky, violet-red prism bloom ──────────
+            // Tuned: dark violet → moderate glow boost for vivid neon depth
             0.91, 0.26,             // ROOT_DARK_EDGE / ROOT_DARK_MID
-            0.31, 0.75,             // ROOT_GLOW_ALPHA_MIN / MAX
-            0.27,                   // ROOT_SHEEN_ALPHA
-            0.38, 0.05,             // ROOT_GLOW_WHITE_BLEND / ROOT_GLOW_BLACK_BLEND
+            0.33, 0.79,             // ROOT_GLOW_ALPHA_MIN / MAX        (↑ 0.31/0.75)
+            0.29,                   // ROOT_SHEEN_ALPHA                 (↑ 0.27)
+            0.42, 0.05,             // ROOT_GLOW_WHITE_BLEND / BLACK    (↑ 0.38)
             // ── Bar tuning – vivid prism tube glow ───────────────────────────
-            0.65, 0.10,             // BAR_LIGHTEN / BAR_DARKEN
-            0.39,                   // BAR_INNER_SHEEN
-            22.0, 0.69, 0.88, 0.32  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND
+            0.67, 0.10,             // BAR_LIGHTEN / BAR_DARKEN         (↑ 0.65)
+            0.43,                   // BAR_INNER_SHEEN                  (↑ 0.39)
+            22.0, 0.72, 0.91, 0.37  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND  (↑)
     );
 
     // ── Fields ────────────────────────────────────────────────────────────────
