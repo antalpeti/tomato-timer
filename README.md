@@ -15,16 +15,19 @@ A Maven-based JavaFX Pomodoro timer, rewritten from the original C# WPF **Tomato
 | **Vector icon set** | Modern, vivid SVG-based icons rendered in JavaFX (scalable) |
 | **Always on Top** | Toggle pin button in the top-right controls |
 | **State persistence** | Window and timer state are restored on next start |
-| **Sounds** | Custom sound file per event (`mp3`, `wav`, `ogg`) |
-| **Google Calendar** | Opens event creation after work overtime or via manual **Finish Work** action |
+| **Sounds** | Custom sound file per event (`mp3`, `wav`, `ogg`); configured on the dedicated Sound Settings page |
+| **Google Calendar** | Opens event creation after work overtime or via manual **Finish Work** action; configured on the dedicated Calendar Settings page |
+| **Taskbar countdown icon** | Dynamic live-countdown icon in the Windows taskbar; layout (vertical/horizontal) and font size configurable on the dedicated Taskbar Settings page |
 
 ## Usage
 
 - Hover over the timer to reveal controls.
 - Hold the **Relax** button for ~2 seconds to start **Long Break**.
 - Use **Finish Work** to create a Google Calendar event from the current work interval (if enabled), then switch directly to short rest.
-- Open **Settings** to configure durations and switch neon preset.
-- Open **Sound Settings** to assign custom notification sounds.
+- Open **Settings** to configure timer durations and switch neon preset; navigate to sub-pages via the icon buttons.
+- Open **Sound Settings** (from Settings) to assign custom notification sounds.
+- Open **Calendar Settings** (from Settings) to configure Google Calendar integration.
+- Open **Taskbar Settings** (from Settings) to configure the taskbar countdown icon.
 - Use top-right **Close** menu to exit with or without saving timer state.
 
 ## Controls
@@ -39,12 +42,17 @@ Timer face (hover state):
   left:   [Settings]
   center: [Reset] [Play/Resume | Pause] [Work] [Finish Work] [Relax]
 
+Settings page:
+  left:   [Back to timer]
+  right:  [Calendar Settings] [Sound Settings] [Taskbar Settings]
+  center: Work / Rest / Long spinners + Neon preset combo
+
 Notes:
   - Hold Relax for ~2s => Long Break
   - Finish Work => Google Calendar event (if enabled) + Short Rest
 ```
 
-- **Settings**: opens timer/theme settings.
+- **Settings**: opens timer/theme settings, with navigation icons to sub-pages.
 - **Reset**: restarts the current mode from full duration.
 - **Play / Resume**: resumes paused work mode.
 - **Pause**: pauses running work mode.
@@ -53,6 +61,42 @@ Notes:
 - **Finish Work**: creates a Google Calendar event (if enabled), then starts short rest.
 - **Always on Top** (pin): toggles whether the window stays above other windows.
 - **Close menu**: close with timer-state save, or close without saving timer state.
+
+## Settings Pages
+
+### Main Settings (`settings.fxml`)
+
+Configures timer durations (Work / Rest / Long Rest) and the active neon theme preset.  
+Navigation icon buttons in the top-right open the three dedicated sub-pages below.
+
+### Calendar Settings (`calendar_settings.fxml`)
+
+| Control | Purpose |
+|---|---|
+| **Enable Google Calendar** | Activates event creation on Finish Work / overtime |
+| **Copy URL to clipboard** | Also copies the generated GCal URL to the system clipboard |
+| **Calendar source** | Calendar ID / source string embedded in the event URL |
+| **Event title** | Default title for created calendar events |
+| **Test** (calendar icon) | Opens a test event in the browser using the current work duration |
+
+Back button returns to the main Settings page.
+
+### Sound Settings (`sound_settings.fxml`)
+
+Assigns a custom audio file (`.mp3`, `.wav`, `.ogg`) to each notification event and provides a preview button per slot.  
+Back button returns to the main Settings page.
+
+### Taskbar Settings (`taskbar_settings.fxml`)
+
+| Control | Purpose |
+|---|---|
+| **Enable taskbar icon** | Toggles the live-countdown icon in the Windows taskbar |
+| **Font size** | Base font size (px at the 64 px reference canvas, range 8–28, default 17) |
+| **Layout — Vertical** | Stacked multi-line: 2 lines (MM / SS) when hours = 0; 3 lines (HH / MM / SS) when hours > 0 |
+| **Layout — Horizontal** | Single-line: `MM:SS` when hours = 0; `HH:MM:SS` when hours > 0 |
+
+Changes to layout and font size take effect on the next icon redraw (within ~1 second, or immediately on Back).  
+Back button saves settings, triggers an immediate icon redraw, and returns to the main Settings page.
 
 ## Run
 
@@ -236,6 +280,10 @@ java-options=--add-opens                                    ← broken (split)
 writing a temporary ICO file and calling `LoadImageW` / `WM_SETICON` through JNA.
 A CRC32-based cache prevents redundant SSD writes when the icon data has not changed.
 
+The **live countdown icon** is rendered by `TaskbarIconRenderer` directly onto a JavaFX
+`Canvas` (no AWT / BufferedImage) and pushed to `Stage.getIcons()` every second.
+Layout and font size are controlled via the **Taskbar Settings** sub-page (see above).
+
 ### Taskbar Icon Debug Mode
 
 #### Quick Start (IntelliJ)
@@ -382,19 +430,27 @@ tomato-timer/
 │   ├── TimerMode.java                    # WORK / RELAX / RELAX_LONG
 │   ├── SoundType.java                    # Notification sound event types
 │   ├── NeonPreset.java                   # Neon theme presets and tuning parameters
+│   ├── TaskbarTimeLayout.java            # VERTICAL / HORIZONTAL enum for taskbar icon
+│   ├── TaskbarIconRenderer.java          # Canvas-based live countdown icon renderer
 │   ├── TimerBackgroundHelper.java        # Gradient / glow / accent color generation
 │   ├── UiScaleHelper.java                # Central dynamic UI scaling calculations
 │   ├── IconFactory.java                  # Scalable SVG icon factory
+│   ├── WindowsNativeWindowIconHelper.java# JNA-based native taskbar/window icon setter
+│   ├── WindowsAppIdHelper.java           # Windows AppUserModelID helper
 │   └── controller/
 │       ├── MainController.java           # Main coordinator (timer, navigation, window)
 │       ├── ButtonsController.java        # Timer page (controls + progress + dynamic styling)
-│       ├── SettingsController.java       # Timer + theme + Google Calendar settings
-│       └── SoundSettingsController.java  # Sound assignment UI and preview
+│       ├── SettingsController.java       # Timer durations + theme; nav to sub-pages
+│       ├── CalendarSettingsController.java # Google Calendar integration settings
+│       ├── SoundSettingsController.java  # Sound assignment UI and preview
+│       └── TaskbarSettingsController.java  # Taskbar icon layout, font size, enable toggle
 └── src/main/resources/com/tomatotimer/
     ├── main.fxml                         # Main shell layout
     ├── buttons.fxml                      # Timer view
-    ├── settings.fxml                     # Settings view
-    ├── sound_settings.fxml               # Sound settings view
+    ├── settings.fxml                     # Main settings view (durations + theme + sub-page nav)
+    ├── calendar_settings.fxml            # Google Calendar settings sub-page
+    ├── sound_settings.fxml               # Sound settings sub-page
+    ├── taskbar_settings.fxml             # Taskbar icon settings sub-page
     ├── style.css                         # Base JavaFX styles
     └── icons/                            # Bitmap assets (legacy/app icon resources)
 ```
