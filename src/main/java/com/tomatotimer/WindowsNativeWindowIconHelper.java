@@ -51,11 +51,29 @@ import java.util.zip.CRC32;
  *
  * <p>All operations fail silently on non-Windows platforms or when JNA is unavailable.
  * Must be called on the JavaFX Application Thread (pixel extraction requires it).</p>
+ *
+ * <h3>Diagnostic logging</h3>
+ * <p>A lightweight debug mode can be enabled at JVM startup to trace every lifecycle
+ * step (HWND search, CRC cache, file I/O, {@code LoadImageW}, {@code WM_SETICON},
+ * {@code DestroyIcon}) without affecting functional behaviour:</p>
+ * <pre>{@code
+ *   java -Dtomatotimer.icon.debug=true -jar tomato-timer.jar
+ * }</pre>
+ * <p>All debug output uses {@code java.util.logging} at {@code FINE} level via the
+ * class-named logger {@code com.tomatotimer.WindowsNativeWindowIconHelper}.</p>
  */
 public final class WindowsNativeWindowIconHelper {
 
     private static final Logger LOG =
             Logger.getLogger(WindowsNativeWindowIconHelper.class.getName());
+
+    /**
+     * When {@code true}, key lifecycle steps are emitted as {@code FINE} log records.
+     * Enabled by passing {@code -Dtomatotimer.icon.debug=true} on the JVM command line.
+     * Has no effect on functional behaviour.
+     */
+    private static final boolean DEBUG_MODE =
+            Boolean.getBoolean("tomatotimer.icon.debug");
 
     // ── Win32 constants ───────────────────────────────────────────────────────
     /** {@code WM_SETICON} – sets the icon associated with a window. */
@@ -191,6 +209,13 @@ public final class WindowsNativeWindowIconHelper {
 
     private WindowsNativeWindowIconHelper() { /* utility class – no instances */ }
 
+    /** Emits a {@code FINE} log record only when {@link #DEBUG_MODE} is active. */
+    private static void debug(final String fmt, final Object... args) {
+        if (DEBUG_MODE) {
+            LOG.fine(String.format(fmt, args));
+        }
+    }
+
     // ── Public API ────────────────────────────────────────────────────────────
 
     /**
@@ -211,8 +236,15 @@ public final class WindowsNativeWindowIconHelper {
      * @param icon the already-rendered taskbar icon; should be ≥ 32 × 32 px
      */
     public static void apply(final Image icon) {
-        if (!isWindows()) return;
-        if (icon == null) return;
+        if (!isWindows()) {
+            debug("apply: skipped – not a Windows platform (os.name=%s)",
+                    System.getProperty("os.name", "<unknown>"));
+            return;
+        }
+        if (icon == null) {
+            debug("apply: skipped – icon image is null");
+            return;
+        }
         try {
             applyUnsafe(icon);
         } catch (Throwable t) {
@@ -245,8 +277,10 @@ public final class WindowsNativeWindowIconHelper {
         final WinDef.HWND hwnd = found[0];
         if (hwnd == null) {
             LOG.fine("EnumWindows: no visible top-level window found for current process");
+            debug("applyUnsafe: HWND not found for pid=%d – aborting", currentPid);
             return;
         }
+        debug("applyUnsafe: HWND found for pid=%d → %s", currentPid, hwnd);
 
         // ── Step 2: extract ARGB pixels from the JavaFX Image ─────────────────
         final int w = (int) icon.getWidth();
@@ -263,18 +297,22 @@ public final class WindowsNativeWindowIconHelper {
         if (cacheInitialized && currentCrc == lastIcoCrc) {
             // Icon data unchanged – skip file I/O and re-registration
             LOG.finest("Icon data unchanged – skipping SSD write and WM_SETICON");
+            debug("cache HIT  crc=0x%08X – skipping file I/O and WM_SETICON", currentCrc);
             return;
         }
+        debug("cache MISS crc 0x%08X → 0x%08X – proceeding with update", lastIcoCrc, currentCrc);
         lastIcoCrc = currentCrc;
         cacheInitialized = true;
 
         // ── Step 5: write bytes to the reusable process-lifetime temp file ────
         if (TEMP_ICO_PATH == null) {
             LOG.warning("Temp ICO path unavailable – WM_SETICON skipped");
+            debug("applyUnsafe: TEMP_ICO_PATH is null – WM_SETICON skipped");
             return;
         }
         Files.write(TEMP_ICO_PATH, icoBytes,
                 StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE);
+        debug("wrote %d bytes to temp ICO → %s", icoBytes.length, TEMP_ICO_PATH);
 
         // ── Step 6: load HICON from the temp ICO file ────────────────────────
         final WinDef.HICON hIcon = User32Icon.INSTANCE.LoadImageW(
@@ -282,8 +320,10 @@ public final class WindowsNativeWindowIconHelper {
 
         if (hIcon == null || isNullHandle(hIcon)) {
             LOG.warning("LoadImageW returned a null/invalid HICON – WM_SETICON skipped");
+            debug("LoadImageW FAILED (null/zero HICON) for path=%s", TEMP_ICO_PATH);
             return;
         }
+        debug("LoadImageW OK → HICON ptr=0x%X", Pointer.nativeValue(hIcon.getPointer()));
 
         // ── Step 7: broadcast WM_SETICON for all three icon slots ─────────────
         final WinDef.LPARAM hIconLParam =
@@ -292,12 +332,15 @@ public final class WindowsNativeWindowIconHelper {
             User32Icon.INSTANCE.SendMessageW(
                     hwnd, WM_SETICON, new WinDef.WPARAM(slot), hIconLParam);
         }
+        debug("WM_SETICON broadcast complete (slots SMALL/BIG/SMALL2) for HWND %s", hwnd);
 
         // ── Step 8: rotate out stale handle to release the GDI object ─────────
         final WinDef.HICON stale = previousHIcon;
         previousHIcon = hIcon;
         if (stale != null && !isNullHandle(stale)) {
-            User32Icon.INSTANCE.DestroyIcon(stale);
+            final boolean destroyed = User32Icon.INSTANCE.DestroyIcon(stale);
+            debug("DestroyIcon stale HICON ptr=0x%X → %s",
+                    Pointer.nativeValue(stale.getPointer()), destroyed ? "OK" : "FAILED");
         }
     }
 
