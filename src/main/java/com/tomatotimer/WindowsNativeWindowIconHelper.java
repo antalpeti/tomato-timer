@@ -82,7 +82,7 @@ public final class WindowsNativeWindowIconHelper {
      * For a 1-second timer update cycle with minute-level display precision,
      * this reduces SSD writes by ~98% (59 skips per 60 calls).
      */
-    private static volatile byte[] lastIcoHash = null;
+    private static volatile int lastIcoHash = 0;
 
     // ── Minimal JNA interface ─────────────────────────────────────────────────
 
@@ -225,8 +225,8 @@ public final class WindowsNativeWindowIconHelper {
         final byte[] icoBytes = buildBmpIco(argb, w, h);
 
         // ── Step 4: compute hash and check cache ─────────────────────────────
-        final byte[] currentHash = computeHash(icoBytes);
-        if (Arrays.equals(currentHash, lastIcoHash)) {
+        final int currentHash = computeHash(icoBytes);
+        if (currentHash == lastIcoHash) {
             // Icon data unchanged – skip file I/O and re-registration
             LOG.finest("Icon data unchanged – skipping SSD write and WM_SETICON");
             return;
@@ -363,22 +363,13 @@ public final class WindowsNativeWindowIconHelper {
     }
 
     /**
-     * Computes a simple hash of the icon byte data for cache validation.
-     * Uses a lightweight rolling hash to avoid the overhead of full cryptographic hashing.
-     * Since icon updates are frequent (every 1 second) but the displayed content changes
-     * rarely (once per minute), this cache dramatically reduces SSD I/O.
+     * Computes a hash of the entire icon byte data for cache validation.
+     * Uses Java's built-in Arrays.hashCode() which is optimized for byte arrays.
+     * This ensures that any change in the icon pixels (e.g., time text update)
+     * is detected and triggers a re-rendering cycle.
      */
-    private static byte[] computeHash(final byte[] data) {
-        // Use first 8 + last 8 bytes + length as a lightweight fingerprint
-        // This avoids expensive full hashing while catching most changes
-        final ByteBuffer buf = ByteBuffer.allocate(24);
-        int len = Math.min(8, data.length);
-        buf.put(data, 0, len);
-        if (data.length > 8) {
-            buf.put(data, data.length - Math.min(8, data.length), Math.min(8, data.length));
-        }
-        buf.putInt(data.length);
-        return buf.array();
+    private static int computeHash(final byte[] data) {
+        return Arrays.hashCode(data);
     }
 
     private static boolean isWindows() {
