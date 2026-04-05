@@ -7,10 +7,8 @@ import com.tomatotimer.UiScaleHelper;
 import javafx.fxml.FXML;
 import javafx.scene.Group;
 import javafx.scene.control.*;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 
-import java.time.LocalDateTime;
 
 /**
  * Controller for settings.fxml – equivalent to Page_Settings.xaml.cs.
@@ -20,7 +18,7 @@ public class SettingsController {
     @FXML private HBox             rootBox;
     @FXML private HBox             settingsRow;
     @FXML private Button           btnBack;
-    @FXML private Button           btnTestGCal;
+    @FXML private Button           btnCalendarSettings;
     @FXML private Button           btnSoundSettings;
     @FXML private Button           btnTaskbarSettings;
     @FXML private Spinner<Integer> spWorkTime;
@@ -31,11 +29,6 @@ public class SettingsController {
     @FXML private Label            lblLong;
     @FXML private Label            lblPreset;
     @FXML private ComboBox<NeonPreset> cbNeonPreset;
-    @FXML private CheckBox         cbEnableGCal;
-    @FXML private CheckBox         cbCopyToClipboard;
-    @FXML private TextField        tfGCalSrc;
-    @FXML private TextField        tfGCalText;
-    @FXML private GridPane         gpGCalDetails;
     @FXML private Label            labelVersion;
 
     private MainController mainController;
@@ -58,7 +51,7 @@ public class SettingsController {
         iconTaskbar  = IconFactory.create(IconFactory.PATH_TASKBAR,  IconFactory.COLOR_TASKBAR);
 
         btnBack.setGraphic(iconBack);
-        btnTestGCal.setGraphic(iconCalendar);
+        btnCalendarSettings.setGraphic(iconCalendar);
         btnSoundSettings.setGraphic(iconVolume);
         btnTaskbarSettings.setGraphic(iconTaskbar);
 
@@ -109,9 +102,6 @@ public class SettingsController {
         lblLong.setStyle(lblStyle);
         lblPreset.setStyle(lblStyle);
 
-        // ── CheckBox labels ───────────────────────────────────────────────────
-        cbEnableGCal.setStyle(lblStyle);
-        cbCopyToClipboard.setStyle(lblStyle);
 
         // ── Version label ─────────────────────────────────────────────────────
         labelVersion.setStyle(String.format("-fx-font-size: %.1fpx;",
@@ -138,12 +128,6 @@ public class SettingsController {
         spLongRelaxTime.getValueFactory().setValue(settings.getRelaxTimeLong());
 
         cbNeonPreset.setValue(settings.getNeonPreset());
-
-        tfGCalSrc.setText(settings.getGCalSrc());
-        tfGCalText.setText(settings.getGCalText());
-        cbEnableGCal.setSelected(settings.isGCalEnable());
-        cbCopyToClipboard.setSelected(settings.isGCalCopyToClipboard());
-        updateGCalControls();
     }
 
     /** Push current UI values into settings. */
@@ -152,15 +136,6 @@ public class SettingsController {
         settings.setRelaxTime(spRelaxTime.getValue());
         settings.setRelaxTimeLong(spLongRelaxTime.getValue());
         if (cbNeonPreset.getValue() != null) settings.setNeonPreset(cbNeonPreset.getValue());
-        settings.setGCalSrc(tfGCalSrc.getText());
-        settings.setGCalText(tfGCalText.getText());
-        settings.setGCalEnable(cbEnableGCal.isSelected());
-        settings.setGCalCopyToClipboard(cbCopyToClipboard.isSelected());
-    }
-
-    private void updateGCalControls() {
-        boolean en = cbEnableGCal.isSelected();
-        gpGCalDetails.setDisable(!en);
     }
 
     // =========================================================================
@@ -174,9 +149,9 @@ public class SettingsController {
     }
 
     @FXML
-    private void onGCalEnableChanged() {
-        updateGCalControls();
+    private void onCalendarSettings() {
         syncToSettings();
+        mainController.showCalendarSettings();
     }
 
     @FXML
@@ -189,13 +164,5 @@ public class SettingsController {
     private void onTaskbarSettings() {
         syncToSettings();
         mainController.showTaskbarSettings();
-    }
-
-    @FXML
-    private void onTestGCal() {
-        syncToSettings();
-        mainController.openGoogleCalendar(
-                LocalDateTime.now().minusMinutes(settings.getWorkTime()),
-                LocalDateTime.now());
     }
 }

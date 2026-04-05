@@ -63,42 +63,18 @@
                 <tooltip><Tooltip text="Neon visual theme preset"/></tooltip>
             </ComboBox>
 
-            <!-- Google Calendar -->
-            <Separator orientation="VERTICAL" prefHeight="30"/>
-            <VBox alignment="CENTER_LEFT" spacing="2">
-                <CheckBox fx:id="cbEnableGCal" text="GCal"
-                          onAction="#onGCalEnableChanged"
-                          focusTraversable="false"/>
-                <CheckBox fx:id="cbCopyToClipboard" text="Copy URL"
-                          focusTraversable="false"/>
-            </VBox>
+            <!-- Calendar settings button – navigates to dedicated Google Calendar settings page -->
+            <!-- margin left=2 right=2: symmetric breathing room around separators -->
+            <Separator orientation="VERTICAL" prefHeight="30">
+                <HBox.margin><Insets left="2" right="2"/></HBox.margin>
+            </Separator>
 
-            <GridPane fx:id="gpGCalDetails" hgap="4" vgap="2">
-                <columnConstraints>
-                    <ColumnConstraints minWidth="60" halignment="RIGHT"/>
-                    <ColumnConstraints prefWidth="160" hgrow="ALWAYS"/>
-                </columnConstraints>
-                <Label text="Calendar ID:" GridPane.columnIndex="0" GridPane.rowIndex="0"
-                       styleClass="setting-label"/>
-                <TextField fx:id="tfGCalSrc" GridPane.columnIndex="1" GridPane.rowIndex="0"
-                           promptText="your-email@gmail.com" prefWidth="160"/>
-                <Label text="Event Title:" GridPane.columnIndex="0" GridPane.rowIndex="1"
-                       styleClass="setting-label"/>
-                <TextField fx:id="tfGCalText" GridPane.columnIndex="1" GridPane.rowIndex="1"
-                           promptText="Pomodoro" prefWidth="160"/>
-            </GridPane>
-
-            <!-- Test GCal button – graphic set by controller -->
-            <!-- margin left=2: extra air between dense gpGCalDetails grid and this icon -->
-            <Button fx:id="btnTestGCal"
-                    styleClass="icon-btn" onAction="#onTestGCal"
+            <Button fx:id="btnCalendarSettings"
+                    styleClass="icon-btn" onAction="#onCalendarSettings"
                     focusTraversable="false">
-                <tooltip><Tooltip text="Test: open Google Calendar"/></tooltip>
-                <HBox.margin><Insets left="2"/></HBox.margin>
+                <tooltip><Tooltip text="Google Calendar settings"/></tooltip>
             </Button>
 
-            <!-- margin left=2 right=2: adds 2 px breathing room on each side of separator;
-                 combined with HBox spacing=6, each icon-to-separator gap becomes 8 px -->
             <Separator orientation="VERTICAL" prefHeight="30">
                 <HBox.margin><Insets left="2" right="2"/></HBox.margin>
             </Separator>

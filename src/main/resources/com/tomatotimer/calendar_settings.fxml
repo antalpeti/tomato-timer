@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+
+<!--
+  calendar_settings.fxml – Google Calendar integration settings page.
+  Icons are assigned programmatically by CalendarSettingsController (SVGPath via IconFactory).
+-->
+<HBox xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.tomatotimer.controller.CalendarSettingsController"
+      fx:id="rootBox"
+      prefHeight="44" maxWidth="Infinity"
+      alignment="CENTER_LEFT"
+      styleClass="page-root">
+
+    <!-- Back button – graphic set by controller -->
+    <Button fx:id="btnBack"
+            styleClass="icon-btn"
+            onAction="#onBack"
+            focusTraversable="false">
+        <tooltip><Tooltip text="Back to settings"/></tooltip>
+    </Button>
+
+    <ScrollPane HBox.hgrow="ALWAYS"
+                fitToHeight="true"
+                vbarPolicy="NEVER"
+                hbarPolicy="AS_NEEDED"
+                style="-fx-background-color: transparent; -fx-background: transparent;">
+
+        <HBox fx:id="calendarRow" alignment="CENTER_LEFT" spacing="6" style="-fx-padding: 2 4 2 4;">
+
+            <!-- Enable GCal + Copy URL checkboxes -->
+            <VBox alignment="CENTER_LEFT" spacing="2">
+                <CheckBox fx:id="cbEnableGCal"
+                          text="GCal"
+                          onAction="#onGCalEnableChanged"
+                          focusTraversable="false">
+                    <tooltip><Tooltip text="Open Google Calendar on work session end"/></tooltip>
+                </CheckBox>
+                <CheckBox fx:id="cbCopyToClipboard"
+                          text="Copy URL"
+                          focusTraversable="false">
+                    <tooltip><Tooltip text="Also copy the event URL to clipboard"/></tooltip>
+                </CheckBox>
+            </VBox>
+
+            <Separator orientation="VERTICAL" prefHeight="30"/>
+
+            <!-- Calendar ID + Event Title grid (disabled when GCal is off) -->
+            <GridPane fx:id="gpGCalDetails" hgap="4" vgap="2">
+                <columnConstraints>
+                    <ColumnConstraints minWidth="60" halignment="RIGHT"/>
+                    <ColumnConstraints prefWidth="160" hgrow="ALWAYS"/>
+                </columnConstraints>
+                <Label text="Calendar ID:"
+                       GridPane.columnIndex="0" GridPane.rowIndex="0"
+                       styleClass="setting-label"/>
+                <TextField fx:id="tfGCalSrc"
+                           GridPane.columnIndex="1" GridPane.rowIndex="0"
+                           promptText="your-email@gmail.com" prefWidth="160"/>
+                <Label text="Event Title:"
+                       GridPane.columnIndex="0" GridPane.rowIndex="1"
+                       styleClass="setting-label"/>
+                <TextField fx:id="tfGCalText"
+                           GridPane.columnIndex="1" GridPane.rowIndex="1"
+                           promptText="Pomodoro" prefWidth="160"/>
+            </GridPane>
+
+            <!-- Test button – opens Google Calendar with a test event -->
+            <!-- margin left=2: extra air between dense grid and icon -->
+            <Button fx:id="btnTestGCal"
+                    styleClass="icon-btn" onAction="#onTestGCal"
+                    focusTraversable="false">
+                <tooltip><Tooltip text="Test: open Google Calendar"/></tooltip>
+                <HBox.margin><Insets left="2"/></HBox.margin>
+            </Button>
+
+        </HBox>
+    </ScrollPane>
+
+</HBox>
+

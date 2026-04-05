@@ -67,14 +67,16 @@ public class MainController {
     private long           timerElapsedWhenPaused = 0;
 
     // ---- sub-views ----------------------------------------------------------
-    private Node                     buttonsView;
-    private Node                     settingsView;
-    private Node                     soundSettingsView;
-    private Node                     taskbarSettingsView;
-    private ButtonsController        buttonsController;
-    private SettingsController       settingsController;
-    private SoundSettingsController  soundSettingsController;
-    private TaskbarSettingsController taskbarSettingsController;
+    private Node                       buttonsView;
+    private Node                       settingsView;
+    private Node                       soundSettingsView;
+    private Node                       taskbarSettingsView;
+    private Node                       calendarSettingsView;
+    private ButtonsController          buttonsController;
+    private SettingsController         settingsController;
+    private SoundSettingsController    soundSettingsController;
+    private TaskbarSettingsController  taskbarSettingsController;
+    private CalendarSettingsController calendarSettingsController;
 
     // ---- drag support -------------------------------------------------------
     private double dragBaseX, dragBaseY;
@@ -143,6 +145,11 @@ public class MainController {
             taskbarSettingsView = ts.load();
             taskbarSettingsController = ts.getController();
             taskbarSettingsController.setMainController(this);
+
+            FXMLLoader cs = new FXMLLoader(getClass().getResource("/com/tomatotimer/calendar_settings.fxml"));
+            calendarSettingsView = cs.load();
+            calendarSettingsController = cs.getController();
+            calendarSettingsController.setMainController(this);
         } catch (IOException e) {
             throw new RuntimeException("Cannot load sub-views", e);
         }
@@ -584,6 +591,11 @@ public class MainController {
     public void showTaskbarSettings() {
         taskbarSettingsController.syncFromSettings();
         contentPane.getChildren().setAll(taskbarSettingsView);
+    }
+
+    public void showCalendarSettings() {
+        calendarSettingsController.syncFromSettings();
+        contentPane.getChildren().setAll(calendarSettingsView);
     }
 
     // =========================================================================
