@@ -91,7 +91,7 @@
             <!-- Test GCal button – graphic set by controller -->
             <!-- margin left=2: extra air between dense gpGCalDetails grid and this icon -->
             <Button fx:id="btnTestGCal"
-                    styleClass="icon-btn" onAction="#onTestGCal"
+                    styleClass="icon-btn icon-btn-settings" onAction="#onTestGCal"
                     focusTraversable="false">
                 <tooltip><Tooltip text="Test: open Google Calendar"/></tooltip>
                 <HBox.margin><Insets left="2"/></HBox.margin>
@@ -105,7 +105,7 @@
 
             <!-- Taskbar settings button – graphic set by controller -->
             <Button fx:id="btnTaskbarSettings"
-                    styleClass="icon-btn" onAction="#onTaskbarSettings"
+                    styleClass="icon-btn icon-btn-settings" onAction="#onTaskbarSettings"
                     focusTraversable="false">
                 <tooltip><Tooltip text="Taskbar display settings (font size, layout)"/></tooltip>
             </Button>
@@ -118,7 +118,7 @@
             <!-- Sound settings button – graphic set by controller -->
             <!-- margin right=2: trailing edge matches the icon-group separator rhythm (6+2=8 px) -->
             <Button fx:id="btnSoundSettings"
-                    styleClass="icon-btn" onAction="#onSoundSettings"
+                    styleClass="icon-btn icon-btn-settings" onAction="#onSoundSettings"
                     focusTraversable="false">
                 <tooltip><Tooltip text="Sound settings"/></tooltip>
                 <HBox.margin><Insets right="2"/></HBox.margin>
