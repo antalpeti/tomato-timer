@@ -51,7 +51,7 @@ public class CalendarSettingsController {
     @FXML
     public void initialize() {
         iconBack     = IconFactory.create(IconFactory.PATH_CLOCK,    IconFactory.COLOR_BACK);
-        iconCalendar = IconFactory.create(IconFactory.PATH_CALENDAR, IconFactory.COLOR_CALENDAR);
+        iconCalendar = IconFactory.create(IconFactory.PATH_CALENDAR, IconFactory.COLOR_CALENDAR_TEST);
 
         btnBack.setGraphic(iconBack);
         btnTestGCal.setGraphic(iconCalendar);

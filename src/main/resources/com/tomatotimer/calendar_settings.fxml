@@ -45,7 +45,10 @@
                 </CheckBox>
             </VBox>
 
-            <Separator orientation="VERTICAL" prefHeight="30"/>
+            <!-- margin left=2 right=2: symmetric breathing room matching settings.fxml separator rhythm -->
+            <Separator orientation="VERTICAL" prefHeight="30">
+                <HBox.margin><Insets left="2" right="2"/></HBox.margin>
+            </Separator>
 
             <!-- Calendar ID + Event Title grid (disabled when GCal is off) -->
             <GridPane fx:id="gpGCalDetails" hgap="4" vgap="2">
@@ -68,12 +71,12 @@
             </GridPane>
 
             <!-- Test button – opens Google Calendar with a test event -->
-            <!-- margin left=2: extra air between dense grid and icon -->
+            <!-- margin left=2: extra air between dense grid and icon; right=2: symmetric trailing edge -->
             <Button fx:id="btnTestGCal"
                     styleClass="icon-btn" onAction="#onTestGCal"
                     focusTraversable="false">
                 <tooltip><Tooltip text="Test: open Google Calendar"/></tooltip>
-                <HBox.margin><Insets left="2"/></HBox.margin>
+                <HBox.margin><Insets left="2" right="2"/></HBox.margin>
             </Button>
 
         </HBox>

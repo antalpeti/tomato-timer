@@ -42,8 +42,10 @@ public final class IconFactory {
     public static final String COLOR_RELAX    = "#74B9FF";
     /** Light grey – back / navigation neutral. */
     public static final String COLOR_BACK     = "#B2BEC3";
-    /** Mint – Google Calendar. */
-    public static final String COLOR_CALENDAR = "#55EFC4";
+    /** Mint – Google Calendar navigation (main Settings page). */
+    public static final String COLOR_CALENDAR      = "#55EFC4";
+    /** Flamingo pink – Calendar test-action icon (Calendar Settings page); distinct from navigation mint. */
+    public static final String COLOR_CALENDAR_TEST = "#FD79A8";
     /** Gold – volume / sound. */
     public static final String COLOR_VOLUME   = "#FDCB6E";
     /** Near-white – always-on-top pin (inactive). */
