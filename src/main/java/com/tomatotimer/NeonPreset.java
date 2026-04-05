@@ -34,6 +34,20 @@ import javafx.scene.paint.Color;
  *       soft bloom and low-saturation accent colours.</li>
  *   <li>{@link #AURORA_DRIFT} – aurora borealis shifting greens, soft cyan and
  *       violet on a midnight-dark sky background.</li>
+ *   <li>{@link #ISLAND_DARK} – flat tropical-dark palette: muted ocean teal,
+ *       leaf-green and coral on a deep dark base with minimal glow.</li>
+ *   <li>{@link #ISLAND_LIGHT} – flat tropical-light palette: brighter ocean and
+ *       foliage tones on a softer dark base with restrained sheen.</li>
+ *   <li>{@link #ISLAND_DRACULA} – Dracula colour palette given a warm tropical
+ *       twist: island-purple, lagoon-green and coral-pink with subtle glow.</li>
+ *   <li>{@link #DARK} – classic flat dark theme: muted, desaturated accents,
+ *       near-zero glow and sheen – the quietest preset of the collection.</li>
+ *   <li>{@link #LIGHT} – flat light-feel theme: vibrant but clean Material-style
+ *       accent colours on a moderately lit dark base with a gentle sheen.</li>
+ *   <li>{@link #DRACULA} – faithful Dracula colour scheme (official palette) with
+ *       low-key glow so the canonical hues stay legible and unblurred.</li>
+ *   <li>{@link #HIGH_CONTRAST} – accessibility-focused maximum-contrast theme:
+ *       pure primary accent colours, almost zero bloom and a very dark base.</li>
  * </ul>
  */
 public enum NeonPreset {
@@ -314,6 +328,188 @@ public enum NeonPreset {
             0.66, 0.10,             // BAR_LIGHTEN / BAR_DARKEN
             0.40,                   // BAR_INNER_SHEEN
             22.0, 0.70, 0.88, 0.33  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND
+    ),
+
+    // ── ISLAND_DARK ───────────────────────────────────────────────────────────
+    /**
+     * Flat tropical-dark theme.
+     * Muted ocean teal, leaf-green and warm coral on a deep dark base.
+     * Very low glow and sheen give a clean, modern look.
+     */
+    ISLAND_DARK(
+            "Island Dark",
+            // ── Accent colours – muted tropical dark palette ──────────────────
+            Color.web("#2D9CDB"),   // WORK normal  – ocean blue
+            Color.web("#27AE60"),   // RELAX normal – leaf green
+            Color.web("#1ABC9C"),   // RELAX_LONG   – turquoise lagoon
+            Color.web("#F39C12"),   // WARNING      – warm amber
+            Color.web("#E74C3C"),   // OVERTIME     – coral red
+            Color.web("#8E44AD"),   // PAUSED       – dusky purple
+            // ── Root gradient – deep dark base, very restrained glow ──────────
+            0.90, 0.30,             // ROOT_DARK_EDGE / ROOT_DARK_MID
+            0.15, 0.42,             // ROOT_GLOW_ALPHA_MIN / MAX  ← flat: low bloom
+            0.12,                   // ROOT_SHEEN_ALPHA           ← flat: subtle
+            0.28, 0.05,             // ROOT_GLOW_WHITE_BLEND / ROOT_GLOW_BLACK_BLEND
+            // ── Bar tuning – restrained halo, clean flat-tube look ───────────
+            0.58, 0.12,             // BAR_LIGHTEN / BAR_DARKEN
+            0.28,                   // BAR_INNER_SHEEN
+            12.0, 0.48, 0.62, 0.22  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND
+    ),
+
+    // ── ISLAND_LIGHT ──────────────────────────────────────────────────────────
+    /**
+     * Flat tropical-light theme.
+     * Brighter ocean-blue and foliage tones on a softer dark base with a
+     * gentle warm sheen and narrow, low-opacity bar halo.
+     */
+    ISLAND_LIGHT(
+            "Island Light",
+            // ── Accent colours – bright tropical light palette ────────────────
+            Color.web("#0984E3"),   // WORK normal  – bright sky-ocean blue
+            Color.web("#00B894"),   // RELAX normal – tropical seafoam green
+            Color.web("#00CEC9"),   // RELAX_LONG   – bright turquoise
+            Color.web("#FDCB6E"),   // WARNING      – sunny amber
+            Color.web("#D63031"),   // OVERTIME     – deep coral-red
+            Color.web("#6C5CE7"),   // PAUSED       – soft island violet
+            // ── Root gradient – lighter dark base, gentle warm glow ───────────
+            0.80, 0.40,             // ROOT_DARK_EDGE / ROOT_DARK_MID  ← softer edges
+            0.12, 0.38,             // ROOT_GLOW_ALPHA_MIN / MAX       ← flat: low bloom
+            0.16,                   // ROOT_SHEEN_ALPHA                ← flat: subtle
+            0.35, 0.04,             // ROOT_GLOW_WHITE_BLEND / ROOT_GLOW_BLACK_BLEND
+            // ── Bar tuning – narrow halo, bright clean glass highlight ────────
+            0.60, 0.10,             // BAR_LIGHTEN / BAR_DARKEN
+            0.30,                   // BAR_INNER_SHEEN
+            11.0, 0.44, 0.58, 0.25  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND
+    ),
+
+    // ── ISLAND_DRACULA ────────────────────────────────────────────────────────
+    /**
+     * Dracula palette given a warm tropical twist.
+     * Island-purple, lagoon-green and coral-pink with a flat, subtle glow that
+     * lets the canonical Dracula hues stay clear and unblurred.
+     */
+    ISLAND_DRACULA(
+            "Island Dracula",
+            // ── Accent colours – tropical-tinted Dracula palette ──────────────
+            Color.web("#A680FF"),   // WORK normal  – island-purple (softened)
+            Color.web("#3DC97B"),   // RELAX normal – lagoon green
+            Color.web("#6ECFDB"),   // RELAX_LONG   – warm island cyan
+            Color.web("#EBE882"),   // WARNING      – warm island yellow
+            Color.web("#FF6666"),   // OVERTIME     – island coral-red
+            Color.web("#E87DB5"),   // PAUSED       – warm island pink
+            // ── Root gradient – dark Dracula base, low-key glow ───────────────
+            0.88, 0.28,             // ROOT_DARK_EDGE / ROOT_DARK_MID
+            0.16, 0.44,             // ROOT_GLOW_ALPHA_MIN / MAX  ← flat: moderate
+            0.13,                   // ROOT_SHEEN_ALPHA           ← flat: subtle
+            0.25, 0.05,             // ROOT_GLOW_WHITE_BLEND / ROOT_GLOW_BLACK_BLEND
+            // ── Bar tuning – tight halo, polished tube look ───────────────────
+            0.56, 0.13,             // BAR_LIGHTEN / BAR_DARKEN
+            0.27,                   // BAR_INNER_SHEEN
+            13.0, 0.50, 0.65, 0.20  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND
+    ),
+
+    // ── DARK ──────────────────────────────────────────────────────────────────
+    /**
+     * Classic flat dark theme.
+     * Muted, desaturated Material-style accent colours on a near-black base.
+     * Near-zero glow and sheen – the quietest, most minimal preset.
+     */
+    DARK(
+            "Dark",
+            // ── Accent colours – muted flat Material dark palette ────────────
+            Color.web("#4A90D9"),   // WORK normal  – flat blue
+            Color.web("#5CB85C"),   // RELAX normal – flat green
+            Color.web("#5BC0DE"),   // RELAX_LONG   – flat cyan
+            Color.web("#F0AD4E"),   // WARNING      – flat orange
+            Color.web("#D9534F"),   // OVERTIME     – flat red
+            Color.web("#9B59B6"),   // PAUSED       – flat purple
+            // ── Root gradient – near-black, almost no bloom ───────────────────
+            0.92, 0.25,             // ROOT_DARK_EDGE / ROOT_DARK_MID
+            0.10, 0.30,             // ROOT_GLOW_ALPHA_MIN / MAX  ← flat: minimal
+            0.08,                   // ROOT_SHEEN_ALPHA           ← flat: near-zero
+            0.20, 0.06,             // ROOT_GLOW_WHITE_BLEND / ROOT_GLOW_BLACK_BLEND
+            // ── Bar tuning – minimal halo, clean flat-tube ────────────────────
+            0.55, 0.14,             // BAR_LIGHTEN / BAR_DARKEN
+            0.22,                   // BAR_INNER_SHEEN
+            10.0, 0.38, 0.52, 0.15  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND
+    ),
+
+    // ── LIGHT ─────────────────────────────────────────────────────────────────
+    /**
+     * Flat light-feel theme.
+     * Vibrant but clean Material-style accent colours on a moderately lit dark
+     * base with a gentle white sheen and a narrow, soft bar halo.
+     */
+    LIGHT(
+            "Light",
+            // ── Accent colours – vibrant clean Material light palette ─────────
+            Color.web("#2980B9"),   // WORK normal  – strong cerulean blue
+            Color.web("#27AE60"),   // RELAX normal – strong emerald green
+            Color.web("#16A085"),   // RELAX_LONG   – strong teal
+            Color.web("#E67E22"),   // WARNING      – strong carrot orange
+            Color.web("#C0392B"),   // OVERTIME     – strong pomegranate red
+            Color.web("#8E44AD"),   // PAUSED       – strong wisteria purple
+            // ── Root gradient – softer dark, warm gentle glow ─────────────────
+            0.75, 0.42,             // ROOT_DARK_EDGE / ROOT_DARK_MID  ← lighter feel
+            0.10, 0.32,             // ROOT_GLOW_ALPHA_MIN / MAX       ← flat: minimal
+            0.18,                   // ROOT_SHEEN_ALPHA                ← slight warmth
+            0.38, 0.03,             // ROOT_GLOW_WHITE_BLEND / ROOT_GLOW_BLACK_BLEND
+            // ── Bar tuning – narrow clean halo, bright highlight ──────────────
+            0.62, 0.09,             // BAR_LIGHTEN / BAR_DARKEN
+            0.32,                   // BAR_INNER_SHEEN
+            11.0, 0.42, 0.55, 0.28  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND
+    ),
+
+    // ── DRACULA ───────────────────────────────────────────────────────────────
+    /**
+     * Faithful Dracula colour scheme (official palette).
+     * Low-key glow so the canonical purple, green, cyan, pink and yellow hues
+     * stay legible and unblurred against the characteristic dark background.
+     */
+    DRACULA(
+            "Dracula",
+            // ── Accent colours – official Dracula palette ─────────────────────
+            Color.web("#BD93F9"),   // WORK normal  – Dracula purple
+            Color.web("#50FA7B"),   // RELAX normal – Dracula green
+            Color.web("#8BE9FD"),   // RELAX_LONG   – Dracula cyan
+            Color.web("#F1FA8C"),   // WARNING      – Dracula yellow
+            Color.web("#FF5555"),   // OVERTIME     – Dracula red
+            Color.web("#FF79C6"),   // PAUSED       – Dracula pink
+            // ── Root gradient – Dracula dark base (#282a36 feel), soft glow ────
+            0.88, 0.26,             // ROOT_DARK_EDGE / ROOT_DARK_MID
+            0.14, 0.40,             // ROOT_GLOW_ALPHA_MIN / MAX  ← flat: restrained
+            0.12,                   // ROOT_SHEEN_ALPHA           ← flat: subtle
+            0.22, 0.05,             // ROOT_GLOW_WHITE_BLEND / ROOT_GLOW_BLACK_BLEND
+            // ── Bar tuning – tight restrained halo, clean tube ────────────────
+            0.57, 0.12,             // BAR_LIGHTEN / BAR_DARKEN
+            0.26,                   // BAR_INNER_SHEEN
+            12.0, 0.46, 0.60, 0.18  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND
+    ),
+
+    // ── HIGH_CONTRAST ─────────────────────────────────────────────────────────
+    /**
+     * Accessibility-focused maximum-contrast theme.
+     * Pure primary accent colours on a near-black base with almost zero bloom
+     * so text and the progress bar remain sharply defined at all times.
+     */
+    HIGH_CONTRAST(
+            "High Contrast",
+            // ── Accent colours – pure primary maximum-contrast palette ─────────
+            Color.web("#FFFFFF"),   // WORK normal  – pure white
+            Color.web("#00FF00"),   // RELAX normal – pure green
+            Color.web("#00FFFF"),   // RELAX_LONG   – pure cyan
+            Color.web("#FFFF00"),   // WARNING      – pure yellow
+            Color.web("#FF0000"),   // OVERTIME     – pure red
+            Color.web("#FF00FF"),   // PAUSED       – pure magenta
+            // ── Root gradient – maximum-dark base, near-zero bloom ────────────
+            0.95, 0.20,             // ROOT_DARK_EDGE / ROOT_DARK_MID
+            0.06, 0.20,             // ROOT_GLOW_ALPHA_MIN / MAX  ← flat: near-zero
+            0.05,                   // ROOT_SHEEN_ALPHA           ← flat: near-zero
+            0.15, 0.08,             // ROOT_GLOW_WHITE_BLEND / ROOT_GLOW_BLACK_BLEND
+            // ── Bar tuning – minimal halo, sharp crisp tube edge ─────────────
+            0.52, 0.16,             // BAR_LIGHTEN / BAR_DARKEN
+            0.18,                   // BAR_INNER_SHEEN
+             8.0, 0.30, 0.45, 0.12  // BAR_GLOW_RADIUS / SPREAD / OPACITY / WHITE_BLEND
     );
 
     // ── Fields ────────────────────────────────────────────────────────────────
