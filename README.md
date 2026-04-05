@@ -107,6 +107,51 @@ Sample output when everything is ready:
 - If no fat JAR is found, a popup explains to run `mvn package`.
 - If `javaw` is not on `PATH`, a popup instructs you to install Java 21+.
 
+## Windows Taskbar Icon
+
+`WindowsNativeWindowIconHelper` sets the native taskbar and window icon on Windows by
+writing a temporary ICO file and calling `LoadImageW` / `WM_SETICON` through JNA.
+A CRC32-based cache prevents redundant SSD writes when the icon data has not changed.
+
+### Taskbar Icon Debug Mode
+
+Enable verbose trace logging by setting the JVM property `-Dtomatotimer.icon.debug=true`.
+
+**Direct JAR launch**
+
+```bash
+java -Dtomatotimer.icon.debug=true -jar target/tomato-timer-1.0.0-fat.jar
+```
+
+**Maven JavaFX run**
+
+```bash
+MAVEN_OPTS="-Dtomatotimer.icon.debug=true" mvn javafx:run
+```
+
+Logs are written at `FINE` level under the logger
+`com.tomatotimer.WindowsNativeWindowIconHelper` via `java.util.logging` (JUL).
+Depending on your environment's JUL configuration, `FINE` messages may not appear by default.
+
+Key log points: skip reasons · HWND resolution · CRC cache hit/miss ·
+temp ICO write · `LoadImageW` result · `WM_SETICON` broadcast · `DestroyIcon` result.
+
+**Minimal `logging.properties` to surface `FINE` output for this logger only**
+
+```properties
+handlers=java.util.logging.ConsoleHandler
+java.util.logging.ConsoleHandler.level=FINE
+com.tomatotimer.WindowsNativeWindowIconHelper.level=FINE
+```
+
+Pass it to the JVM with `-Djava.util.logging.config.file=logging.properties`:
+
+```bash
+java -Dtomatotimer.icon.debug=true \
+     -Djava.util.logging.config.file=logging.properties \
+     -jar target/tomato-timer-1.0.0-fat.jar
+```
+
 ## Requirements
 
 - Java 21+
