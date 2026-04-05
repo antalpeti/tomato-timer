@@ -89,13 +89,19 @@
             </GridPane>
 
             <!-- Test GCal button – graphic set by controller -->
+            <!-- margin left=2: extra air between dense gpGCalDetails grid and this icon -->
             <Button fx:id="btnTestGCal"
                     styleClass="icon-btn" onAction="#onTestGCal"
                     focusTraversable="false">
                 <tooltip><Tooltip text="Test: open Google Calendar"/></tooltip>
+                <HBox.margin><Insets left="2"/></HBox.margin>
             </Button>
 
-            <Separator orientation="VERTICAL" prefHeight="30"/>
+            <!-- margin left=2 right=2: adds 2 px breathing room on each side of separator;
+                 combined with HBox spacing=6, each icon-to-separator gap becomes 8 px -->
+            <Separator orientation="VERTICAL" prefHeight="30">
+                <HBox.margin><Insets left="2" right="2"/></HBox.margin>
+            </Separator>
 
             <!-- Taskbar settings button – graphic set by controller -->
             <Button fx:id="btnTaskbarSettings"
@@ -104,13 +110,18 @@
                 <tooltip><Tooltip text="Taskbar display settings (font size, layout)"/></tooltip>
             </Button>
 
-            <Separator orientation="VERTICAL" prefHeight="30"/>
+            <!-- same 2+2 margin: symmetric around separator between taskbar and sound -->
+            <Separator orientation="VERTICAL" prefHeight="30">
+                <HBox.margin><Insets left="2" right="2"/></HBox.margin>
+            </Separator>
 
             <!-- Sound settings button – graphic set by controller -->
+            <!-- margin right=2: trailing edge matches the icon-group separator rhythm (6+2=8 px) -->
             <Button fx:id="btnSoundSettings"
                     styleClass="icon-btn" onAction="#onSoundSettings"
                     focusTraversable="false">
                 <tooltip><Tooltip text="Sound settings"/></tooltip>
+                <HBox.margin><Insets right="2"/></HBox.margin>
             </Button>
 
         </HBox>
