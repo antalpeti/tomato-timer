@@ -10,14 +10,15 @@ A Maven-based JavaFX Pomodoro timer, rewritten from the original C# WPF **Tomato
 | **Pause / Resume / Reset** | Full timer control during work mode |
 | **Resizable UI** | Window can be resized; fonts, icons, and controls scale dynamically |
 | **Dynamic time display** | Main time text scales with window size |
-| **Neon visual presets** | 11 selectable themes: `Neon Balanced`, `Ultra Neon`, `Night Runner`, `Solar Flare`, `Arctic Pulse`, `Toxic Lime`, `Synth Sunset`, `Deep Ocean`, `Crimson Reactor`, `Monochrome Plasma`, `Aurora Drift` |
+| **Neon visual presets** | 11 selectable themes: `Night Runner`, `Arctic Pulse`, `Monochrome Plasma`, `Aurora Drift`, `Ruby Flame`, `Amber Dune`, `Solar Canary`, `Emerald Bloom`, `Azure Wave`, `Indigo Orbit`, `Violet Nova` |
 | **Animated background** | Progress-aware gradient + glow changes over time and mode |
 | **Vector icon set** | Modern, vivid SVG-based icons rendered in JavaFX (scalable) |
 | **Always on Top** | Toggle pin button in the top-right controls |
-| **State persistence** | Window and timer state are restored on next start |
-| **Sounds** | Custom sound file per event (`mp3`, `wav`, `ogg`); configured on the dedicated Sound Settings page |
+| **State persistence** | Window position/size and saved **Work** session state can be restored on next start |
+| **Sounds** | Custom sound file per event (`mp3`, `wav`, `ogg`, `wma`) with play/stop/mute controls on the Sound Settings page |
 | **Google Calendar** | Opens event creation after work overtime or via manual **Finish Work** action; configured on the dedicated Calendar Settings page |
 | **Taskbar countdown icon** | Dynamic live-countdown icon in the Windows taskbar; layout (vertical/horizontal) and font size configurable on the dedicated Taskbar Settings page |
+| **Taskbar preview buttons (Windows)** | Thumbnail toolbar actions: `Reset`, `Pause`, `Finish Work`, `Take a break`, `Go to Work` |
 
 ## Usage
 
@@ -44,8 +45,11 @@ Timer face (hover state):
 
 Settings page:
   left:   [Back to timer]
-  right:  [Calendar Settings] [Sound Settings] [Taskbar Settings]
+  right:  [Calendar Settings] [Taskbar Settings] [Sound Settings]
   center: Work / Rest / Long spinners + Neon preset combo
+
+Windows taskbar preview (thumbnail toolbar):
+  [Reset] [Pause] [Finish Work] [Take a break] [Go to Work]
 
 Notes:
   - Hold Relax for ~2s => Long Break
@@ -66,8 +70,9 @@ Notes:
 
 ### Main Settings (`settings.fxml`)
 
-Configures timer durations (Work / Rest / Long Rest) and the active neon theme preset.  
-Navigation icon buttons in the top-right open the three dedicated sub-pages below.
+Configures timer durations (Work / Rest / Long Rest) and the active neon theme preset.
+Navigation icon buttons in the top-right open the dedicated sub-pages in this order:
+**Calendar**, **Taskbar**, **Sound**.
 
 ### Calendar Settings (`calendar_settings.fxml`)
 
@@ -83,7 +88,13 @@ Back button returns to the main Settings page.
 
 ### Sound Settings (`sound_settings.fxml`)
 
-Assigns a custom audio file (`.mp3`, `.wav`, `.ogg`) to each notification event and provides a preview button per slot.  
+For each event slot (**Resume**, **Pause**, **Work Done**, **Rest End**), you can:
+
+- **Play** preview audio
+- **Stop** current preview playback
+- **Choose file** (`.mp3`, `.wav`, `.ogg`, `.wma`)
+- **Mute** that slot
+
 Back button returns to the main Settings page.
 
 ### Taskbar Settings (`taskbar_settings.fxml`)
@@ -95,7 +106,7 @@ Back button returns to the main Settings page.
 | **Layout — Vertical** | Stacked multi-line: 2 lines (MM / SS) when hours = 0; 3 lines (HH / MM / SS) when hours > 0 |
 | **Layout — Horizontal** | Single-line: `MM:SS` when hours = 0; `HH:MM:SS` when hours > 0 |
 
-Changes to layout and font size take effect on the next icon redraw (within ~1 second, or immediately on Back).  
+Changes to layout and font size take effect on the next icon redraw (within ~1 second, or immediately on Back).
 Back button saves settings, triggers an immediate icon redraw, and returns to the main Settings page.
 
 ## Run
@@ -128,7 +139,7 @@ Two launcher scripts at the project root let you start the app without opening a
    ```bat
    mvn package
    ```
-2. Double-click **`TomatoTimer.vbs`** in File Explorer.  
+2. Double-click **`TomatoTimer.vbs`** in File Explorer.
    The app opens; no console window appears.
 
 **Verify the environment without launching** (run in a terminal):
@@ -142,14 +153,14 @@ Sample output when everything is ready:
 ```text
 [DRY-RUN] JAR    : C:\...\target\tomato-timer-1.0.0-fat.jar
 [DRY-RUN] JAVAW  : C:\Program Files\Eclipse Adoptium\jdk-21...\bin\javaw.exe
-[DRY-RUN] Command: "...\javaw.exe" -jar "...\tomato-timer-1.0.0-fat.jar"
+[DRY-RUN] Command: "...\javaw.exe" --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED -jar "...\tomato-timer-1.0.0-fat.jar"
 [DRY-RUN] OK -- environment looks good, no process was started.
 ```
 
 **Error handling**
 
-- If no fat JAR is found, a popup explains to run `mvn package`.
-- If `javaw` is not on `PATH`, a popup instructs you to install Java 21+.
+- If no fat JAR is found, the script prints an error and asks you to run `mvn package`.
+- If `javaw` is not on `PATH`, the script prints an error and asks you to install Java 21+.
 
 ### Windows EXE wrapper (jpackage)
 
@@ -159,7 +170,7 @@ bundled JRE.  No Java installation is required on the target machine.
 
 **Prerequisites**
 
-- JDK 14+ (provides `jpackage`) — its `bin\` directory must be on `PATH`.
+- JDK 21+ (project baseline; includes `jpackage`) — its `bin\` directory must be on `PATH`.
 - A fat JAR must already exist under `target\` (run `mvn package` first).
 
 **Steps**
@@ -283,6 +294,9 @@ A CRC32-based cache prevents redundant SSD writes when the icon data has not cha
 The **live countdown icon** is rendered by `TaskbarIconRenderer` directly onto a JavaFX
 `Canvas` (no AWT / BufferedImage) and pushed to `Stage.getIcons()` every second.
 Layout and font size are controlled via the **Taskbar Settings** sub-page (see above).
+
+`WindowsTaskbarPreviewButtonsHelper` adds clickable thumbnail-toolbar controls on
+Windows taskbar preview popups (`Reset`, `Pause`, `Finish Work`, `Take a break`, `Go to Work`).
 
 ### Taskbar Icon Debug Mode
 
@@ -422,7 +436,13 @@ If logs still do not appear, check the following:
 
 ```text
 tomato-timer/
+├── BuildTomatoTimerExe.bat
+├── TomatoTimer.bat
+├── TomatoTimer.vbs
 ├── pom.xml
+├── .run/
+│   ├── TomatoTimer_Debug_App.run.xml
+│   └── TomatoTimer_Debug_Maven_javafx_run.run.xml
 ├── src/main/java/com/tomatotimer/
 │   ├── App.java                          # JavaFX application entry point
 │   ├── Launcher.java                     # Fat JAR launcher class
@@ -436,6 +456,7 @@ tomato-timer/
 │   ├── UiScaleHelper.java                # Central dynamic UI scaling calculations
 │   ├── IconFactory.java                  # Scalable SVG icon factory
 │   ├── WindowsNativeWindowIconHelper.java# JNA-based native taskbar/window icon setter
+│   ├── WindowsTaskbarPreviewButtonsHelper.java # Windows taskbar preview (thumbnail) action buttons
 │   ├── WindowsAppIdHelper.java           # Windows AppUserModelID helper
 │   └── controller/
 │       ├── MainController.java           # Main coordinator (timer, navigation, window)
@@ -457,8 +478,8 @@ tomato-timer/
 
 ## Settings Storage
 
-The app uses `java.util.prefs.Preferences` for persistence.  
-On Windows, values are stored under:  
+The app uses `java.util.prefs.Preferences` for persistence.
+On Windows, values are stored under:
 `HKCU\Software\JavaSoft\Prefs\com\tomatotimer`
 
 ## Notes
@@ -466,3 +487,4 @@ On Windows, values are stored under:
 - Scalable typography and control/icon sizing are handled by `UiScaleHelper`.
 - The active in-app icon system is vector-based (`IconFactory`) and scales with UI size.
 - The `archive/` folder contains the original WPF solution and historical assets.
+
