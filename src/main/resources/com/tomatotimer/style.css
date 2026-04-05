@@ -256,9 +256,21 @@
     -fx-border-radius: 2;
     -fx-background-radius: 2;
 }
-.combo-box:hover,
-.combo-box:focused {
+/* Hover: slightly lighter border, no colour shift */
+.combo-box:hover {
     -fx-border-color: #777;
+}
+/* Focused: subtle teal edge — same accent as TextField (#4ECDC4) but at
+   ~55 % opacity so it reads as a gentle ring rather than a bold highlight.
+   A faint dropshadow adds depth without being visually noisy. */
+.combo-box:focused {
+    -fx-border-color: rgba(78, 205, 196, 0.55);
+    -fx-effect: dropshadow(gaussian, rgba(78, 205, 196, 0.20), 5, 0.10, 0, 0);
+}
+/* Arrow button picks up a barely-there teal wash on focus so the whole
+   control feels unified, but remains visually secondary to the border. */
+.combo-box:focused .arrow-button {
+    -fx-background-color: rgba(78, 205, 196, 0.10);
 }
 /* Display cell shown in the closed combo box */
 .combo-box .list-cell {
