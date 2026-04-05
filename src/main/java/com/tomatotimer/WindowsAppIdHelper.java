@@ -27,8 +27,8 @@ import java.util.logging.Logger;
  *   <li>All JNA calls are wrapped in a broad {@code catch(Throwable)} so a
  *       missing native library or an unsupported OS version never crashes the
  *       app.</li>
- *   <li>Must be called from the main / JavaFX Application thread, before
- *       {@link javafx.stage.Stage#show()}.</li>
+     *   <li>Must be called from the {@code main} thread, before
+     *       {@link javafx.application.Application#launch}.</li>
  * </ul>
  */
 public final class WindowsAppIdHelper {
@@ -66,9 +66,10 @@ public final class WindowsAppIdHelper {
     /**
      * Registers {@link #APP_USER_MODEL_ID} with Windows.
      *
-     * <p>Call once from {@link App#start(javafx.stage.Stage)} <em>before</em>
-     * {@code primaryStage.show()} so that the shell picks up the ID before
-     * the first taskbar button is created.</p>
+     * <p>Call once from the application {@code main} method <em>before</em>
+     * {@link javafx.application.Application#launch} so that the ID is
+     * registered before the JavaFX toolkit initialises native Windows peer
+     * windows and before the first taskbar button is created.</p>
      *
      * <p>This method is a no-op on non-Windows platforms or when JNA is not
      * available.</p>

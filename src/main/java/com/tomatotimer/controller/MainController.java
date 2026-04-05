@@ -8,6 +8,7 @@ import com.tomatotimer.TaskbarIconRenderer;
 import com.tomatotimer.TimerBackgroundHelper;
 import com.tomatotimer.TimerMode;
 import com.tomatotimer.UiScaleHelper;
+import com.tomatotimer.WindowsNativeWindowIconHelper;
 import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -370,6 +371,12 @@ public class MainController {
 
         // AWT Taskbar push: use the 32 px image (index 2 in [16,24,32,48,64])
         pushAwtTaskbarIcon(icons.get(2));
+
+        // Native Win32 HICON push: sends WM_SETICON directly to the HWND so that
+        // the taskbar button icon is updated even when the JavaFX/AWT paths are
+        // insufficient to trigger a Windows shell refresh.
+        // Uses the 32 px image; no-op on non-Windows or when JNA is unavailable.
+        WindowsNativeWindowIconHelper.apply(icons.get(2));
     }
 
     /** Returns the current remaining milliseconds (positive = time left, negative = overtime). */
