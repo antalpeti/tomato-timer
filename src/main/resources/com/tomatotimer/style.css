@@ -165,6 +165,27 @@
     -fx-text-fill: #cccccc;
     -fx-font-size: 10px;
 }
+/* Dark box background */
+.check-box .box {
+    -fx-background-color: #2e2e2e;
+    -fx-border-color: #555;
+    -fx-border-radius: 2;
+    -fx-background-radius: 2;
+}
+.check-box:hover .box {
+    -fx-border-color: #A29BFE;
+}
+.check-box:selected .box {
+    -fx-background-color: #2e2e2e;
+    -fx-border-color: #A29BFE;
+}
+/* White checkmark (two-layer paint matches Modena highlight convention) */
+.check-box .mark {
+    -fx-background-color: transparent;
+}
+.check-box:selected .mark {
+    -fx-background-color: white, white;
+}
 
 /* ---- RadioButton ------------------------------------------- */
 .radio-button {
@@ -227,3 +248,57 @@
 .scroll-bar:horizontal .track { -fx-background-color: #333; }
 .scroll-bar .increment-button,
 .scroll-bar .decrement-button { -fx-padding: 0; }
+
+/* ---- ComboBox (dark theme – matches spinner/text-field palette) */
+.combo-box {
+    -fx-background-color: #2e2e2e;
+    -fx-border-color: #555;
+    -fx-border-radius: 2;
+    -fx-background-radius: 2;
+}
+.combo-box:hover,
+.combo-box:focused {
+    -fx-border-color: #777;
+}
+/* Display cell shown in the closed combo box */
+.combo-box .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #eeeeee;
+    -fx-padding: 2 4 2 4;
+    -fx-font-size: 11px;
+}
+/* Arrow-button strip on the right */
+.combo-box .arrow-button {
+    -fx-background-color: #3a3a3a;
+    -fx-background-radius: 0 2 2 0;
+    -fx-padding: 0 6 0 6;
+}
+.combo-box .arrow-button .arrow {
+    -fx-background-color: #cccccc;
+}
+/* Popup list container */
+.combo-box-popup .list-view {
+    -fx-background-color: #1e1e1e;
+    -fx-border-color: #555;
+    -fx-border-radius: 2;
+    -fx-background-radius: 2;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.55), 8, 0, 0, 3);
+}
+/* Popup list items */
+.combo-box-popup .list-cell {
+    -fx-background-color: #1e1e1e;
+    -fx-text-fill: #eeeeee;
+    -fx-padding: 4 8 4 8;
+    -fx-font-size: 11px;
+}
+.combo-box-popup .list-cell:filled:hover {
+    -fx-background-color: #3a3a3a;
+    -fx-text-fill: white;
+}
+.combo-box-popup .list-cell:filled:selected,
+.combo-box-popup .list-cell:filled:selected:hover {
+    -fx-background-color: rgba(162, 155, 254, 0.35);  /* lavender accent – matches radio-button */
+    -fx-text-fill: white;
+}
+
+
