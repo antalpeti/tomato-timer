@@ -157,6 +157,26 @@ JAVA_TOOL_OPTIONS="-Dtomatotimer.icon.debug=true" mvn javafx:run
    Make sure `logging.properties` exists at the project root (see template below).
 5. Click **OK** and run the configuration.
 
+**Versioned IntelliJ run profiles (`.run/`)**
+
+The project ships two shared run configurations under `.run/`.
+IntelliJ IDEA auto-detects them when you open the project — no manual setup required.
+
+| Profile name | Type | What it runs |
+|---|---|---|
+| `TomatoTimer Debug (App)` | Application | Launches `com.tomatotimer.Launcher` directly via the JVM |
+| `TomatoTimer Debug (Maven javafx:run)` | Maven | Runs `mvn javafx:run`; sets `JAVA_TOOL_OPTIONS` so debug flags reach the forked JVM |
+
+Both profiles pre-configure:
+- `-Dtomatotimer.icon.debug=true`
+- `-Djava.util.logging.config.file=logging.properties`
+
+**Steps**
+
+1. Open the **Run / Debug** dropdown in the toolbar (top-right of the IDE).
+2. Select `TomatoTimer Debug (App)` or `TomatoTimer Debug (Maven javafx:run)`.
+3. Click **Run ▶** or **Debug 🐛**.
+
 Logs are written at `FINE` level under the logger
 `com.tomatotimer.WindowsNativeWindowIconHelper` via `java.util.logging` (JUL).
 Depending on your environment's JUL configuration, `FINE` messages may not appear by default.

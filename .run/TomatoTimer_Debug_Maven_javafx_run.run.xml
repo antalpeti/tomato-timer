@@ -1,0 +1,14 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="TomatoTimer Debug (Maven javafx:run)" type="MavenRunConfiguration" factoryName="Maven">
+    <MavenSettings>
+      <option name="myGoals" value="javafx:run" />
+      <option name="myWorkingDirPath" value="$PROJECT_DIR$" />
+    </MavenSettings>
+    <envs>
+      <env name="JAVA_TOOL_OPTIONS"
+           value="-Dtomatotimer.icon.debug=true -Djava.util.logging.config.file=$PROJECT_DIR$/logging.properties" />
+    </envs>
+    <method v="2" />
+  </configuration>
+</component>
+

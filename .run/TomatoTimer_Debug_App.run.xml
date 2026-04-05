@@ -1,0 +1,13 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="TomatoTimer Debug (App)" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="com.tomatotimer.Launcher" />
+    <option name="VM_PARAMETERS"
+            value="-Dtomatotimer.icon.debug=true -Djava.util.logging.config.file=$PROJECT_DIR$/logging.properties" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+    <module name="tomato-timer" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
+
