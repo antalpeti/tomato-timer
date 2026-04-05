@@ -105,6 +105,15 @@
                 <tooltip><Tooltip text="Show remaining time in Windows taskbar icon"/></tooltip>
             </CheckBox>
 
+            <!-- Taskbar settings button – graphic set by controller -->
+            <Button fx:id="btnTaskbarSettings"
+                    styleClass="icon-btn" onAction="#onTaskbarSettings"
+                    focusTraversable="false">
+                <tooltip><Tooltip text="Taskbar display settings (font size, layout)"/></tooltip>
+            </Button>
+
+            <Separator orientation="VERTICAL" prefHeight="30"/>
+
             <!-- Sound settings button – graphic set by controller -->
             <Button fx:id="btnSoundSettings"
                     styleClass="icon-btn" onAction="#onSoundSettings"

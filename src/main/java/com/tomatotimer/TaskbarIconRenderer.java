@@ -361,29 +361,259 @@ public final class TaskbarIconRenderer {
 
     /**
      * Renders the 2-line stacked icon at all standard sizes (16, 24, 32, 48, 64 px)
-     * in one call.
+     * in one call, using a caller-supplied base font size.
      *
-     * <p>Use this overload when {@code hours == 0}: only minutes and seconds are shown,
-     * allowing a larger font than the 3-line variant.</p>
-     *
-     * <p>Pass the returned list directly to {@code stage.getIcons().setAll(...)} so
-     * Windows can pick the best resolution for each taskbar / alt-tab context.</p>
-     *
-     * @param minuteText  zero-padded minute component, e.g. {@code "04"}; must not be {@code null}
-     * @param secondText  zero-padded second component, e.g. {@code "32"}; must not be {@code null}
+     * @param minuteText  zero-padded minute component; must not be {@code null}
+     * @param secondText  zero-padded second component; must not be {@code null}
      * @param accentColor neon accent colour matching the current timer state
+     * @param baseFontSize base font size at {@value #REFERENCE_SIZE} px; clamped to ≥ 1.0
      * @return unmodifiable {@link List} of {@link Image} instances, one per entry in
      *         {@code [16, 24, 32, 48, 64]}
      */
     public static List<Image> renderAllSizes(String minuteText, String secondText,
-                                             Color accentColor) {
+                                             Color accentColor, double baseFontSize) {
         return List.of(
-                render(minuteText, secondText, accentColor, 16),
-                render(minuteText, secondText, accentColor, 24),
-                render(minuteText, secondText, accentColor, 32),
-                render(minuteText, secondText, accentColor, 48),
-                render(minuteText, secondText, accentColor, 64)
+                render(minuteText, secondText, accentColor, 16, baseFontSize),
+                render(minuteText, secondText, accentColor, 24, baseFontSize),
+                render(minuteText, secondText, accentColor, 32, baseFontSize),
+                render(minuteText, secondText, accentColor, 48, baseFontSize),
+                render(minuteText, secondText, accentColor, 64, baseFontSize)
+        );
+    }
+
+    // =========================================================================
+    //  2-line stacked display – configurable font size overload
+    // =========================================================================
+
+    /**
+     * Renders a 2-line stacked icon at the requested {@code size} with a caller-supplied
+     * {@code baseFontSize} (at {@value #REFERENCE_SIZE} px) instead of the fixed 22 px default.
+     *
+     * @param minuteText   zero-padded minute component; must not be {@code null}
+     * @param secondText   zero-padded second component; must not be {@code null}
+     * @param accentColor  neon accent colour
+     * @param size         icon side length in pixels
+     * @param baseFontSize base font size at {@value #REFERENCE_SIZE} px; clamped to ≥ 1.0
+     * @return a {@code size × size} JavaFX {@link Image}
+     */
+    public static Image render(String minuteText, String secondText,
+                               Color accentColor, int size, double baseFontSize) {
+        final var canvas = new Canvas(size, size);
+        final var gc     = canvas.getGraphicsContext2D();
+
+        final double scale       = (double) size / REFERENCE_SIZE;
+        final double arc         = ARC * scale;
+        final double borderWidth = Math.max(1.0, BORDER_WIDTH * scale);
+        final double inset       = borderWidth / 2.0;
+
+        // ── Background ────────────────────────────────────────────────────────
+        gc.setFill(BACKGROUND);
+        gc.fillRoundRect(0, 0, size, size, arc, arc);
+
+        // ── Accent border ─────────────────────────────────────────────────────
+        gc.setStroke(accentColor.deriveColor(0.0, 1.0, 1.0, 0.82));
+        gc.setLineWidth(borderWidth);
+        gc.strokeRoundRect(inset, inset, size - borderWidth, size - borderWidth,
+                arc - inset, arc - inset);
+
+        // ── Inner subtle glow ring ────────────────────────────────────────────
+        gc.setStroke(accentColor.deriveColor(0.0, 1.0, 1.0, 0.18));
+        gc.setLineWidth(3.5 * scale);
+        final double glowOff  = 3.0 * scale;
+        final double glowSize = size - borderWidth - 6.0 * scale;
+        gc.strokeRoundRect(inset + glowOff, inset + glowOff, glowSize, glowSize,
+                arc - 4.0 * scale, arc - 4.0 * scale);
+
+        // ── 2-line stacked timer text ─────────────────────────────────────────
+        final double fontSize   = Math.max(1.0, baseFontSize * scale);
+        final double lineHeight = fontSize * 1.25;
+
+        gc.setFill(accentColor);
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setFont(Font.font("SansSerif", FontWeight.BOLD, fontSize));
+
+        final double centerX = size / 2.0;
+        final double midY    = size / 2.0 + fontSize * 0.38;
+
+        gc.fillText(minuteText, centerX, midY - lineHeight / 2.0);
+        gc.fillText(secondText, centerX, midY + lineHeight / 2.0);
+
+        // ── Snapshot ──────────────────────────────────────────────────────────
+        final var params = new SnapshotParameters();
+        params.setFill(Color.TRANSPARENT);
+        return canvas.snapshot(params, null);
+    }
+
+    // =========================================================================
+    //  3-line stacked display – configurable font size overload
+    // =========================================================================
+
+    /**
+     * Renders a 3-line stacked icon at the requested {@code size} with a caller-supplied
+     * {@code baseFontSize} (at {@value #REFERENCE_SIZE} px) instead of the fixed 17 px default.
+     *
+     * @param hourText     zero-padded hour component; must not be {@code null}
+     * @param minuteText   zero-padded minute component; must not be {@code null}
+     * @param secondText   zero-padded second component; must not be {@code null}
+     * @param accentColor  neon accent colour
+     * @param size         icon side length in pixels
+     * @param baseFontSize base font size at {@value #REFERENCE_SIZE} px; clamped to ≥ 1.0
+     * @return a {@code size × size} JavaFX {@link Image}
+     */
+    public static Image render(String hourText, String minuteText, String secondText,
+                               Color accentColor, int size, double baseFontSize) {
+        final var canvas = new Canvas(size, size);
+        final var gc     = canvas.getGraphicsContext2D();
+
+        final double scale       = (double) size / REFERENCE_SIZE;
+        final double arc         = ARC * scale;
+        final double borderWidth = Math.max(1.0, BORDER_WIDTH * scale);
+        final double inset       = borderWidth / 2.0;
+
+        // ── Background ────────────────────────────────────────────────────────
+        gc.setFill(BACKGROUND);
+        gc.fillRoundRect(0, 0, size, size, arc, arc);
+
+        // ── Accent border ─────────────────────────────────────────────────────
+        gc.setStroke(accentColor.deriveColor(0.0, 1.0, 1.0, 0.82));
+        gc.setLineWidth(borderWidth);
+        gc.strokeRoundRect(inset, inset, size - borderWidth, size - borderWidth,
+                arc - inset, arc - inset);
+
+        // ── Inner subtle glow ring ────────────────────────────────────────────
+        gc.setStroke(accentColor.deriveColor(0.0, 1.0, 1.0, 0.18));
+        gc.setLineWidth(3.5 * scale);
+        final double glowOff  = 3.0 * scale;
+        final double glowSize = size - borderWidth - 6.0 * scale;
+        gc.strokeRoundRect(inset + glowOff, inset + glowOff, glowSize, glowSize,
+                arc - 4.0 * scale, arc - 4.0 * scale);
+
+        // ── 3-line stacked timer text ─────────────────────────────────────────
+        final double fontSize       = Math.max(1.0, baseFontSize * scale);
+        final double lineHeight     = fontSize * 1.25;
+        final double baselineOffset = fontSize * 0.38;
+
+        gc.setFill(accentColor);
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setFont(Font.font("SansSerif", FontWeight.BOLD, fontSize));
+
+        final double centerX = size / 2.0;
+        final double midY    = size / 2.0 + baselineOffset;
+
+        gc.fillText(hourText,   centerX, midY - lineHeight);  // line 1 – hours
+        gc.fillText(minuteText, centerX, midY);                // line 2 – minutes
+        gc.fillText(secondText, centerX, midY + lineHeight);   // line 3 – seconds
+
+        // ── Snapshot ──────────────────────────────────────────────────────────
+        final var params = new SnapshotParameters();
+        params.setFill(Color.TRANSPARENT);
+        return canvas.snapshot(params, null);
+    }
+
+    /**
+     * Renders the 3-line stacked icon at all standard sizes (16, 24, 32, 48, 64 px)
+     * in one call, using a caller-supplied base font size.
+     *
+     * @param hourText     zero-padded hour component; must not be {@code null}
+     * @param minuteText   zero-padded minute component; must not be {@code null}
+     * @param secondText   zero-padded second component; must not be {@code null}
+     * @param accentColor  neon accent colour matching the current timer state
+     * @param baseFontSize base font size at {@value #REFERENCE_SIZE} px; clamped to ≥ 1.0
+     * @return unmodifiable {@link List} of {@link Image} instances, one per entry in
+     *         {@code [16, 24, 32, 48, 64]}
+     */
+    public static List<Image> renderAllSizes(String hourText, String minuteText,
+                                             String secondText, Color accentColor,
+                                             double baseFontSize) {
+        return List.of(
+                render(hourText, minuteText, secondText, accentColor, 16, baseFontSize),
+                render(hourText, minuteText, secondText, accentColor, 24, baseFontSize),
+                render(hourText, minuteText, secondText, accentColor, 32, baseFontSize),
+                render(hourText, minuteText, secondText, accentColor, 48, baseFontSize),
+                render(hourText, minuteText, secondText, accentColor, 64, baseFontSize)
+        );
+    }
+
+    // =========================================================================
+    //  Horizontal single-line display
+    // =========================================================================
+
+    /**
+     * Renders a horizontal single-line icon at the requested {@code size}.
+     *
+     * <p>Displays the time as a single colon-separated string:
+     * {@code "MM:SS"} when hours == 0, or {@code "HH:MM:SS"} when hours &gt; 0.
+     * The {@code baseFontSize} is the target font size at {@value #REFERENCE_SIZE} px
+     * and scales proportionally with {@code size / REFERENCE_SIZE}.</p>
+     *
+     * @param timeText     colon-separated time string (e.g. {@code "04:32"} or {@code "01:04:32"})
+     * @param accentColor  neon accent colour
+     * @param size         icon side length in pixels
+     * @param baseFontSize base font size at {@value #REFERENCE_SIZE} px; clamped to ≥ 1.0
+     * @return a {@code size × size} JavaFX {@link Image}
+     */
+    public static Image renderHorizontal(String timeText, Color accentColor,
+                                         int size, double baseFontSize) {
+        final var canvas = new Canvas(size, size);
+        final var gc     = canvas.getGraphicsContext2D();
+
+        final double scale       = (double) size / REFERENCE_SIZE;
+        final double arc         = ARC * scale;
+        final double borderWidth = Math.max(1.0, BORDER_WIDTH * scale);
+        final double inset       = borderWidth / 2.0;
+
+        // ── Background ────────────────────────────────────────────────────────
+        gc.setFill(BACKGROUND);
+        gc.fillRoundRect(0, 0, size, size, arc, arc);
+
+        // ── Accent border ─────────────────────────────────────────────────────
+        gc.setStroke(accentColor.deriveColor(0.0, 1.0, 1.0, 0.82));
+        gc.setLineWidth(borderWidth);
+        gc.strokeRoundRect(inset, inset, size - borderWidth, size - borderWidth,
+                arc - inset, arc - inset);
+
+        // ── Inner subtle glow ring ────────────────────────────────────────────
+        gc.setStroke(accentColor.deriveColor(0.0, 1.0, 1.0, 0.18));
+        gc.setLineWidth(3.5 * scale);
+        final double glowOff  = 3.0 * scale;
+        final double glowSize = size - borderWidth - 6.0 * scale;
+        gc.strokeRoundRect(inset + glowOff, inset + glowOff, glowSize, glowSize,
+                arc - 4.0 * scale, arc - 4.0 * scale);
+
+        // ── Single-line timer text ────────────────────────────────────────────
+        // baseFontSize scales with the icon; for "HH:MM:SS" (8 chars) a size ≤ 14
+        // at 64 px prevents horizontal clipping.
+        final double fontSize = Math.max(1.0, baseFontSize * scale);
+
+        gc.setFill(accentColor);
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setFont(Font.font("SansSerif", FontWeight.BOLD, fontSize));
+        gc.fillText(timeText, size / 2.0, size / 2.0 + fontSize * 0.38);
+
+        // ── Snapshot ──────────────────────────────────────────────────────────
+        final var params = new SnapshotParameters();
+        params.setFill(Color.TRANSPARENT);
+        return canvas.snapshot(params, null);
+    }
+
+    /**
+     * Renders the horizontal single-line icon at all standard sizes (16, 24, 32, 48, 64 px)
+     * in one call.
+     *
+     * @param timeText     colon-separated time string; must not be {@code null}
+     * @param accentColor  neon accent colour matching the current timer state
+     * @param baseFontSize base font size at {@value #REFERENCE_SIZE} px; clamped to ≥ 1.0
+     * @return unmodifiable {@link List} of {@link Image} instances, one per entry in
+     *         {@code [16, 24, 32, 48, 64]}
+     */
+    public static List<Image> renderAllSizesHorizontal(String timeText, Color accentColor,
+                                                        double baseFontSize) {
+        return List.of(
+                renderHorizontal(timeText, accentColor, 16, baseFontSize),
+                renderHorizontal(timeText, accentColor, 24, baseFontSize),
+                renderHorizontal(timeText, accentColor, 32, baseFontSize),
+                renderHorizontal(timeText, accentColor, 48, baseFontSize),
+                renderHorizontal(timeText, accentColor, 64, baseFontSize)
         );
     }
 }
-

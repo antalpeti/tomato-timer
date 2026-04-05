@@ -5,6 +5,7 @@ import com.tomatotimer.IconFactory;
 import com.tomatotimer.NeonPreset;
 import com.tomatotimer.SoundType;
 import com.tomatotimer.TaskbarIconRenderer;
+import com.tomatotimer.TaskbarTimeLayout;
 import com.tomatotimer.TimerBackgroundHelper;
 import com.tomatotimer.TimerMode;
 import com.tomatotimer.UiScaleHelper;
@@ -66,12 +67,14 @@ public class MainController {
     private long           timerElapsedWhenPaused = 0;
 
     // ---- sub-views ----------------------------------------------------------
-    private Node                  buttonsView;
-    private Node                  settingsView;
-    private Node                  soundSettingsView;
-    private ButtonsController     buttonsController;
-    private SettingsController    settingsController;
-    private SoundSettingsController soundSettingsController;
+    private Node                     buttonsView;
+    private Node                     settingsView;
+    private Node                     soundSettingsView;
+    private Node                     taskbarSettingsView;
+    private ButtonsController        buttonsController;
+    private SettingsController       settingsController;
+    private SoundSettingsController  soundSettingsController;
+    private TaskbarSettingsController taskbarSettingsController;
 
     // ---- drag support -------------------------------------------------------
     private double dragBaseX, dragBaseY;
@@ -98,9 +101,11 @@ public class MainController {
     // ---- one-second clock ---------------------------------------------------
     private Timeline clock;
 
-    // ---- taskbar icon cache (avoids redraw when text + colour unchanged) ----
-    private String lastIconText  = "";
-    private Color  lastIconColor = null;
+    // ---- taskbar icon cache (avoids redraw when text + colour + settings unchanged) ----
+    private String            lastIconText     = "";
+    private Color             lastIconColor    = null;
+    private TaskbarTimeLayout lastIconLayout   = null;
+    private double            lastIconFontSize = -1.0;
 
     // =========================================================================
     //  Initialisation
@@ -133,6 +138,11 @@ public class MainController {
             soundSettingsView = ss.load();
             soundSettingsController = ss.getController();
             soundSettingsController.setMainController(this);
+
+            FXMLLoader ts = new FXMLLoader(getClass().getResource("/com/tomatotimer/taskbar_settings.fxml"));
+            taskbarSettingsView = ts.load();
+            taskbarSettingsController = ts.getController();
+            taskbarSettingsController.setMainController(this);
         } catch (IOException e) {
             throw new RuntimeException("Cannot load sub-views", e);
         }
@@ -323,8 +333,15 @@ public class MainController {
     /**
      * Updates (or clears) the stage icon shown in the Windows taskbar every second.
      *
-     * <p>Re-renders only when the displayed text or accent colour has actually changed
-     * to avoid unnecessary {@link javafx.scene.canvas.Canvas} snapshots.</p>
+     * <p>Re-renders only when the displayed text, accent colour, layout, or font size
+     * has actually changed to avoid unnecessary {@link javafx.scene.canvas.Canvas} snapshots.</p>
+     *
+     * <p>Routing:
+     * <ul>
+     *   <li>{@link TaskbarTimeLayout#HORIZONTAL} – single-line {@code "MM:SS"} / {@code "HH:MM:SS"}.</li>
+     *   <li>{@link TaskbarTimeLayout#VERTICAL} – 2-line (hours == 0) or 3-line (hours &gt; 0) stacked.</li>
+     * </ul>
+     * Font size is read from {@link AppSettings#getTaskbarFontSize()} (base px at 64 px canvas).</p>
      *
      * @param preset      the currently active {@link NeonPreset}
      * @param progressPct elapsed progress percentage in [0, 100]
@@ -338,48 +355,63 @@ public class MainController {
                 stage.getIcons().clear();
             }
             // Reset cache so re-enabling triggers an immediate redraw
-            lastIconText  = "";
-            lastIconColor = null;
+            lastIconText     = "";
+            lastIconColor    = null;
+            lastIconLayout   = null;
+            lastIconFontSize = -1.0;
             return;
         }
 
-        // ── Compute icon text (time only, no mode prefix) ─────────────────────
+        // ── Compute time components ───────────────────────────────────────────
         long absMs    = Math.abs(currentRemainingMs());
         long totalSec = absMs / 1000;
         long hours    = totalSec / 3600;
         long minutes  = (totalSec % 3600) / 60;
         long seconds  = totalSec % 60;
 
-        // Zero-padded components for the stacked taskbar display.
+        // Zero-padded components for vertical stacked display.
         final String iconHour   = String.format("%02d", hours);
         final String iconMinute = String.format("%02d", minutes);
         final String iconSecond = String.format("%02d", seconds);
 
-        // Cache key encodes the layout mode implicitly:
-        //   hours == 0  →  "MM:SS"   (5 chars)  – 2-line layout
-        //   hours  > 0  →  "HH:MM:SS" (8 chars)  – 3-line layout
-        // The different lengths guarantee a redraw whenever the layout changes.
+        // Cache key text: "MM:SS" (hours == 0) or "HH:MM:SS" (hours > 0).
+        // Different lengths guarantee a redraw when hours cross the zero boundary.
         final String iconText = (hours == 0)
                 ? iconMinute + ":" + iconSecond
                 : iconHour + ":" + iconMinute + ":" + iconSecond;
 
-        // ── Compute accent colour matching the timer face ─────────────────────
+        // ── Layout and font size from user settings ───────────────────────────
+        final TaskbarTimeLayout layout      = settings.getTaskbarLayout();
+        final double            baseFontSz  = settings.getTaskbarFontSize();
+
+        // ── Accent colour ─────────────────────────────────────────────────────
         final Color accentColor = TimerBackgroundHelper.computeAccentColor(
                 preset, mode, progressPct, isPaused, isOverTime);
 
-        // ── Re-render only on change ──────────────────────────────────────────
-        if (iconText.equals(lastIconText) && accentColor.equals(lastIconColor)) return;
+        // ── Re-render only when something changed ─────────────────────────────
+        if (iconText.equals(lastIconText)
+                && accentColor.equals(lastIconColor)
+                && layout == lastIconLayout
+                && Double.compare(baseFontSz, lastIconFontSize) == 0) {
+            return;
+        }
 
-        lastIconText  = iconText;
-        lastIconColor = accentColor;
+        lastIconText     = iconText;
+        lastIconColor    = accentColor;
+        lastIconLayout   = layout;
+        lastIconFontSize = baseFontSz;
 
-        // Render at all standard sizes so Windows picks the best resolution
-        // for taskbar, alt-tab thumbnail, jump-list, etc.
-        // When hours == 0: 2-line layout (MM / SS) with larger font for readability.
-        // When hours  > 0: 3-line layout (HH / MM / SS).
-        final List<Image> icons = (hours == 0)
-                ? TaskbarIconRenderer.renderAllSizes(iconMinute, iconSecond, accentColor)
-                : TaskbarIconRenderer.renderAllSizes(iconHour, iconMinute, iconSecond, accentColor);
+        // ── Render at all standard sizes ──────────────────────────────────────
+        final List<Image> icons;
+        if (layout == TaskbarTimeLayout.HORIZONTAL) {
+            // Single-line "MM:SS" or "HH:MM:SS"
+            icons = TaskbarIconRenderer.renderAllSizesHorizontal(iconText, accentColor, baseFontSz);
+        } else {
+            // VERTICAL: 2-line (hours == 0) or 3-line (hours > 0)
+            icons = (hours == 0)
+                    ? TaskbarIconRenderer.renderAllSizes(iconMinute, iconSecond, accentColor, baseFontSz)
+                    : TaskbarIconRenderer.renderAllSizes(iconHour, iconMinute, iconSecond, accentColor, baseFontSz);
+        }
         stage.getIcons().setAll(icons);
 
         // AWT Taskbar push: use the 32 px image (index 2 in [16,24,32,48,64])
@@ -547,6 +579,11 @@ public class MainController {
 
     public void showSoundSettings() {
         contentPane.getChildren().setAll(soundSettingsView);
+    }
+
+    public void showTaskbarSettings() {
+        taskbarSettingsController.syncFromSettings();
+        contentPane.getChildren().setAll(taskbarSettingsView);
     }
 
     // =========================================================================

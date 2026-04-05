@@ -32,6 +32,8 @@ public class AppSettings {
     private static final String KEY_SOUND_REST_TIMEOUT = "sound_rest_timeout";
     private static final String KEY_NEON_PRESET           = "neon_preset";
     private static final String KEY_TASKBAR_ICON_ENABLE   = "taskbar_icon_enable";
+    private static final String KEY_TASKBAR_FONT_SIZE     = "taskbar_font_size";
+    private static final String KEY_TASKBAR_LAYOUT        = "taskbar_layout";
 
     private AppSettings() {}
 
@@ -114,6 +116,22 @@ public class AppSettings {
     // ---- taskbar icon -------------------------------------------------------
     public boolean isTaskbarIconEnable()           { return prefs.getBoolean(KEY_TASKBAR_ICON_ENABLE, true); }
     public void    setTaskbarIconEnable(boolean v) { prefs.putBoolean(KEY_TASKBAR_ICON_ENABLE, v); }
+
+    /**
+     * Base font size used when rendering the taskbar icon (at the 64 px reference canvas).
+     * Range [8, 28], default 17.0.  Applies to both vertical and horizontal layouts.
+     */
+    public double getTaskbarFontSize()         { return prefs.getDouble(KEY_TASKBAR_FONT_SIZE, 17.0); }
+    public void   setTaskbarFontSize(double v) { prefs.putDouble(KEY_TASKBAR_FONT_SIZE, v); }
+
+    /** Layout orientation for the taskbar countdown display. Defaults to {@link TaskbarTimeLayout#VERTICAL}. */
+    public TaskbarTimeLayout getTaskbarLayout() {
+        return TaskbarTimeLayout.fromName(prefs.get(KEY_TASKBAR_LAYOUT, TaskbarTimeLayout.VERTICAL.name()));
+    }
+
+    public void setTaskbarLayout(TaskbarTimeLayout layout) {
+        prefs.put(KEY_TASKBAR_LAYOUT, layout.name());
+    }
 
     // ---- flush --------------------------------------------------------------
     public void save() {

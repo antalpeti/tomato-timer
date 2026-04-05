@@ -165,6 +165,25 @@
     -fx-font-size: 10px;
 }
 
+/* ---- RadioButton ------------------------------------------- */
+.radio-button {
+    -fx-text-fill: #cccccc;
+    -fx-font-size: 10px;
+}
+.radio-button .radio {
+    -fx-background-color: #2e2e2e;
+    -fx-border-color: #666666;
+    -fx-border-radius: 50%;
+    -fx-background-radius: 50%;
+}
+.radio-button:selected .radio .dot {
+    -fx-background-color: #A29BFE;  /* matches COLOR_PIN_ON / settings lavender */
+    -fx-background-radius: 50%;
+}
+.radio-button:hover .radio {
+    -fx-border-color: #A29BFE;
+}
+
 /* ---- TextField -------------------------------------------- */
 .text-field {
     -fx-background-color: #2a2a2a;

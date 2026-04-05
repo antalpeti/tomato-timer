@@ -22,6 +22,7 @@ public class SettingsController {
     @FXML private Button           btnBack;
     @FXML private Button           btnTestGCal;
     @FXML private Button           btnSoundSettings;
+    @FXML private Button           btnTaskbarSettings;
     @FXML private Spinner<Integer> spWorkTime;
     @FXML private Spinner<Integer> spRelaxTime;
     @FXML private Spinner<Integer> spLongRelaxTime;
@@ -45,6 +46,7 @@ public class SettingsController {
     private Group iconBack;
     private Group iconCalendar;
     private Group iconVolume;
+    private Group iconTaskbar;
 
     public void setMainController(MainController mc) { this.mainController = mc; }
 
@@ -54,10 +56,12 @@ public class SettingsController {
         iconBack     = IconFactory.create(IconFactory.PATH_CLOCK,    IconFactory.COLOR_BACK);
         iconCalendar = IconFactory.create(IconFactory.PATH_CALENDAR, IconFactory.COLOR_CALENDAR);
         iconVolume   = IconFactory.create(IconFactory.PATH_VOLUME,   IconFactory.COLOR_VOLUME);
+        iconTaskbar  = IconFactory.create(IconFactory.PATH_TASKBAR,  IconFactory.COLOR_TASKBAR);
 
         btnBack.setGraphic(iconBack);
         btnTestGCal.setGraphic(iconCalendar);
         btnSoundSettings.setGraphic(iconVolume);
+        btnTaskbarSettings.setGraphic(iconTaskbar);
 
         // Resize all scalable elements once laid out, and whenever height changes
         rootBox.heightProperty().addListener((obs, ov, nv) -> updateDynamicSizing(nv.doubleValue()));
@@ -96,6 +100,7 @@ public class SettingsController {
         IconFactory.resize(iconBack,     navSz);
         IconFactory.resize(iconCalendar, navSz * 0.88);
         IconFactory.resize(iconVolume,   navSz * 0.88);
+        IconFactory.resize(iconTaskbar,  navSz * 0.88);
 
         // ── Setting labels (Work / Rest / Long / Theme) ───────────────────────────
         final String lblStyle = String.format("-fx-font-size: %.1fpx;",
@@ -187,6 +192,12 @@ public class SettingsController {
     private void onSoundSettings() {
         syncToSettings();
         mainController.showSoundSettings();
+    }
+
+    @FXML
+    private void onTaskbarSettings() {
+        syncToSettings();
+        mainController.showTaskbarSettings();
     }
 
     @FXML

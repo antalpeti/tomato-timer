@@ -52,6 +52,8 @@ public final class IconFactory {
     public static final String COLOR_PIN_ON   = "#A29BFE";
     /** Red – close / cancel. */
     public static final String COLOR_CLOSE    = "#FF7675";
+    /** Ice teal – taskbar / display settings. */
+    public static final String COLOR_TASKBAR  = "#81ECEC";
 
     // ── SVG path data (Material Design spec, 24 × 24 viewbox) ─────────────────
 
@@ -130,6 +132,11 @@ public final class IconFactory {
     public static final String PATH_CLOSE =
         "M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12" +
         "L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z";
+
+    /** Monitor / display – taskbar display settings. */
+    public static final String PATH_TASKBAR =
+        "M21,2H3C1.9,2 1,2.9 1,4V16C1,17.1 1.9,18 3,18H10L8,21V22H16V21L14,18H21" +
+        "C22.1,18 23,17.1 23,16V4C23,2.9 22.1,2 21,2M21,16H3V4H21V16Z";
 
     // ── Factory ───────────────────────────────────────────────────────────────
 
