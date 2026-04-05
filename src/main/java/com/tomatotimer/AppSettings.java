@@ -106,7 +106,7 @@ public class AppSettings {
 
     // ---- neon theme preset --------------------------------------------------
     public NeonPreset getNeonPreset() {
-        return NeonPreset.fromName(prefs.get(KEY_NEON_PRESET, NeonPreset.NIGHT_RUNNER.name()));
+        return NeonPreset.fromName(prefs.get(KEY_NEON_PRESET, NeonPreset.AURORA_DRIFT.name()));
     }
 
     public void setNeonPreset(NeonPreset preset) {

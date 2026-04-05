@@ -10,7 +10,7 @@ A Maven-based JavaFX Pomodoro timer, rewritten from the original C# WPF **Tomato
 | **Pause / Resume / Reset** | Full timer control during work mode |
 | **Resizable UI** | Window can be resized; fonts, icons, and controls scale dynamically |
 | **Dynamic time display** | Main time text scales with window size |
-| **Neon visual presets** | 11 selectable themes: `Night Runner`, `Arctic Pulse`, `Monochrome Plasma`, `Aurora Drift`, `Ruby Flame`, `Amber Dune`, `Solar Canary`, `Emerald Bloom`, `Azure Wave`, `Indigo Orbit`, `Violet Nova` |
+| **Neon visual presets** | 8 selectable rainbow-spectrum themes: `Aurora Drift` (default), `Scarlet Surge`, `Citrus Spark`, `Lime Flash`, `Jade Mist`, `Ocean Glow`, `Cosmos Blaze`, `Prism Veil` |
 | **Animated background** | Progress-aware gradient + glow changes over time and mode |
 | **Vector icon set** | Modern, vivid SVG-based icons rendered in JavaFX (scalable) |
 | **Always on Top** | Toggle pin button in the top-right controls |
