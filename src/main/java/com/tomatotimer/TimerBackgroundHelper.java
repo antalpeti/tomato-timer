@@ -128,13 +128,13 @@ public final class TimerBackgroundHelper {
     }
 
     /**
-     * Backward-compatible overload that delegates to {@link NeonPreset#NEON_BALANCED}.
+     * Backward-compatible overload that delegates to {@link NeonPreset#NIGHT_RUNNER}.
      *
      * @see #computeRootGradientCss(NeonPreset, TimerMode, double, boolean, boolean)
      */
     public static String computeRootGradientCss(TimerMode mode, double progressPct,
                                                 boolean isPaused, boolean isOverTime) {
-        return computeRootGradientCss(NeonPreset.NEON_BALANCED, mode, progressPct, isPaused, isOverTime);
+        return computeRootGradientCss(NeonPreset.NIGHT_RUNNER, mode, progressPct, isPaused, isOverTime);
     }
 
     /**
@@ -170,13 +170,13 @@ public final class TimerBackgroundHelper {
     }
 
     /**
-     * Backward-compatible overload that delegates to {@link NeonPreset#NEON_BALANCED}.
+     * Backward-compatible overload that delegates to {@link NeonPreset#NIGHT_RUNNER}.
      *
      * @see #computeBarCss(NeonPreset, TimerMode, double, boolean, boolean)
      */
     public static String computeBarCss(TimerMode mode, double progressPct,
                                        boolean isPaused, boolean isOverTime) {
-        return computeBarCss(NeonPreset.NEON_BALANCED, mode, progressPct, isPaused, isOverTime);
+        return computeBarCss(NeonPreset.NIGHT_RUNNER, mode, progressPct, isPaused, isOverTime);
     }
 
     /**
@@ -222,13 +222,13 @@ public final class TimerBackgroundHelper {
     }
 
     /**
-     * Backward-compatible overload that delegates to {@link NeonPreset#NEON_BALANCED}.
+     * Backward-compatible overload that delegates to {@link NeonPreset#NIGHT_RUNNER}.
      *
      * @see #computeAccentColor(NeonPreset, TimerMode, double, boolean, boolean)
      */
     public static Color computeAccentColor(TimerMode mode, double progressPct,
                                            boolean isPaused, boolean isOverTime) {
-        return computeAccentColor(NeonPreset.NEON_BALANCED, mode, progressPct, isPaused, isOverTime);
+        return computeAccentColor(NeonPreset.NIGHT_RUNNER, mode, progressPct, isPaused, isOverTime);
     }
 
     /**
