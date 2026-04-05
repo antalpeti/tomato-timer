@@ -95,6 +95,7 @@
                 <tooltip><Tooltip text="Test: open Google Calendar"/></tooltip>
             </Button>
 
+            <Separator orientation="VERTICAL" prefHeight="30"/>
 
             <!-- Taskbar settings button – graphic set by controller -->
             <Button fx:id="btnTaskbarSettings"
