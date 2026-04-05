@@ -60,7 +60,7 @@ if not defined JAVAW_EXE (
 if "%DRY_RUN%"=="1" (
     echo [DRY-RUN] JAR    : %JAR_FILE%
     echo [DRY-RUN] JAVAW  : %JAVAW_EXE%
-    echo [DRY-RUN] Command: "%JAVAW_EXE%" -jar "%JAR_FILE%"
+    echo [DRY-RUN] Command: "%JAVAW_EXE%" --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED -jar "%JAR_FILE%"
     echo [DRY-RUN] OK -- environment looks good, no process was started.
     exit /b 0
 )
@@ -68,12 +68,18 @@ if "%DRY_RUN%"=="1" (
 :: ------------------------------------------------------------
 :: 4. Launch -- "start" detaches the process so this batch
 ::    exits immediately; javaw runs without a console window.
+::
+::    --add-opens flags are required by JNA 5.x on JDK 17+ to
+::    allow reflective access to java.base internals.
 :: ------------------------------------------------------------
 echo Launching TomatoTimer ...
 echo JAR   : %JAR_FILE%
 echo JAVAW : %JAVAW_EXE%
 
-start "" "%JAVAW_EXE%" -jar "%JAR_FILE%"
+start "" "%JAVAW_EXE%" ^
+    --add-opens java.base/java.lang=ALL-UNNAMED ^
+    --add-opens java.base/java.io=ALL-UNNAMED ^
+    -jar "%JAR_FILE%"
 
 endlocal
 exit /b 0
