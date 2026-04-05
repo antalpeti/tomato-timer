@@ -77,6 +77,66 @@ public final class TimerBackgroundHelper {
     /**
      * Returns the CSS colour value for the timer root pane's
      * {@code -fx-background-color} inline style, rendered using the supplied
+     * {@link NeonPreset} and {@link NeonGlowProfile}.
+     *
+     * <p>The profile multiplies alpha, sheen and white-blend values so a single
+     * preset can be rendered at three intensity levels without duplicating data.</p>
+     *
+     * @param preset      the active neon visual-theme preset
+     * @param profile     the active glow intensity profile
+     * @param mode        current {@link TimerMode}
+     * @param progressPct elapsed percentage in [0, 100]
+     * @param isPaused    whether the timer is paused
+     * @param isOverTime  whether the allocated time has fully elapsed
+     * @return a comma-separated CSS background value string (no semicolon)
+     */
+    public static String computeRootGradientCss(NeonPreset preset, NeonGlowProfile profile,
+                                                TimerMode mode, double progressPct,
+                                                boolean isPaused, boolean isOverTime) {
+        final Color accent = computeAccentColor(preset, mode, progressPct, isPaused, isOverTime);
+        final double progress01 = clamp(progressPct / 100.0, 0.0, 1.0);
+        final double rawGlowAlpha = isOverTime
+                ? preset.getRootGlowAlphaMax()
+                : isPaused
+                ? 0.20
+                : preset.getRootGlowAlphaMin()
+                        + (preset.getRootGlowAlphaMax() - preset.getRootGlowAlphaMin()) * progress01;
+        final double glowAlpha      = clamp(rawGlowAlpha * profile.getFactorAlpha(), 0.0, 1.0);
+        final double sheenAlpha     = clamp(preset.getRootSheenAlpha()    * profile.getFactorSheen(),      0.0, 1.0);
+        final double whiteBlend     = clamp(preset.getRootGlowWhiteBlend()* profile.getFactorWhiteBlend(), 0.0, 1.0);
+
+        // Deep base layer
+        final Color top    = accent.interpolate(Color.BLACK, preset.getRootDarkEdge());
+        final Color mid    = accent.interpolate(Color.BLACK, preset.getRootDarkMid());
+        final Color bottom = accent.interpolate(Color.BLACK, preset.getRootDarkEdge() + 0.06);
+
+        // Coloured atmospheric glow through the middle band
+        final Color glowStrong = accent.interpolate(Color.WHITE, whiteBlend);
+        final Color glowSoft   = accent.interpolate(Color.BLACK, preset.getRootGlowBlackBlend());
+
+        // Subtle glossy sheen near the top
+        final Color sheen = accent.interpolate(Color.WHITE, 0.35);
+
+        return String.format(
+                "linear-gradient(to bottom, %s 0%%, %s 20%%, rgba(255,255,255,0.00) 55%%),"
+              + "linear-gradient(to top,    %s 0%%, %s 25%%, rgba(0,0,0,0.00) 65%%),"
+              + "linear-gradient(to bottom, rgba(0,0,0,0.00) 0%%, %s 15%%, %s 45%%, %s 80%%, rgba(0,0,0,0.00) 100%%),"
+              + "linear-gradient(to bottom, %s 0%%, %s 42%%, %s 100%%)",
+                toCssRgba(sheen, sheenAlpha),
+                toCssRgba(sheen, sheenAlpha * 0.40),
+                toCssRgba(glowSoft,   glowAlpha * 0.50),
+                toCssRgba(glowStrong, glowAlpha * 0.40),
+                toCssRgba(glowSoft,   glowAlpha * 0.40),
+                toCssRgba(glowStrong, glowAlpha),
+                toCssRgba(glowSoft,   glowAlpha * 0.50),
+                toCssHex(top),
+                toCssHex(mid),
+                toCssHex(bottom));
+    }
+
+    /**
+     * Returns the CSS colour value for the timer root pane's
+     * {@code -fx-background-color} inline style, rendered using the supplied
      * {@link NeonPreset}.
      *
      * @param preset      the active neon visual-theme preset
@@ -135,6 +195,48 @@ public final class TimerBackgroundHelper {
     public static String computeRootGradientCss(TimerMode mode, double progressPct,
                                                 boolean isPaused, boolean isOverTime) {
         return computeRootGradientCss(NeonPreset.AURORA_DRIFT, mode, progressPct, isPaused, isOverTime);
+    }
+
+    /**
+     * Returns the complete CSS style string for the progress-bar {@code .bar}
+     * sub-node, rendered using the supplied {@link NeonPreset} and {@link NeonGlowProfile}.
+     *
+     * <p>The profile scales inner sheen, glow opacity, spread and white-blend so the
+     * bar matches the root-gradient intensity at any profile level.</p>
+     *
+     * @param preset      the active neon visual-theme preset
+     * @param profile     the active glow intensity profile
+     * @param mode        current {@link TimerMode}
+     * @param progressPct elapsed percentage in [0, 100]
+     * @param isPaused    whether the timer is paused
+     * @param isOverTime  whether the allocated time has fully elapsed
+     * @return CSS style string ready to pass to {@link javafx.scene.Node#setStyle(String)}
+     */
+    public static String computeBarCss(NeonPreset preset, NeonGlowProfile profile,
+                                       TimerMode mode, double progressPct,
+                                       boolean isPaused, boolean isOverTime) {
+        final Color  accent     = computeAccentColor(preset, mode, progressPct, isPaused, isOverTime);
+        final double darken     = clamp(preset.getBarDarken()        * profile.getFactorDarken(),     0.0, 1.0);
+        final double sheen      = clamp(preset.getBarInnerSheen()    * profile.getFactorSheen(),      0.0, 1.0);
+        final double glowOpac   = clamp(preset.getBarGlowOpacity()   * profile.getFactorAlpha(),      0.0, 1.0);
+        final double glowSpread = clamp(preset.getBarGlowSpread()    * profile.getFactorSpread(),     0.0, 1.0);
+        final double whiteBlend = clamp(preset.getBarGlowWhiteBlend()* profile.getFactorWhiteBlend(), 0.0, 1.0);
+
+        final Color lighter   = accent.interpolate(Color.WHITE, preset.getBarLighten());
+        final Color darker    = accent.interpolate(Color.BLACK, darken);
+        final Color glowColor = accent.interpolate(Color.WHITE, whiteBlend);
+
+        return String.format(
+                "-fx-background-color:"
+                + " linear-gradient(to bottom, rgba(255,255,255,%.3f) 0%%, rgba(255,255,255,0.000) 38%%),"
+                + " linear-gradient(to bottom, %s 0%%, %s 55%%, %s 100%%);"
+                + "-fx-background-radius: 0, 0;"
+                + "-fx-background-insets: 0, 0;"
+                + "-fx-effect: dropshadow(gaussian, %s, %.0f, %.2f, 0, 0);",
+                sheen,
+                toCssHex(lighter), toCssHex(accent), toCssHex(darker),
+                toCssRgba(glowColor, glowOpac),
+                preset.getBarGlowRadius(), glowSpread);
     }
 
     /**

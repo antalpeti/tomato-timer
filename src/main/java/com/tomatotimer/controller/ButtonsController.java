@@ -1,6 +1,7 @@
 package com.tomatotimer.controller;
 
 import com.tomatotimer.IconFactory;
+import com.tomatotimer.NeonGlowProfile;
 import com.tomatotimer.NeonPreset;
 import com.tomatotimer.TimerBackgroundHelper;
 import com.tomatotimer.TimerMode;
@@ -121,13 +122,14 @@ public class ButtonsController {
     //  UI update (called from MainController every second)
     // =========================================================================
 
-    public void updateUI(NeonPreset preset, TimerMode mode, boolean isPaused, boolean isOverTime,
+    public void updateUI(NeonPreset preset, NeonGlowProfile profile,
+                         TimerMode mode, boolean isPaused, boolean isOverTime,
                          double progressPct, String timeStr, String infoStr) {
 
-        // ---- Root-pane ambient gradient (preset + state + mode aware) --------
+        // ---- Root-pane ambient gradient (preset + profile + state + mode aware)
         rootPane.setStyle("-fx-background-color: " +
                 TimerBackgroundHelper.computeRootGradientCss(
-                        preset, mode, progressPct, isPaused, isOverTime) + ";");
+                        preset, profile, mode, progressPct, isPaused, isOverTime) + ";");
 
         // ---- Progress bar value ---------------------------------------------
         if (isPaused) {
@@ -147,7 +149,7 @@ public class ButtonsController {
         final Node bar = progressBar.lookup(".bar");
         if (bar != null) {
             bar.setStyle(TimerBackgroundHelper.computeBarCss(
-                    preset, mode, progressPct, isPaused, isOverTime));
+                    preset, profile, mode, progressPct, isPaused, isOverTime));
         }
 
         // ---- .track sub-node: near-transparent overlay ----------------------

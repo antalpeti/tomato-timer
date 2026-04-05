@@ -2,6 +2,7 @@ package com.tomatotimer.controller;
 
 import com.tomatotimer.AppSettings;
 import com.tomatotimer.IconFactory;
+import com.tomatotimer.NeonGlowProfile;
 import com.tomatotimer.NeonPreset;
 import com.tomatotimer.UiScaleHelper;
 import javafx.fxml.FXML;
@@ -29,6 +30,8 @@ public class SettingsController {
     @FXML private Label            lblLong;
     @FXML private Label            lblPreset;
     @FXML private ComboBox<NeonPreset> cbNeonPreset;
+    @FXML private Label            lblGlow;
+    @FXML private ComboBox<NeonGlowProfile> cbNeonGlowProfile;
     @FXML private Label            labelVersion;
 
     private MainController mainController;
@@ -75,6 +78,16 @@ public class SettingsController {
             }
         });
 
+        // Neon glow profile ComboBox – populate, set current value, apply immediately on change
+        cbNeonGlowProfile.getItems().addAll(NeonGlowProfile.values());
+        cbNeonGlowProfile.setValue(settings.getNeonGlowProfile());
+        cbNeonGlowProfile.valueProperty().addListener((obs, ov, nv) -> {
+            if (nv != null) {
+                settings.setNeonGlowProfile(nv);
+                if (mainController != null) mainController.updateUI();
+            }
+        });
+
         String ver = getClass().getPackage().getImplementationVersion();
         if (labelVersion != null)
             labelVersion.setText("v" + (ver != null ? ver : "1.0.0"));
@@ -94,13 +107,14 @@ public class SettingsController {
         IconFactory.resize(iconVolume,   navSz * 0.88);
         IconFactory.resize(iconTaskbar,  navSz * 0.88);
 
-        // ── Setting labels (Work / Rest / Long / Theme) ───────────────────────────
+        // ── Setting labels (Work / Rest / Long / Theme / Glow) ───────────────────────
         final String lblStyle = String.format("-fx-font-size: %.1fpx;",
                 UiScaleHelper.settingLabelFontPx(eff));
         lblWork.setStyle(lblStyle);
         lblRest.setStyle(lblStyle);
         lblLong.setStyle(lblStyle);
         lblPreset.setStyle(lblStyle);
+        lblGlow.setStyle(lblStyle);
 
 
         // ── Version label ─────────────────────────────────────────────────────
@@ -116,6 +130,9 @@ public class SettingsController {
         // ── Preset ComboBox – proportional width, min 90 px ──────────────────
         cbNeonPreset.setPrefWidth(UiScaleHelper.clamp(spinW * 2.2, 90.0, 140.0));
 
+        // ── Glow Profile ComboBox – slightly narrower (3 short values) ───────
+        cbNeonGlowProfile.setPrefWidth(UiScaleHelper.clamp(spinW * 1.8, 80.0, 110.0));
+
         // ── Row spacing and padding ───────────────────────────────────────────
         settingsRow.setSpacing(UiScaleHelper.settingsSpacingPx(eff));
         settingsRow.setStyle(UiScaleHelper.rowPaddingStyle(eff));
@@ -128,6 +145,7 @@ public class SettingsController {
         spLongRelaxTime.getValueFactory().setValue(settings.getRelaxTimeLong());
 
         cbNeonPreset.setValue(settings.getNeonPreset());
+        cbNeonGlowProfile.setValue(settings.getNeonGlowProfile());
     }
 
     /** Push current UI values into settings. */
@@ -136,6 +154,7 @@ public class SettingsController {
         settings.setRelaxTime(spRelaxTime.getValue());
         settings.setRelaxTimeLong(spLongRelaxTime.getValue());
         if (cbNeonPreset.getValue() != null) settings.setNeonPreset(cbNeonPreset.getValue());
+        if (cbNeonGlowProfile.getValue() != null) settings.setNeonGlowProfile(cbNeonGlowProfile.getValue());
     }
 
     // =========================================================================

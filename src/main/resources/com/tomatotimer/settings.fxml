@@ -63,6 +63,12 @@
                 <tooltip><Tooltip text="Neon visual theme preset"/></tooltip>
             </ComboBox>
 
+            <!-- Neon glow intensity profile -->
+            <Label fx:id="lblGlow" text="Glow:" styleClass="setting-label"/>
+            <ComboBox fx:id="cbNeonGlowProfile" prefWidth="100" focusTraversable="false">
+                <tooltip><Tooltip text="Glow intensity profile: Soft / Balanced / Vivid"/></tooltip>
+            </ComboBox>
+
             <!-- Calendar settings button – navigates to dedicated Google Calendar settings page -->
             <!-- margin left=2 right=2: symmetric breathing room around separators -->
             <Separator orientation="VERTICAL" prefHeight="30">

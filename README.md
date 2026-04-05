@@ -12,6 +12,7 @@ A Maven-based JavaFX Pomodoro timer, rewritten from the original C# WPF **Tomato
 | **Dynamic time display** | Main time text scales with window size |
 | **Neon visual presets** | 8 selectable rainbow-spectrum themes: `Aurora Drift` (default), `Scarlet Surge`, `Citrus Spark`, `Lime Flash`, `Jade Mist`, `Ocean Glow`, `Cosmos Blaze`, `Prism Veil` |
 | **Animated background** | Progress-aware gradient + glow changes over time and mode |
+| **Glow intensity profiles** | 3 A/B quick-tune profiles applied on top of any preset: `Soft` (reduced glow), `Balanced` (default, no change), `Vivid` (boosted glow) |
 | **Vector icon set** | Modern, vivid SVG-based icons rendered in JavaFX (scalable) |
 | **Always on Top** | Toggle pin button in the top-right controls |
 | **State persistence** | Window position/size and saved **Work** session state can be restored on next start |
@@ -25,7 +26,7 @@ A Maven-based JavaFX Pomodoro timer, rewritten from the original C# WPF **Tomato
 - Hover over the timer to reveal controls.
 - Hold the **Relax** button for ~2 seconds to start **Long Break**.
 - Use **Finish Work** to create a Google Calendar event from the current work interval (if enabled), then switch directly to short rest.
-- Open **Settings** to configure timer durations and switch neon preset; navigate to sub-pages via the icon buttons.
+- Open **Settings** to configure timer durations, switch neon preset, and choose the glow intensity profile; navigate to sub-pages via the icon buttons.
 - Open **Sound Settings** (from Settings) to assign custom notification sounds.
 - Open **Calendar Settings** (from Settings) to configure Google Calendar integration.
 - Open **Taskbar Settings** (from Settings) to configure the taskbar countdown icon.
@@ -46,7 +47,7 @@ Timer face (hover state):
 Settings page:
   left:   [Back to timer]
   right:  [Calendar Settings] [Taskbar Settings] [Sound Settings]
-  center: Work / Rest / Long spinners + Neon preset combo
+  center: Work / Rest / Long spinners + Neon preset combo + Glow profile combo
 
 Windows taskbar preview (thumbnail toolbar):
   [Reset] [Pause] [Finish Work] [Take a break] [Go to Work]
@@ -70,9 +71,25 @@ Notes:
 
 ### Main Settings (`settings.fxml`)
 
-Configures timer durations (Work / Rest / Long Rest) and the active neon theme preset.
+Configures timer durations (Work / Rest / Long Rest), the active neon theme preset, and the glow intensity profile.
 Navigation icon buttons in the top-right open the dedicated sub-pages in this order:
 **Calendar**, **Taskbar**, **Sound**.
+
+### Glow Intensity Profiles
+
+A global **glow profile** can be combined with any neon preset to adjust the visual intensity
+without duplicating preset data.  The profile is selected directly on the Main Settings page
+via the **Glow** combo (next to the Theme combo) and is persisted in `java.util.prefs.Preferences`
+under the key `neon_glow_profile` (managed by `AppSettings`).
+
+| Profile | Effect |
+|---|---|
+| **Soft** | Reduced alpha/opacity (×0.65), spread (×0.70), sheen (×0.65), white-blend (×0.70); slightly heavier darken (×1.15) — calmer, less distracting appearance. |
+| **Balanced** | All factors = 1.00 — presets are used verbatim. **This is the application default.** |
+| **Vivid** | Boosted alpha/opacity (×1.30), spread (×1.25), sheen (×1.25), white-blend (×1.25); slightly lighter darken (×0.85) — brighter, more saturated neon effect. |
+
+Scale factors are applied by `TimerBackgroundHelper` at render-time (root gradient + bar glow),
+so existing `NeonPreset` constants remain unchanged.  All scaled values are clamped to `[0, 1]`.
 
 ### Calendar Settings (`calendar_settings.fxml`)
 

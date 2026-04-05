@@ -31,6 +31,7 @@ public class AppSettings {
     private static final String KEY_SOUND_WORK_DONE    = "sound_work_done";
     private static final String KEY_SOUND_REST_TIMEOUT = "sound_rest_timeout";
     private static final String KEY_NEON_PRESET           = "neon_preset";
+    private static final String KEY_NEON_GLOW_PROFILE     = "neon_glow_profile";
     private static final String KEY_TASKBAR_ICON_ENABLE   = "taskbar_icon_enable";
     private static final String KEY_TASKBAR_FONT_SIZE     = "taskbar_font_size";
     private static final String KEY_TASKBAR_LAYOUT        = "taskbar_layout";
@@ -111,6 +112,19 @@ public class AppSettings {
 
     public void setNeonPreset(NeonPreset preset) {
         prefs.put(KEY_NEON_PRESET, preset.name());
+    }
+
+    // ---- neon glow profile --------------------------------------------------
+    /**
+     * Returns the active {@link NeonGlowProfile}, defaulting to {@link NeonGlowProfile#BALANCED}
+     * when no value has been saved yet.
+     */
+    public NeonGlowProfile getNeonGlowProfile() {
+        return NeonGlowProfile.fromName(prefs.get(KEY_NEON_GLOW_PROFILE, NeonGlowProfile.BALANCED.name()));
+    }
+
+    public void setNeonGlowProfile(NeonGlowProfile profile) {
+        prefs.put(KEY_NEON_GLOW_PROFILE, profile.name());
     }
 
     // ---- taskbar icon -------------------------------------------------------

@@ -334,8 +334,9 @@ public class MainController {
         }
 
         if (buttonsController != null) {
-            final var preset = settings.getNeonPreset();
-            buttonsController.updateUI(preset,
+            final var preset  = settings.getNeonPreset();
+            final var profile = settings.getNeonGlowProfile();
+            buttonsController.updateUI(preset, profile,
                     mode, isPaused, isOverTime, progressPct, timeStr, infoStr);
             updateTaskbarIcon(preset, progressPct);
         }
