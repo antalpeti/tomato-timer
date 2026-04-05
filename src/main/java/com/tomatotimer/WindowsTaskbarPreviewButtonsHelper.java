@@ -20,6 +20,10 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.Shape;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Arc2D;
+import java.awt.geom.Path2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -32,6 +36,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Adds clickable buttons to the Windows taskbar thumbnail preview for quick timer control.
@@ -84,6 +90,33 @@ public final class WindowsTaskbarPreviewButtonsHelper {
     private static final int BUTTON_GO_TO_WORK  = 2005;
 
     private static final int BUTTON_COUNT = 5;
+
+    // ── SVG path data (Material Design 24 × 24 viewbox, mirrors IconFactory) ────
+    // These paths are duplicated here to avoid a JavaFX dependency from the
+    // pure-AWT rendering pipeline used for thumbnail-toolbar icons.
+    private static final String SVG_RESET =
+        "M12,5V1L7,6L12,11V7A6,6 0 0,1 18,13A6,6 0 0,1 12,19" +
+        "A6,6 0 0,1 6,13H4A8,8 0 0,0 12,21A8,8 0 0,0 20,13A8,8 0 0,0 12,5Z";
+    private static final String SVG_PAUSE =
+        "M14,19H18V5H14M6,19H10V5H6Z";
+    private static final String SVG_CLOCK =
+        "M12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20" +
+        "M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22C6.47,22 2,17.5 2,12" +
+        "A10,10 0 0,1 12,2M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z";
+    private static final String SVG_RELAX =
+        "M7,6H9V9H12V11H9V14H7V11H4V9H7V6" +
+        "M18,9A1,1 0 0,1 19,10A1,1 0 0,1 18,11A1,1 0 0,1 17,10A1,1 0 0,1 18,9" +
+        "M15,12A1,1 0 0,1 16,13A1,1 0 0,1 15,14A1,1 0 0,1 14,13A1,1 0 0,1 15,12" +
+        "M21,6H3C1.89,6 1,6.89 1,8V16C1,17.11 1.89,18 3,18H21" +
+        "C22.11,18 23,17.11 23,16V8C23,6.89 22.11,6 21,6Z";
+    private static final String SVG_WORK =
+        "M20,6H16V4C16,2.89 15.11,2 14,2H10C8.89,2 8,2.89 8,4V6" +
+        "H4C2.89,6 2,6.89 2,8V19C2,20.11 2.89,21 4,21H20" +
+        "C21.11,21 22,20.11 22,19V8C22,6.89 21.11,6 20,6M10,4H14V6H10V4Z";
+
+    /** Matches SVG number tokens (integers, decimals, scientific notation). */
+    private static final Pattern NUMBER_RE =
+        Pattern.compile("[+-]?\\d*\\.?\\d+(?:[eE][+-]?\\d+)?");
 
     // ITaskbarList3 vtable indexes
     private static final int VT_HR_INIT = 3;
@@ -491,15 +524,20 @@ public final class WindowsTaskbarPreviewButtonsHelper {
     }
 
     private void prepareButtons() throws IOException {
-        buttons      = (THUMBBUTTON[]) new THUMBBUTTON().toArray(BUTTON_COUNT);
-        buttonIcons  = new WinDef.HICON[BUTTON_COUNT];
+        buttons         = (THUMBBUTTON[]) new THUMBBUTTON().toArray(BUTTON_COUNT);
+        buttonIcons     = new WinDef.HICON[BUTTON_COUNT];
         buttonIconFiles = new Path[BUTTON_COUNT];
 
-        buttonIcons[0] = loadButtonIcon('R', new Color(0x2D, 0xD4, 0xBF), 0); // Reset      – teal
-        buttonIcons[1] = loadButtonIcon('P', new Color(0xF5, 0x9E, 0x0B), 1); // Pause      – amber
-        buttonIcons[2] = loadButtonIcon('F', new Color(0x8B, 0x5C, 0xF6), 2); // Finish     – violet
-        buttonIcons[3] = loadButtonIcon('B', new Color(0x22, 0xC5, 0x5E), 3); // Break      – green
-        buttonIcons[4] = loadButtonIcon('W', new Color(0xEF, 0x44, 0x44), 4); // Go to Work – red
+        // Slot 0 – Reset (replay arrow)  – teal
+        buttonIcons[0] = loadButtonIconFromSvg(SVG_RESET, new Color(0x2D, 0xD4, 0xBF), 0);
+        // Slot 1 – Pause (two bars)       – amber
+        buttonIcons[1] = loadButtonIconFromSvg(SVG_PAUSE, new Color(0xF5, 0x9E, 0x0B), 1);
+        // Slot 2 – Finish work (clock)    – violet
+        buttonIcons[2] = loadButtonIconFromSvg(SVG_CLOCK, new Color(0x8B, 0x5C, 0xF6), 2);
+        // Slot 3 – Take a break (gamepad) – green
+        buttonIcons[3] = loadButtonIconFromSvg(SVG_RELAX, new Color(0x22, 0xC5, 0x5E), 3);
+        // Slot 4 – Go to Work (briefcase) – red
+        buttonIcons[4] = loadButtonIconFromSvg(SVG_WORK,  new Color(0xEF, 0x44, 0x44), 4);
 
         configureButton(buttons[0], BUTTON_RESET,       buttonIcons[0], "Reset");
         configureButton(buttons[1], BUTTON_PAUSE,       buttonIcons[1], "Pause");
@@ -508,33 +546,57 @@ public final class WindowsTaskbarPreviewButtonsHelper {
         configureButton(buttons[4], BUTTON_GO_TO_WORK,  buttonIcons[4], "Go to Work");
     }
 
-    private WinDef.HICON loadButtonIcon(char glyph, Color accent, int slot) throws IOException {
+    /**
+     * Renders a 32 × 32 thumbnail-toolbar icon from a Material-Design SVG path,
+     * writes it as a temporary {@code .ico} file, and loads it with {@code LoadImage}.
+     *
+     * <p>Visual design:</p>
+     * <ul>
+     *   <li>Dark (near-black) rounded-rectangle background – matches the app's neon icon style.</li>
+     *   <li>Thin accent-coloured border.</li>
+     *   <li>Near-white SVG vector icon (24 × 24 viewbox scaled to ~20 × 20 px, centred).</li>
+     * </ul>
+     */
+    private WinDef.HICON loadButtonIconFromSvg(String svgPath, Color accent, int slot)
+            throws IOException {
         final int size = 32;
         final BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
         final Graphics2D g = image.createGraphics();
         try {
-            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,   RenderingHints.VALUE_ANTIALIAS_ON);
+            g.setRenderingHint(RenderingHints.KEY_RENDERING,      RenderingHints.VALUE_RENDER_QUALITY);
+            g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
 
+            // ── Background ────────────────────────────────────────────────────────
             g.setColor(new Color(22, 25, 32, 230));
             g.fillRoundRect(1, 1, size - 2, size - 2, 10, 10);
+
+            // ── Accent border ─────────────────────────────────────────────────────
             g.setColor(accent);
-            g.setStroke(new BasicStroke(2f));
+            g.setStroke(new BasicStroke(1.5f));
             g.drawRoundRect(1, 1, size - 3, size - 3, 10, 10);
 
-            g.setColor(new Color(245, 248, 255));
-            g.setFont(g.getFont().deriveFont(18f));
-            final String text = String.valueOf(glyph);
-            final var metrics = g.getFontMetrics();
-            final int x = (size - metrics.stringWidth(text)) / 2;
-            final int y = (size - metrics.getHeight()) / 2 + metrics.getAscent();
-            g.drawString(text, x, y);
+            // ── SVG icon: scale 24 × 24 → 20 × 20, centred inside the 32 × 32 canvas ──
+            final double iconSize = 20.0;
+            final double svgScale = iconSize / 24.0;
+            final double offsetX  = (size - iconSize) / 2.0;
+            final double offsetY  = (size - iconSize) / 2.0;
+
+            final Shape rawShape = parseSvgPath(svgPath);
+            final AffineTransform at = AffineTransform.getTranslateInstance(offsetX, offsetY);
+            at.scale(svgScale, svgScale);
+            final Shape scaledShape = at.createTransformedShape(rawShape);
+
+            // Near-white fill so icons stay visible both enabled and (Windows-dimmed) disabled
+            g.setColor(new Color(235, 240, 255));
+            g.fill(scaledShape);
+
         } finally {
             g.dispose();
         }
 
-        final int[] argb = image.getRGB(0, 0, size, size, null, 0, size);
-        final byte[] ico = buildBmpIco(argb, size, size);
+        final int[] argb  = image.getRGB(0, 0, size, size, null, 0, size);
+        final byte[] ico  = buildBmpIco(argb, size, size);
 
         final Path iconFile = Files.createTempFile("tomato-thumb-" + slot + "-", ".ico");
         iconFile.toFile().deleteOnExit();
@@ -542,18 +604,211 @@ public final class WindowsTaskbarPreviewButtonsHelper {
         buttonIconFiles[slot] = iconFile;
 
         final WinNT.HANDLE handle = User32.INSTANCE.LoadImage(
-                null,
-                iconFile.toString(),
-                IMAGE_ICON,
-                16,
-                16,
-                LR_LOADFROMFILE);
+                null, iconFile.toString(), IMAGE_ICON, 16, 16, LR_LOADFROMFILE);
 
         if (handle == null || Pointer.nativeValue(handle.getPointer()) == 0L) {
             throw new IOException("LoadImage failed for preview button icon: " + iconFile);
         }
 
         return new WinDef.HICON(handle.getPointer());
+    }
+
+    /**
+     * Parses a Material-Design SVG path-data string into an AWT {@link Shape}.
+     *
+     * <p>Supported commands: {@code M m L l H h V v C c A a Z z}.
+     * The 24 × 24 viewbox is preserved; call
+     * {@link AffineTransform#createTransformedShape} to scale/translate the result.</p>
+     */
+    private static Shape parseSvgPath(String d) {
+        final Path2D.Double path = new Path2D.Double();
+        double x = 0, y = 0;   // current drawing point
+        double mx = 0, my = 0; // last moveTo anchor (for closePath reset)
+
+        int i = 0;
+        final int len = d.length();
+
+        while (i < len) {
+            // skip whitespace
+            while (i < len && Character.isWhitespace(d.charAt(i))) i++;
+            if (i >= len) break;
+
+            final char cmd = d.charAt(i++);
+            if (!Character.isLetter(cmd)) break;
+
+            // Collect raw number text until the next command letter
+            final int numStart = i;
+            while (i < len && !Character.isLetter(d.charAt(i))) i++;
+            final double[] n = parseNumbers(d.substring(numStart, i));
+
+            switch (cmd) {
+                case 'M' -> {
+                    for (int j = 0; j < n.length; j += 2) {
+                        x = n[j]; y = n[j + 1];
+                        if (j == 0) { path.moveTo(x, y); mx = x; my = y; }
+                        else          path.lineTo(x, y);
+                    }
+                }
+                case 'm' -> {
+                    for (int j = 0; j < n.length; j += 2) {
+                        x += n[j]; y += n[j + 1];
+                        if (j == 0) { path.moveTo(x, y); mx = x; my = y; }
+                        else          path.lineTo(x, y);
+                    }
+                }
+                case 'L' -> {
+                    for (int j = 0; j < n.length; j += 2) {
+                        x = n[j]; y = n[j + 1]; path.lineTo(x, y);
+                    }
+                }
+                case 'l' -> {
+                    for (int j = 0; j < n.length; j += 2) {
+                        x += n[j]; y += n[j + 1]; path.lineTo(x, y);
+                    }
+                }
+                case 'H' -> { for (double nx : n) { x = nx;  path.lineTo(x, y); } }
+                case 'h' -> { for (double dx : n) { x += dx; path.lineTo(x, y); } }
+                case 'V' -> { for (double ny : n) { y = ny;  path.lineTo(x, y); } }
+                case 'v' -> { for (double dy : n) { y += dy; path.lineTo(x, y); } }
+                case 'C' -> {
+                    for (int j = 0; j < n.length; j += 6) {
+                        path.curveTo(n[j], n[j+1], n[j+2], n[j+3], n[j+4], n[j+5]);
+                        x = n[j+4]; y = n[j+5];
+                    }
+                }
+                case 'c' -> {
+                    for (int j = 0; j < n.length; j += 6) {
+                        path.curveTo(x+n[j], y+n[j+1], x+n[j+2], y+n[j+3],
+                                     x+n[j+4], y+n[j+5]);
+                        x += n[j+4]; y += n[j+5];
+                    }
+                }
+                case 'A' -> {
+                    for (int j = 0; j < n.length; j += 7) {
+                        final double nx = n[j+5], ny = n[j+6];
+                        svgArcTo(path, x, y, n[j], n[j+1], n[j+2],
+                                 (int) n[j+3], (int) n[j+4], nx, ny);
+                        x = nx; y = ny;
+                    }
+                }
+                case 'a' -> {
+                    for (int j = 0; j < n.length; j += 7) {
+                        final double nx = x + n[j+5], ny = y + n[j+6];
+                        svgArcTo(path, x, y, n[j], n[j+1], n[j+2],
+                                 (int) n[j+3], (int) n[j+4], nx, ny);
+                        x = nx; y = ny;
+                    }
+                }
+                case 'Z', 'z' -> { path.closePath(); x = mx; y = my; }
+                default -> { /* unknown command – skip */ }
+            }
+        }
+        return path;
+    }
+
+    /**
+     * Appends an SVG elliptical arc segment to {@code path}, implementing the
+     * <a href="https://www.w3.org/TR/SVG/implnote.html#ArcImplementationNotes">
+     * SVG arc → centre-parameterisation</a> conversion.
+     *
+     * @param path         target path (current point must be (x1, y1))
+     * @param x1           current point x (arc start)
+     * @param y1           current point y (arc start)
+     * @param rx           semi-axis x
+     * @param ry           semi-axis y
+     * @param xRotDeg      x-axis rotation in degrees
+     * @param largeArcFlag 0 or 1
+     * @param sweepFlag    0 = counter-clockwise, 1 = clockwise
+     * @param x2           arc end point x
+     * @param y2           arc end point y
+     */
+    private static void svgArcTo(Path2D.Double path,
+                                  double x1, double y1,
+                                  double rx, double ry, double xRotDeg,
+                                  int largeArcFlag, int sweepFlag,
+                                  double x2, double y2) {
+        if (x1 == x2 && y1 == y2) return;
+        if (rx == 0 || ry == 0)   { path.lineTo(x2, y2); return; }
+
+        rx = Math.abs(rx);
+        ry = Math.abs(ry);
+
+        final double phi    = Math.toRadians(xRotDeg);
+        final double cosPhi = Math.cos(phi);
+        final double sinPhi = Math.sin(phi);
+
+        // Step 1 – mid-point transform
+        final double dx  = (x1 - x2) / 2.0;
+        final double dy  = (y1 - y2) / 2.0;
+        final double x1p =  cosPhi * dx + sinPhi * dy;
+        final double y1p = -sinPhi * dx + cosPhi * dy;
+
+        // Step 2 – fix radii if too small, then find centre (cx', cy')
+        double rx2 = rx * rx, ry2 = ry * ry;
+        final double x1p2 = x1p * x1p, y1p2 = y1p * y1p;
+        final double lambda = x1p2 / rx2 + y1p2 / ry2;
+        if (lambda > 1) {
+            final double ls = Math.sqrt(lambda);
+            rx *= ls; ry *= ls;
+            rx2 = rx * rx; ry2 = ry * ry;
+        }
+
+        final double num = rx2 * ry2 - rx2 * y1p2 - ry2 * x1p2;
+        final double den = rx2 * y1p2 + ry2 * x1p2;
+        double sq = (num <= 0) ? 0 : Math.sqrt(num / den);
+        if (largeArcFlag == sweepFlag) sq = -sq;
+
+        final double cxp =  sq * rx * y1p / ry;
+        final double cyp = -sq * ry * x1p / rx;
+
+        // Step 3 – un-rotate
+        final double cx = cosPhi * cxp - sinPhi * cyp + (x1 + x2) / 2.0;
+        final double cy = sinPhi * cxp + cosPhi * cyp + (y1 + y2) / 2.0;
+
+        // Step 4 – start angle and sweep angle
+        final double ux = (x1p - cxp) / rx,  uy = (y1p - cyp) / ry;
+        final double vx = (-x1p - cxp) / rx, vy = (-y1p - cyp) / ry;
+
+        double theta1 = svgVectorAngle(1, 0, ux, uy);
+        double dtheta = svgVectorAngle(ux, uy, vx, vy);
+
+        if (sweepFlag == 0 && dtheta > 0) dtheta -= 2 * Math.PI;
+        if (sweepFlag == 1 && dtheta < 0) dtheta += 2 * Math.PI;
+
+        // AWT Arc2D measures angles in degrees from 3-o'clock, positive = CCW in
+        // screen coords (Y-down), whereas SVG theta is positive = CCW in math coords.
+        // The sign flip (−) converts between the two conventions.
+        final double startDeg  = -Math.toDegrees(theta1);
+        final double extentDeg = -Math.toDegrees(dtheta);
+
+        final Arc2D.Double arc = new Arc2D.Double(
+                cx - rx, cy - ry, 2 * rx, 2 * ry,
+                startDeg, extentDeg, Arc2D.OPEN);
+        path.append(arc, true);   // connect=true joins with the current point
+    }
+
+    /** Signed angle between 2-D vectors {@code (ux,uy)} and {@code (vx,vy)}. */
+    private static double svgVectorAngle(double ux, double uy, double vx, double vy) {
+        final double n = Math.sqrt(ux * ux + uy * uy) * Math.sqrt(vx * vx + vy * vy);
+        if (n == 0) return 0;
+        final double cos   = Math.max(-1, Math.min(1, (ux * vx + uy * vy) / n));
+        final double angle = Math.acos(cos);
+        return (ux * vy - uy * vx < 0) ? -angle : angle;
+    }
+
+    /**
+     * Tokenises an SVG number-sequence string into a {@code double[]} array.
+     *
+     * <p>Handles integers, decimals ({@code .5}), negative numbers and scientific
+     * notation.  Commas, spaces and consecutive decimal points all act as
+     * separators (the regex simply finds all number tokens).</p>
+     */
+    private static double[] parseNumbers(String s) {
+        if (s == null || s.isBlank()) return new double[0];
+        final Matcher m = NUMBER_RE.matcher(s);
+        final List<Double> result = new ArrayList<>();
+        while (m.find()) result.add(Double.parseDouble(m.group()));
+        return result.stream().mapToDouble(Double::doubleValue).toArray();
     }
 
     private static void configureButton(THUMBBUTTON button, int id, WinDef.HICON icon, String tooltip) {
