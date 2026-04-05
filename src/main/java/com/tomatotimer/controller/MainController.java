@@ -10,6 +10,7 @@ import com.tomatotimer.TimerBackgroundHelper;
 import com.tomatotimer.TimerMode;
 import com.tomatotimer.UiScaleHelper;
 import com.tomatotimer.WindowsNativeWindowIconHelper;
+import com.tomatotimer.WindowsTaskbarPreviewButtonsHelper;
 import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -108,6 +109,10 @@ public class MainController {
     private Color             lastIconColor    = null;
     private TaskbarTimeLayout lastIconLayout   = null;
     private double            lastIconFontSize = -1.0;
+
+    // ---- Windows taskbar thumbnail preview buttons ---------------------------
+    private final WindowsTaskbarPreviewButtonsHelper taskbarPreviewButtons =
+            new WindowsTaskbarPreviewButtonsHelper();
 
     // =========================================================================
     //  Initialisation
@@ -258,6 +263,9 @@ public class MainController {
         clock.setCycleCount(Timeline.INDEFINITE);
         clock.play();
 
+        // Install Windows taskbar preview action buttons once the native window exists.
+        Platform.runLater(this::installTaskbarPreviewButtons);
+
         updateUI();
     }
 
@@ -331,6 +339,7 @@ public class MainController {
                     mode, isPaused, isOverTime, progressPct, timeStr, infoStr);
             updateTaskbarIcon(preset, progressPct);
         }
+        taskbarPreviewButtons.updateState(mode, isPaused);
     }
 
     // =========================================================================
@@ -626,6 +635,7 @@ public class MainController {
         settings.save();
 
         clock.stop();
+        taskbarPreviewButtons.dispose();
         Platform.exit();
     }
 
@@ -707,6 +717,17 @@ public class MainController {
         ft.setFromValue(from);
         ft.setToValue(to);
         return ft;
+    }
+
+    private void installTaskbarPreviewButtons() {
+        taskbarPreviewButtons.install(
+                this::reset,
+                this::pause,
+                this::finishWork,
+                () -> this.startRelax(false),
+                this::startWork           // Go to Work – enabled in REST mode
+        );
+        taskbarPreviewButtons.updateState(mode, isPaused);
     }
 
     /** Derives window-control icon size (px) from the stage height – delegated to UiScaleHelper. */
