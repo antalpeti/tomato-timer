@@ -150,5 +150,123 @@ public final class TaskbarIconRenderer {
                 render(timeText, accentColor, 64)
         );
     }
+
+    // =========================================================================
+    //  3-line stacked display (hour / minute / second on separate rows)
+    // =========================================================================
+
+    /**
+     * Renders a taskbar icon at the default {@value #REFERENCE_SIZE} px size using
+     * a 3-line stacked layout: {@code hourText} on top, {@code minuteText} in the
+     * middle, and {@code secondText} at the bottom.
+     *
+     * <p>Delegates to {@link #render(String, String, String, Color, int)}.</p>
+     *
+     * @param hourText    zero-padded hour component, e.g. {@code "01"}
+     * @param minuteText  zero-padded minute component, e.g. {@code "04"}
+     * @param secondText  zero-padded second component, e.g. {@code "32"}
+     * @param accentColor neon accent colour matching the current timer state
+     * @return a {@value #REFERENCE_SIZE}×{@value #REFERENCE_SIZE} JavaFX {@link Image}
+     */
+    public static Image render(String hourText, String minuteText, String secondText,
+                               Color accentColor) {
+        return render(hourText, minuteText, secondText, accentColor, REFERENCE_SIZE);
+    }
+
+    /**
+     * Renders a taskbar icon at the requested {@code size} using a 3-line stacked layout.
+     *
+     * <p>All visual dimensions (border, arc, glow ring, font) scale proportionally
+     * with {@code size / REFERENCE_SIZE}.  The base font size is {@code 17.0} px at
+     * {@value #REFERENCE_SIZE} px, giving each of the three rows roughly equal space
+     * with a small top/bottom margin.  The three rows are vertically centred as a block
+     * using the same {@code 0.38 × fontSize} baseline offset used in the single-line
+     * variant.</p>
+     *
+     * @param hourText    zero-padded hour component, e.g. {@code "01"}; must not be {@code null}
+     * @param minuteText  zero-padded minute component, e.g. {@code "04"}; must not be {@code null}
+     * @param secondText  zero-padded second component, e.g. {@code "32"}; must not be {@code null}
+     * @param accentColor neon accent colour matching the current timer state
+     * @param size        icon side length in pixels (square)
+     * @return a {@code size × size} JavaFX {@link Image}
+     */
+    public static Image render(String hourText, String minuteText, String secondText,
+                               Color accentColor, int size) {
+        final var canvas = new Canvas(size, size);
+        final var gc     = canvas.getGraphicsContext2D();
+
+        final double scale       = (double) size / REFERENCE_SIZE;
+        final double arc         = ARC * scale;
+        final double borderWidth = Math.max(1.0, BORDER_WIDTH * scale);
+        final double inset       = borderWidth / 2.0;
+
+        // ── Background ────────────────────────────────────────────────────────
+        gc.setFill(BACKGROUND);
+        gc.fillRoundRect(0, 0, size, size, arc, arc);
+
+        // ── Accent border ─────────────────────────────────────────────────────
+        gc.setStroke(accentColor.deriveColor(0.0, 1.0, 1.0, 0.82));
+        gc.setLineWidth(borderWidth);
+        gc.strokeRoundRect(inset, inset, size - borderWidth, size - borderWidth,
+                arc - inset, arc - inset);
+
+        // ── Inner subtle glow ring ────────────────────────────────────────────
+        gc.setStroke(accentColor.deriveColor(0.0, 1.0, 1.0, 0.18));
+        gc.setLineWidth(3.5 * scale);
+        final double glowOff  = 3.0 * scale;
+        final double glowSize = size - borderWidth - 6.0 * scale;
+        gc.strokeRoundRect(inset + glowOff, inset + glowOff, glowSize, glowSize,
+                arc - 4.0 * scale, arc - 4.0 * scale);
+
+        // ── 3-line stacked timer text ──────────────────────────────────────────
+        // Base font size of 17 px at 64 px lets three rows fill the icon with a
+        // small top/bottom margin (3 × 17×1.25 ≈ 63.75 px out of 64 px total).
+        final double baseFontSize = 17.0;
+        final double fontSize     = Math.max(1.0, baseFontSize * scale);
+        final double lineHeight   = fontSize * 1.25;
+
+        gc.setFill(accentColor);
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setFont(Font.font("SansSerif", FontWeight.BOLD, fontSize));
+
+        // Baseline offset (0.38 × fontSize) visually centres the glyph block on Y.
+        final double baselineOffset = fontSize * 0.38;
+        final double centerX = size / 2.0;
+        final double midY    = size / 2.0 + baselineOffset;
+
+        gc.fillText(hourText,   centerX, midY - lineHeight);  // line 1 – hours
+        gc.fillText(minuteText, centerX, midY);                // line 2 – minutes
+        gc.fillText(secondText, centerX, midY + lineHeight);   // line 3 – seconds
+
+        // ── Snapshot ──────────────────────────────────────────────────────────
+        final var params = new SnapshotParameters();
+        params.setFill(Color.TRANSPARENT);
+        return canvas.snapshot(params, null);
+    }
+
+    /**
+     * Renders the 3-line stacked icon at all standard sizes (16, 24, 32, 48, 64 px)
+     * in one call.
+     *
+     * <p>Pass the returned list directly to {@code stage.getIcons().setAll(...)} so
+     * Windows can pick the best resolution for each taskbar / alt-tab context.</p>
+     *
+     * @param hourText    zero-padded hour component, e.g. {@code "01"}; must not be {@code null}
+     * @param minuteText  zero-padded minute component, e.g. {@code "04"}; must not be {@code null}
+     * @param secondText  zero-padded second component, e.g. {@code "32"}; must not be {@code null}
+     * @param accentColor neon accent colour matching the current timer state
+     * @return unmodifiable {@link List} of {@link Image} instances, one per entry in
+     *         {@code [16, 24, 32, 48, 64]}
+     */
+    public static List<Image> renderAllSizes(String hourText, String minuteText,
+                                             String secondText, Color accentColor) {
+        return List.of(
+                render(hourText, minuteText, secondText, accentColor, 16),
+                render(hourText, minuteText, secondText, accentColor, 24),
+                render(hourText, minuteText, secondText, accentColor, 32),
+                render(hourText, minuteText, secondText, accentColor, 48),
+                render(hourText, minuteText, secondText, accentColor, 64)
+        );
+    }
 }
 

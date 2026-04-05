@@ -350,9 +350,13 @@ public class MainController {
         long minutes  = (totalSec % 3600) / 60;
         long seconds  = totalSec % 60;
 
-        final String iconText = (hours > 0)
-                ? String.format("%d:%02d:%02d", hours, minutes, seconds)
-                : String.format("%d:%02d", minutes, seconds);
+        // Zero-padded components for the 3-line stacked taskbar display.
+        final String iconHour   = String.format("%02d", hours);
+        final String iconMinute = String.format("%02d", minutes);
+        final String iconSecond = String.format("%02d", seconds);
+
+        // Combined "HH:MM:SS" string used only as the change-detection cache key.
+        final String iconText = iconHour + ":" + iconMinute + ":" + iconSecond;
 
         // ── Compute accent colour matching the timer face ─────────────────────
         final Color accentColor = TimerBackgroundHelper.computeAccentColor(
@@ -366,7 +370,9 @@ public class MainController {
 
         // Render at all standard sizes so Windows picks the best resolution
         // for taskbar, alt-tab thumbnail, jump-list, etc.
-        final List<Image> icons = TaskbarIconRenderer.renderAllSizes(iconText, accentColor);
+        // 3-line stacked layout: hour / minute / second on separate rows.
+        final List<Image> icons = TaskbarIconRenderer.renderAllSizes(
+                iconHour, iconMinute, iconSecond, accentColor);
         stage.getIcons().setAll(icons);
 
         // AWT Taskbar push: use the 32 px image (index 2 in [16,24,32,48,64])
