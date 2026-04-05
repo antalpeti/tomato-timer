@@ -93,19 +93,6 @@
     -fx-effect: dropshadow(gaussian, rgba(200,100,255,0.85), 16, 0.50, 0, 0);
 }
 
-/* ---- Settings-row icon buttons: optional optical-centre harmonisation ----- */
-/* Scope : btnTestGCal, btnTaskbarSettings, btnSoundSettings (settings.fxml).   */
-/* The 1 px symmetric horizontal background-insets on hover/pressed pull the    */
-/* neon glow highlight 1 px away from each neighbouring Separator, so the lit   */
-/* area reads as optically centred within the separator gap rather than          */
-/* abutting the separator's boundary space.                                      */
-/* Hit-area, button size, padding, and all base interactions stay unchanged.    */
-.icon-btn-settings:hover {
-    -fx-background-insets: 0 1 0 1;
-}
-.icon-btn-settings:pressed {
-    -fx-background-insets: 0 1 0 1;
-}
 
 /* ---- Small icon buttons (sound settings) ------------------ */
 .icon-btn-sm {
