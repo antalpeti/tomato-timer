@@ -350,13 +350,18 @@ public class MainController {
         long minutes  = (totalSec % 3600) / 60;
         long seconds  = totalSec % 60;
 
-        // Zero-padded components for the 3-line stacked taskbar display.
+        // Zero-padded components for the stacked taskbar display.
         final String iconHour   = String.format("%02d", hours);
         final String iconMinute = String.format("%02d", minutes);
         final String iconSecond = String.format("%02d", seconds);
 
-        // Combined "HH:MM:SS" string used only as the change-detection cache key.
-        final String iconText = iconHour + ":" + iconMinute + ":" + iconSecond;
+        // Cache key encodes the layout mode implicitly:
+        //   hours == 0  →  "MM:SS"   (5 chars)  – 2-line layout
+        //   hours  > 0  →  "HH:MM:SS" (8 chars)  – 3-line layout
+        // The different lengths guarantee a redraw whenever the layout changes.
+        final String iconText = (hours == 0)
+                ? iconMinute + ":" + iconSecond
+                : iconHour + ":" + iconMinute + ":" + iconSecond;
 
         // ── Compute accent colour matching the timer face ─────────────────────
         final Color accentColor = TimerBackgroundHelper.computeAccentColor(
@@ -370,9 +375,11 @@ public class MainController {
 
         // Render at all standard sizes so Windows picks the best resolution
         // for taskbar, alt-tab thumbnail, jump-list, etc.
-        // 3-line stacked layout: hour / minute / second on separate rows.
-        final List<Image> icons = TaskbarIconRenderer.renderAllSizes(
-                iconHour, iconMinute, iconSecond, accentColor);
+        // When hours == 0: 2-line layout (MM / SS) with larger font for readability.
+        // When hours  > 0: 3-line layout (HH / MM / SS).
+        final List<Image> icons = (hours == 0)
+                ? TaskbarIconRenderer.renderAllSizes(iconMinute, iconSecond, accentColor)
+                : TaskbarIconRenderer.renderAllSizes(iconHour, iconMinute, iconSecond, accentColor);
         stage.getIcons().setAll(icons);
 
         // AWT Taskbar push: use the 32 px image (index 2 in [16,24,32,48,64])
