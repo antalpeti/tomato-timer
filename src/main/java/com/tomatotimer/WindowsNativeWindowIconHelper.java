@@ -15,8 +15,11 @@ import java.nio.ByteOrder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 import java.util.zip.CRC32;
 
 /**
@@ -74,6 +77,12 @@ public final class WindowsNativeWindowIconHelper {
      */
     private static final boolean DEBUG_MODE =
             Boolean.getBoolean("tomatotimer.icon.debug");
+
+    /**
+     * Guards the one-time debug-logging bootstrap so it executes at most once,
+     * even if {@link #apply} is called concurrently from multiple threads.
+     */
+    private static final AtomicBoolean BOOTSTRAP_DONE = new AtomicBoolean(false);
 
     // ── Win32 constants ───────────────────────────────────────────────────────
     /** {@code WM_SETICON} – sets the icon associated with a window. */
@@ -216,6 +225,49 @@ public final class WindowsNativeWindowIconHelper {
         }
     }
 
+    /**
+     * One-time bootstrap that guarantees {@link #LOG} can emit {@code FINE} records to
+     * the console when {@link #DEBUG_MODE} is active, regardless of the JUL configuration
+     * present in the environment.
+     *
+     * <p>JUL's default root handler only surfaces {@code INFO} and above.  If no
+     * {@code logging.properties} is supplied (e.g., when launched via Maven without
+     * {@code -Djava.util.logging.config.file}), {@code FINE} messages are silently dropped.
+     * This method prevents that by installing a dedicated {@link ConsoleHandler} at
+     * {@code FINE} level on the class logger if none already exists in the logger hierarchy,
+     * so debug output reliably reaches the console without any external configuration.</p>
+     *
+     * <p>Thread-safe: the {@link AtomicBoolean} guard ensures the setup runs at most once.</p>
+     */
+    private static void bootstrapDebugLogging() {
+        if (!DEBUG_MODE || !BOOTSTRAP_DONE.compareAndSet(false, true)) {
+            return;
+        }
+        // Ensure this logger passes FINE records down to its own handlers.
+        LOG.setLevel(Level.FINE);
+
+        // Walk the full logger hierarchy; if any ancestor already has a ConsoleHandler
+        // capable of handling FINE, skip adding a duplicate.
+        boolean found = false;
+        for (Logger cursor = LOG; cursor != null; cursor = cursor.getParent()) {
+            for (final var h : cursor.getHandlers()) {
+                if (h instanceof ConsoleHandler
+                        && h.getLevel().intValue() <= Level.FINE.intValue()) {
+                    found = true;
+                    break;
+                }
+            }
+            if (found) break;
+        }
+
+        if (!found) {
+            final var console = new ConsoleHandler();
+            console.setLevel(Level.FINE);
+            console.setFormatter(new SimpleFormatter());
+            LOG.addHandler(console);
+        }
+    }
+
     // ── Public API ────────────────────────────────────────────────────────────
 
     /**
@@ -236,6 +288,7 @@ public final class WindowsNativeWindowIconHelper {
      * @param icon the already-rendered taskbar icon; should be ≥ 32 × 32 px
      */
     public static void apply(final Image icon) {
+        bootstrapDebugLogging();
         if (!isWindows()) {
             debug("apply: skipped – not a Windows platform (os.name=%s)",
                     System.getProperty("os.name", "<unknown>"));

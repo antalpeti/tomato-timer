@@ -129,6 +129,34 @@ java -Dtomatotimer.icon.debug=true -jar target/tomato-timer-1.0.0-fat.jar
 MAVEN_OPTS="-Dtomatotimer.icon.debug=true" mvn javafx:run
 ```
 
+> **Note:** `MAVEN_OPTS` sets properties on the Maven process itself.
+> `javafx:run` (plugin version 0.0.8) forks a separate child JVM, so properties in
+> `MAVEN_OPTS` are **not** forwarded to it and the flag will have no effect.
+> Use `JAVA_TOOL_OPTIONS` instead — it is an OS-level environment variable that every
+> JVM process inherits, including forked ones:
+
+```bash
+# Reliable: propagates to the forked child JVM spawned by javafx:run
+JAVA_TOOL_OPTIONS="-Dtomatotimer.icon.debug=true" mvn javafx:run
+```
+
+**IntelliJ IDEA run configuration**
+
+1. Open **Run › Edit Configurations…**
+2. Choose an existing configuration or create a new one:
+   - **Application** — set *Main class* to `com.tomatotimer.Launcher`
+   - **Maven** — set *Command line* to `javafx:run`
+3. In the **VM options** field add:
+   ```
+   -Dtomatotimer.icon.debug=true
+   ```
+4. *(Optional)* To surface `FINE` log output, also add:
+   ```
+   -Djava.util.logging.config.file=logging.properties
+   ```
+   Make sure `logging.properties` exists at the project root (see template below).
+5. Click **OK** and run the configuration.
+
 Logs are written at `FINE` level under the logger
 `com.tomatotimer.WindowsNativeWindowIconHelper` via `java.util.logging` (JUL).
 Depending on your environment's JUL configuration, `FINE` messages may not appear by default.
@@ -151,6 +179,26 @@ java -Dtomatotimer.icon.debug=true \
      -Djava.util.logging.config.file=logging.properties \
      -jar target/tomato-timer-1.0.0-fat.jar
 ```
+
+### If you see no logs
+
+Even with `-Dtomatotimer.icon.debug=true` set, JUL's default configuration only surfaces
+`INFO` and above — `FINE` messages are silently dropped when no `logging.properties` is
+supplied.
+
+Starting from this version, the code-level bootstrap in `WindowsNativeWindowIconHelper`
+handles this automatically: when debug mode is active, the class logger's level is raised
+to `FINE` and a `ConsoleHandler` at `FINE` level is attached if one is not already present
+in the logger hierarchy.  No external configuration file is required.
+
+If logs still do not appear, check the following:
+
+| Possible cause | Fix |
+|---|---|
+| `MAVEN_OPTS` used with `mvn javafx:run` | Switch to `JAVA_TOOL_OPTIONS` (see above) |
+| Property typo | Verify the exact flag: `-Dtomatotimer.icon.debug=true` |
+| Non-Windows platform | The helper is a no-op on non-Windows; check the `apply: skipped` message |
+| IDE run config missing VM option | Add `-Dtomatotimer.icon.debug=true` to **VM options** (not program arguments) |
 
 ## Requirements
 
