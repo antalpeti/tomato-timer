@@ -106,8 +106,10 @@ if "%DRY_RUN%"=="1" (
     echo               --main-jar "%JAR_NAME%"
     echo               --main-class %MAIN_CLASS%
     echo               --dest "%DEST_DIR%"
-    echo               --java-options "--add-opens java.base/java.lang=ALL-UNNAMED"
-    echo               --java-options "--add-opens java.base/java.io=ALL-UNNAMED"
+    echo               --java-options "--add-opens=java.base/java.lang=ALL-UNNAMED"
+    echo               --java-options "--add-opens=java.base/java.io=ALL-UNNAMED"
+    echo [DRY-RUN] Note: = ^(not space^) in --add-opens is required -- jpackage splits
+    echo [DRY-RUN]       space-separated java-options values into broken cfg lines.
     echo [DRY-RUN] Note: jpackage auto-injects -Djpackage.app-version from --app-version.
     echo [DRY-RUN] OK -- environment looks good, no build was started.
     exit /b 0
@@ -148,6 +150,22 @@ echo STAGING  : %STAGING_DIR%
 echo DEST     : %DEST_DIR%
 echo.
 
+:: IMPORTANT – use = (not a space) between --add-opens and its argument.
+::
+:: jpackage on JDK 21.x (and earlier) splits the value of --java-options on
+:: every space when writing TomatoTimer.cfg.  A space-separated form like
+::   --java-options "--add-opens java.base/java.lang=ALL-UNNAMED"
+:: produces two *separate* lines in the cfg:
+::   java-options=--add-opens                      <- value-less: JVM rejects this
+::   java-options=java.base/java.lang=ALL-UNNAMED  <- unrecognised: ignored
+:: The JVM's JNI invocation API treats each java-options line as one standalone
+:: argument, so it never reassembles the two-token form and aborts with:
+::   Error: --add-opens requires a <module>/<package>=<target-module> specification
+::
+:: The single-token = form is accepted by all JDKs >= 9 and is never split:
+::   --java-options "--add-opens=java.base/java.lang=ALL-UNNAMED"
+:: produces the correct single cfg line:
+::   java-options=--add-opens=java.base/java.lang=ALL-UNNAMED
 "%JPACKAGE_EXE%" ^
     --type app-image ^
     --name %APP_NAME% ^
@@ -155,8 +173,8 @@ echo.
     --main-jar "%JAR_NAME%" ^
     --main-class %MAIN_CLASS% ^
     --dest "%DEST_DIR%" ^
-    --java-options "--add-opens java.base/java.lang=ALL-UNNAMED" ^
-    --java-options "--add-opens java.base/java.io=ALL-UNNAMED"
+    --java-options "--add-opens=java.base/java.lang=ALL-UNNAMED" ^
+    --java-options "--add-opens=java.base/java.io=ALL-UNNAMED"
 
 set "JPACKAGE_EXIT=%errorlevel%"
 
