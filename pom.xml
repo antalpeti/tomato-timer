@@ -122,7 +122,7 @@
                 </configuration>
             </plugin>
 
-            <!-- JaCoCo coverage – collect during test, report at verify -->
+            <!-- JaCoCo coverage – collect during test, report at verify, gate at verify -->
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
@@ -138,6 +138,46 @@
                         <id>jacoco-report</id>
                         <phase>verify</phase>
                         <goals><goal>report</goal></goals>
+                    </execution>
+                    <!--
+                      CI quality gate – BUNDLE level so a single large class (e.g. MainController)
+                      cannot silently drag the whole project below the floor.
+
+                      Thresholds chosen at ~5 pp below the values measured on the last full run:
+                        LINE    49.7 % → minimum 45 %
+                        METHOD  64.1 % → minimum 58 %
+                        BRANCH  23.3 % → minimum 18 %  (kept loose: JavaFX event-handlers and
+                                                         anonymous listeners are genuinely hard
+                                                         to branch-test in headless CI)
+                    -->
+                    <execution>
+                        <id>jacoco-check</id>
+                        <phase>verify</phase>
+                        <goals><goal>check</goal></goals>
+                        <configuration>
+                            <rules>
+                                <rule>
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <limit>
+                                            <counter>LINE</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.45</minimum>
+                                        </limit>
+                                        <limit>
+                                            <counter>METHOD</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.58</minimum>
+                                        </limit>
+                                        <limit>
+                                            <counter>BRANCH</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.18</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
