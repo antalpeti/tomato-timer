@@ -129,5 +129,93 @@ class FxmlSmokeTest {
 
         assertNotNull(root, "FXMLLoader.load() must return a non-null root node");
     }
+
+    /**
+     * Loads {@code sound_settings.fxml} and verifies the root node and its
+     * controller ({@link com.tomatotimer.controller.SoundSettingsController}) were
+     * created successfully.
+     */
+    @Test
+    @DisplayName("sound_settings.fxml loads without exception and returns a non-null root node")
+    void testSoundSettingsFxmlLoads() throws Exception {
+        Assumptions.assumeTrue(JavaFxTestHelper.ensureToolkitStarted(),
+                "JavaFX toolkit unavailable – sound_settings.fxml load test skipped");
+
+        final URL url = BASE.getResource("sound_settings.fxml");
+        assertNotNull(url);
+
+        final Object root = JavaFxTestHelper.runOnFxThread(() -> {
+            final FXMLLoader loader = new FXMLLoader(url);
+            return loader.load();
+        });
+
+        assertNotNull(root, "FXMLLoader.load() must return a non-null root node");
+    }
+
+    /**
+     * Loads {@code taskbar_settings.fxml} and verifies the root node and its
+     * controller ({@link com.tomatotimer.controller.TaskbarSettingsController}) were
+     * created successfully.
+     */
+    @Test
+    @DisplayName("taskbar_settings.fxml loads without exception and returns a non-null root node")
+    void testTaskbarSettingsFxmlLoads() throws Exception {
+        Assumptions.assumeTrue(JavaFxTestHelper.ensureToolkitStarted(),
+                "JavaFX toolkit unavailable – taskbar_settings.fxml load test skipped");
+
+        final URL url = BASE.getResource("taskbar_settings.fxml");
+        assertNotNull(url);
+
+        final Object root = JavaFxTestHelper.runOnFxThread(() -> {
+            final FXMLLoader loader = new FXMLLoader(url);
+            return loader.load();
+        });
+
+        assertNotNull(root, "FXMLLoader.load() must return a non-null root node");
+    }
+
+    /**
+     * Loads {@code calendar_settings.fxml} and verifies the root node and its
+     * controller ({@link com.tomatotimer.controller.CalendarSettingsController}) were
+     * created successfully.
+     */
+    @Test
+    @DisplayName("calendar_settings.fxml loads without exception and returns a non-null root node")
+    void testCalendarSettingsFxmlLoads() throws Exception {
+        Assumptions.assumeTrue(JavaFxTestHelper.ensureToolkitStarted(),
+                "JavaFX toolkit unavailable – calendar_settings.fxml load test skipped");
+
+        final URL url = BASE.getResource("calendar_settings.fxml");
+        assertNotNull(url);
+
+        final Object root = JavaFxTestHelper.runOnFxThread(() -> {
+            final FXMLLoader loader = new FXMLLoader(url);
+            return loader.load();
+        });
+
+        assertNotNull(root, "FXMLLoader.load() must return a non-null root node");
+    }
+
+    /**
+     * Loads {@code theme_settings.fxml} and verifies the root node and its
+     * controller ({@link com.tomatotimer.controller.ThemeSettingsController}) were
+     * created successfully.
+     */
+    @Test
+    @DisplayName("theme_settings.fxml loads without exception and returns a non-null root node")
+    void testThemeSettingsFxmlLoads() throws Exception {
+        Assumptions.assumeTrue(JavaFxTestHelper.ensureToolkitStarted(),
+                "JavaFX toolkit unavailable – theme_settings.fxml load test skipped");
+
+        final URL url = BASE.getResource("theme_settings.fxml");
+        assertNotNull(url);
+
+        final Object root = JavaFxTestHelper.runOnFxThread(() -> {
+            final FXMLLoader loader = new FXMLLoader(url);
+            return loader.load();
+        });
+
+        assertNotNull(root, "FXMLLoader.load() must return a non-null root node");
+    }
 }
 
