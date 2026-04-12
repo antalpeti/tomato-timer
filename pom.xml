@@ -74,6 +74,19 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.2.5</version>
+                <configuration>
+                    <argLine>
+                        <!-- Allow Mockito / ByteBuddy to self-attach as a Java agent (Java 21+) -->
+                        -XX:+EnableDynamicAgentLoading
+                        <!-- ByteBuddy instrumentation for static / inline mocking -->
+                        --add-opens=java.base/java.lang=ALL-UNNAMED
+                        --add-opens=java.base/java.lang.reflect=ALL-UNNAMED
+                        <!-- Force Prism software renderer so Canvas.snapshot() works
+                             even without a GPU / display server in the test JVM -->
+                        -Dprism.order=sw
+                        -Dprism.verbose=false
+                    </argLine>
+                </configuration>
             </plugin>
 
             <!-- Run with: mvn javafx:run -->
