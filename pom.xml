@@ -20,6 +20,10 @@
         <junit.version>5.10.3</junit.version>
         <mockito.version>5.12.0</mockito.version>
         <testfx.version>4.0.18</testfx.version>
+        <jacoco.version>0.8.12</jacoco.version>
+        <!-- Empty-string fallback so @{argLine} in Surefire never throws "property not set"
+             when running without JaCoCo. jacoco:prepare-agent overrides this at runtime. -->
+        <argLine></argLine>
     </properties>
 
     <dependencies>
@@ -97,17 +101,14 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.2.5</version>
                 <configuration>
-                    <argLine>
-                        <!-- Allow Mockito / ByteBuddy to self-attach as a Java agent (Java 21+) -->
-                        -XX:+EnableDynamicAgentLoading
-                        <!-- ByteBuddy instrumentation for static / inline mocking -->
-                        --add-opens=java.base/java.lang=ALL-UNNAMED
-                        --add-opens=java.base/java.lang.reflect=ALL-UNNAMED
-                        <!-- Force Prism software renderer so Canvas.snapshot() works
-                             even without a GPU / display server in the test JVM -->
-                        -Dprism.order=sw
-                        -Dprism.verbose=false
-                    </argLine>
+                    <!--
+                      @{argLine} is late-binding: Surefire resolves it at execution time,
+                      so it correctly picks up the -javaagent set by jacoco:prepare-agent
+                      in the initialize phase. The empty-string fallback <argLine/> in
+                      <properties> ensures no "property not set" error when running
+                      without JaCoCo (e.g. mvn test -Djacoco.skip=true).
+                    -->
+                    <argLine>@{argLine} -XX:+EnableDynamicAgentLoading --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED -Dprism.order=sw -Dprism.verbose=false</argLine>
                 </configuration>
             </plugin>
 
@@ -119,6 +120,26 @@
                 <configuration>
                     <mainClass>com.tomatotimer.App</mainClass>
                 </configuration>
+            </plugin>
+
+            <!-- JaCoCo coverage – collect during test, report at verify -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.version}</version>
+                <executions>
+                    <!-- Binds to initialize; sets ${argLine} with the -javaagent path -->
+                    <execution>
+                        <id>jacoco-prepare-agent</id>
+                        <goals><goal>prepare-agent</goal></goals>
+                    </execution>
+                    <!-- Binds to verify; generates target/site/jacoco/ (HTML + XML) -->
+                    <execution>
+                        <id>jacoco-report</id>
+                        <phase>verify</phase>
+                        <goals><goal>report</goal></goals>
+                    </execution>
+                </executions>
             </plugin>
 
             <!-- Fat-jar with: mvn package -->
