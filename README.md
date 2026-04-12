@@ -13,6 +13,7 @@ A Maven-based JavaFX Pomodoro timer, rewritten from the original C# WPF **Tomato
 | **Neon visual presets** | 8 selectable rainbow-spectrum themes: `Aurora Drift` (default), `Scarlet Surge`, `Citrus Spark`, `Lime Flash`, `Jade Mist`, `Ocean Glow`, `Cosmos Blaze`, `Prism Veil` |
 | **Animated background** | Progress-aware gradient + glow changes over time and mode |
 | **Glow intensity profiles** | 3 A/B quick-tune profiles applied on top of any preset: `Soft` (reduced glow), `Balanced` (default, no change), `Vivid` (boosted glow) |
+| **Theme selection modes** | On each new **Work** phase, theme can stay fixed or rotate via `Static` / `Sequential` / `Random` / `Shuffle` |
 | **Vector icon set** | Modern, vivid SVG-based icons rendered in JavaFX (scalable) |
 | **Always on Top** | Toggle pin button in the top-right controls |
 | **State persistence** | Window position/size and saved **Work** session state can be restored on next start |
@@ -26,7 +27,8 @@ A Maven-based JavaFX Pomodoro timer, rewritten from the original C# WPF **Tomato
 - Hover over the timer to reveal controls.
 - Hold the **Relax** button for ~2 seconds to start **Long Break**.
 - Use **Finish Work** to create a Google Calendar event from the current work interval (if enabled), then switch directly to short rest.
-- Open **Settings** to configure timer durations, switch neon preset, and choose the glow intensity profile; navigate to sub-pages via the icon buttons.
+- Open **Settings** to configure timer durations and navigate to dedicated sub-pages (**Theme**, **Calendar**, **Taskbar**, **Sound**).
+- Open **Theme Settings** (from Settings) to choose neon preset, glow intensity profile, and theme selection mode.
 - Open **Sound Settings** (from Settings) to assign custom notification sounds.
 - Open **Calendar Settings** (from Settings) to configure Google Calendar integration.
 - Open **Taskbar Settings** (from Settings) to configure the taskbar countdown icon.
@@ -46,8 +48,8 @@ Timer face (hover state):
 
 Settings page:
   left:   [Back to timer]
-  right:  [Calendar Settings] [Taskbar Settings] [Sound Settings]
-  center: Work / Rest / Long spinners + Neon preset combo + Glow profile combo
+  right:  [Theme Settings] [Calendar Settings] [Taskbar Settings] [Sound Settings]
+  center: Work / Rest / Long spinners
 
 Windows taskbar preview (thumbnail toolbar):
   [Reset] [Pause] [Finish Work] [Take a break] [Go to Work]
@@ -57,7 +59,7 @@ Notes:
   - Finish Work => Google Calendar event (if enabled) + Short Rest
 ```
 
-- **Settings**: opens timer/theme settings, with navigation icons to sub-pages.
+- **Settings**: opens timer duration settings, with navigation icons to sub-pages.
 - **Reset**: restarts the current mode from full duration.
 - **Play / Resume**: resumes paused work mode.
 - **Pause**: pauses running work mode.
@@ -71,15 +73,27 @@ Notes:
 
 ### Main Settings (`settings.fxml`)
 
-Configures timer durations (Work / Rest / Long Rest), the active neon theme preset, and the glow intensity profile.
+Configures timer durations (Work / Rest / Long Rest).
 Navigation icon buttons in the top-right open the dedicated sub-pages in this order:
-**Calendar**, **Taskbar**, **Sound**.
+**Theme**, **Calendar**, **Taskbar**, **Sound**.
+
+### Theme Settings (`theme_settings.fxml`)
+
+| Control | Purpose |
+|---|---|
+| **Theme** | Selects the active neon preset (`Aurora Drift` ... `Prism Veil`) |
+| **Glow** | Selects the global glow profile (`Soft`, `Balanced`, `Vivid`) |
+| **Selection** | Defines how theme changes at each new **Work** start (`Static`, `Sequential`, `Random`, `Shuffle`) |
+
+Preset and Glow changes apply immediately and refresh the timer face in the background.
+Selection mode is persisted and applied when the next **Work** phase starts.
+Back button returns to the main Settings page.
 
 ### Glow Intensity Profiles
 
 A global **glow profile** can be combined with any neon preset to adjust the visual intensity
-without duplicating preset data.  The profile is selected directly on the Main Settings page
-via the **Glow** combo (next to the Theme combo) and is persisted in `java.util.prefs.Preferences`
+without duplicating preset data.  The profile is selected on the dedicated **Theme Settings** page
+via the **Glow** combo and is persisted in `java.util.prefs.Preferences`
 under the key `neon_glow_profile` (managed by `AppSettings`).
 
 | Profile | Effect |
@@ -90,6 +104,17 @@ under the key `neon_glow_profile` (managed by `AppSettings`).
 
 Scale factors are applied by `TimerBackgroundHelper` at render-time (root gradient + bar glow),
 so existing `NeonPreset` constants remain unchanged.  All scaled values are clamped to `[0, 1]`.
+
+### Theme Selection Modes
+
+`ThemeSelectionMode` controls how the next theme is picked when a new **Work** phase starts:
+
+| Mode | Behavior |
+|---|---|
+| **Static** | Keep the currently selected preset (**default**) |
+| **Sequential** | Move to the next preset in enum order, wrapping at the end |
+| **Random** | Pick a random preset that differs from the current one |
+| **Shuffle** | Walk a randomized non-repeating cycle of all presets, then reshuffle |
 
 ### Calendar Settings (`calendar_settings.fxml`)
 
@@ -467,6 +492,8 @@ tomato-timer/
 │   ├── TimerMode.java                    # WORK / RELAX / RELAX_LONG
 │   ├── SoundType.java                    # Notification sound event types
 │   ├── NeonPreset.java                   # Neon theme presets and tuning parameters
+│   ├── NeonGlowProfile.java              # SOFT / BALANCED / VIVID glow intensity multipliers
+│   ├── ThemeSelectionMode.java           # STATIC / SEQUENTIAL / RANDOM / SHUFFLE theme rotation mode
 │   ├── TaskbarTimeLayout.java            # VERTICAL / HORIZONTAL enum for taskbar icon
 │   ├── TaskbarIconRenderer.java          # Canvas-based live countdown icon renderer
 │   ├── TimerBackgroundHelper.java        # Gradient / glow / accent color generation
@@ -478,14 +505,16 @@ tomato-timer/
 │   └── controller/
 │       ├── MainController.java           # Main coordinator (timer, navigation, window)
 │       ├── ButtonsController.java        # Timer page (controls + progress + dynamic styling)
-│       ├── SettingsController.java       # Timer durations + theme; nav to sub-pages
+│       ├── SettingsController.java       # Timer durations; nav to dedicated sub-pages
+│       ├── ThemeSettingsController.java  # Theme preset + glow profile + selection mode
 │       ├── CalendarSettingsController.java # Google Calendar integration settings
 │       ├── SoundSettingsController.java  # Sound assignment UI and preview
 │       └── TaskbarSettingsController.java  # Taskbar icon layout, font size, enable toggle
 └── src/main/resources/com/tomatotimer/
     ├── main.fxml                         # Main shell layout
     ├── buttons.fxml                      # Timer view
-    ├── settings.fxml                     # Main settings view (durations + theme + sub-page nav)
+    ├── settings.fxml                     # Main settings view (durations + sub-page nav)
+    ├── theme_settings.fxml               # Theme settings sub-page (preset + glow + selection mode)
     ├── calendar_settings.fxml            # Google Calendar settings sub-page
     ├── sound_settings.fxml               # Sound settings sub-page
     ├── taskbar_settings.fxml             # Taskbar icon settings sub-page
