@@ -107,11 +107,6 @@
                              even without a GPU / display server in the test JVM -->
                         -Dprism.order=sw
                         -Dprism.verbose=false
-                        <!-- TestFX: allow access to internal JavaFX application bootstrap API -->
-                        --add-exports=javafx.graphics/com.sun.javafx.application=ALL-UNNAMED
-                        --add-opens=javafx.graphics/com.sun.javafx.application=ALL-UNNAMED
-                        <!-- TestFX: allow access to Glass UI (robot / window introspection) -->
-                        --add-exports=javafx.graphics/com.sun.glass.ui=ALL-UNNAMED
                     </argLine>
                 </configuration>
             </plugin>
