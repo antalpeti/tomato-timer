@@ -125,6 +125,11 @@ public final class WindowsTaskbarPreviewButtonsHelper {
     /** Play triangle – used as the Resume icon in the BUTTON_PAUSE slot when the timer is paused. */
     private static final String SVG_RESUME =
         "M8,5.14V19.14L19,12.14L8,5.14Z";
+    /** Calendar / today – matches the "Finish work" button icon in the main UI. */
+    private static final String SVG_CALENDAR =
+        "M19,19H5V8H19M16,1V3H8V1H6V3H5C3.89,3 3,3.9 3,5V19" +
+        "C3,20.11 3.9,21 5,21H19C20.11,21 21,20.11 21,19V5" +
+        "C21,3.9 20.11,3 19,3H18V1M17,13H12V18H17V13Z";
 
     /** Matches SVG number tokens (integers, decimals, scientific notation). */
     private static final Pattern NUMBER_RE =
@@ -576,15 +581,15 @@ public final class WindowsTaskbarPreviewButtonsHelper {
         // Colors are derived from IconFactory constants so thumbnail-toolbar icons
         // stay in sync with the main UI without manual hex drift.
         // Slot 0 – Reset (replay arrow)  – salmon-orange (IconFactory.COLOR_RESET)
-        buttonIcons[0] = loadButtonIconFromSvg(SVG_RESET,  hexToAwtColor(IconFactory.COLOR_RESET),    0);
+        buttonIcons[0] = loadButtonIconFromSvg(SVG_RESET,     hexToAwtColor(IconFactory.COLOR_RESET),    0);
         // Slot 1 – Pause (two bars)       – warm yellow (IconFactory.COLOR_PAUSE)
-        buttonIcons[1] = loadButtonIconFromSvg(SVG_PAUSE,  hexToAwtColor(IconFactory.COLOR_PAUSE),    1);
-        // Slot 2 – Finish work (clock)    – mint (IconFactory.COLOR_CALENDAR, matches btnFinishWork)
-        buttonIcons[2] = loadButtonIconFromSvg(SVG_CLOCK,  hexToAwtColor(IconFactory.COLOR_CALENDAR), 2);
+        buttonIcons[1] = loadButtonIconFromSvg(SVG_PAUSE,     hexToAwtColor(IconFactory.COLOR_PAUSE),    1);
+        // Slot 2 – Finish work (calendar) – mint (IconFactory.COLOR_CALENDAR, matches btnFinishWork)
+        buttonIcons[2] = loadButtonIconFromSvg(SVG_CALENDAR,  hexToAwtColor(IconFactory.COLOR_CALENDAR), 2);
         // Slot 3 – Take a break (gamepad) – sky blue (IconFactory.COLOR_RELAX)
-        buttonIcons[3] = loadButtonIconFromSvg(SVG_RELAX,  hexToAwtColor(IconFactory.COLOR_RELAX),    3);
+        buttonIcons[3] = loadButtonIconFromSvg(SVG_RELAX,     hexToAwtColor(IconFactory.COLOR_RELAX),    3);
         // Slot 4 – Go to Work (briefcase) – coral/tomato (IconFactory.COLOR_WORK)
-        buttonIcons[4] = loadButtonIconFromSvg(SVG_WORK,   hexToAwtColor(IconFactory.COLOR_WORK),     4);
+        buttonIcons[4] = loadButtonIconFromSvg(SVG_WORK,      hexToAwtColor(IconFactory.COLOR_WORK),     4);
         // Slot 5 – Resume (play triangle) – teal (IconFactory.COLOR_PLAY); alternate for BUTTON_PAUSE slot when paused
         buttonIcons[ICON_SLOT_RESUME] = loadButtonIconFromSvg(SVG_RESUME, hexToAwtColor(IconFactory.COLOR_PLAY), ICON_SLOT_RESUME);
 
