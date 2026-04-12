@@ -69,6 +69,12 @@
                 <tooltip><Tooltip text="Glow intensity profile: Soft / Balanced / Vivid"/></tooltip>
             </ComboBox>
 
+            <!-- Theme selection mode – applied on each WORK phase start -->
+            <Label fx:id="lblSelection" text="Selection:" styleClass="setting-label"/>
+            <ComboBox fx:id="cbThemeSelectionMode" prefWidth="100" focusTraversable="false">
+                <tooltip><Tooltip text="Theme selection on WORK start: Static / Sequential / Random / Shuffle"/></tooltip>
+            </ComboBox>
+
             <!-- Calendar settings button – navigates to dedicated Google Calendar settings page -->
             <!-- margin left=2 right=2: symmetric breathing room around separators -->
             <Separator orientation="VERTICAL" prefHeight="30">

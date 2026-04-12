@@ -6,6 +6,7 @@ import com.tomatotimer.NeonPreset;
 import com.tomatotimer.SoundType;
 import com.tomatotimer.TaskbarIconRenderer;
 import com.tomatotimer.TaskbarTimeLayout;
+import com.tomatotimer.ThemeSelectionMode;
 import com.tomatotimer.TimerBackgroundHelper;
 import com.tomatotimer.TimerMode;
 import com.tomatotimer.UiScaleHelper;
@@ -42,6 +43,9 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -66,6 +70,10 @@ public class MainController {
     private LocalDateTime  pauseStartTime   = LocalDateTime.now();
     private long           pausedMillisTotal= 0;
     private long           timerElapsedWhenPaused = 0;
+
+    // ---- theme selection (SHUFFLE mode) -------------------------------------
+    /** Remaining presets in the current shuffle cycle. Refilled and reshuffled when empty. */
+    private final List<NeonPreset> shuffleDeck = new ArrayList<>();
 
     // ---- sub-views ----------------------------------------------------------
     private Node                       buttonsView;
@@ -510,6 +518,7 @@ public class MainController {
 
     public void startWork() {
         triggerGCalIfNeeded();
+        advanceThemeForWorkStart();
         timerStartTime    = LocalDateTime.now();
         pauseStartTime    = LocalDateTime.now();
         pausedMillisTotal = 0;
@@ -518,6 +527,57 @@ public class MainController {
         isPaused = false;
         isOverTime = false;
         updateUI();
+    }
+
+    /**
+     * Advances the active {@link NeonPreset} according to the configured
+     * {@link ThemeSelectionMode} before a new WORK phase begins.
+     *
+     * <ul>
+     *   <li>{@code STATIC}     – no-op.</li>
+     *   <li>{@code SEQUENTIAL} – wraps to the next preset in {@link NeonPreset#values()} order.</li>
+     *   <li>{@code RANDOM}     – picks a uniformly-random preset excluding the current one.</li>
+     *   <li>{@code SHUFFLE}    – pops the next preset from the in-memory shuffle deck;
+     *                            refills and reshuffles when the deck is empty.</li>
+     * </ul>
+     *
+     * <p>After updating {@link AppSettings}, the Settings-panel combo box is refreshed
+     * via {@link SettingsController#syncPresetComboBox()} so the UI stays consistent
+     * even when the settings page is open (e.g. triggered from the taskbar thumbnail).</p>
+     */
+    private void advanceThemeForWorkStart() {
+        final ThemeSelectionMode selMode = settings.getThemeSelectionMode();
+        if (selMode == ThemeSelectionMode.STATIC) return;
+
+        final NeonPreset[] all     = NeonPreset.values();
+        final NeonPreset   current = settings.getNeonPreset();
+
+        final NeonPreset next = switch (selMode) {
+            case SEQUENTIAL -> {
+                final int idx = Arrays.asList(all).indexOf(current);
+                yield all[(idx + 1) % all.length];
+            }
+            case RANDOM -> {
+                final var pool = Arrays.stream(all)
+                        .filter(p -> p != current)
+                        .toList();
+                yield pool.get((int) (Math.random() * pool.size()));
+            }
+            case SHUFFLE -> {
+                if (shuffleDeck.isEmpty()) {
+                    shuffleDeck.addAll(Arrays.asList(all));
+                    Collections.shuffle(shuffleDeck);
+                }
+                yield shuffleDeck.remove(0);
+            }
+            case STATIC -> current; // unreachable: guarded by the early return above
+        };
+
+        settings.setNeonPreset(next);
+        // Keep the Settings-panel combo box in sync (no-op when the panel is hidden)
+        if (settingsController != null) {
+            settingsController.syncPresetComboBox();
+        }
     }
 
     public void startRelax(boolean longBreak) {

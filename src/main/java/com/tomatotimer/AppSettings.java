@@ -32,9 +32,10 @@ public class AppSettings {
     private static final String KEY_SOUND_REST_TIMEOUT = "sound_rest_timeout";
     private static final String KEY_NEON_PRESET           = "neon_preset";
     private static final String KEY_NEON_GLOW_PROFILE     = "neon_glow_profile";
-    private static final String KEY_TASKBAR_ICON_ENABLE   = "taskbar_icon_enable";
-    private static final String KEY_TASKBAR_FONT_SIZE     = "taskbar_font_size";
-    private static final String KEY_TASKBAR_LAYOUT        = "taskbar_layout";
+    private static final String KEY_TASKBAR_ICON_ENABLE      = "taskbar_icon_enable";
+    private static final String KEY_TASKBAR_FONT_SIZE        = "taskbar_font_size";
+    private static final String KEY_TASKBAR_LAYOUT           = "taskbar_layout";
+    private static final String KEY_THEME_SELECTION_MODE     = "theme_selection_mode";
 
     private AppSettings() {}
 
@@ -145,6 +146,21 @@ public class AppSettings {
 
     public void setTaskbarLayout(TaskbarTimeLayout layout) {
         prefs.put(KEY_TASKBAR_LAYOUT, layout.name());
+    }
+
+    // ---- theme selection mode -----------------------------------------------
+
+    /**
+     * Returns the active {@link ThemeSelectionMode}, defaulting to {@link ThemeSelectionMode#STATIC}
+     * when no value has been saved yet.
+     */
+    public ThemeSelectionMode getThemeSelectionMode() {
+        return ThemeSelectionMode.fromName(
+                prefs.get(KEY_THEME_SELECTION_MODE, ThemeSelectionMode.STATIC.name()));
+    }
+
+    public void setThemeSelectionMode(ThemeSelectionMode mode) {
+        prefs.put(KEY_THEME_SELECTION_MODE, mode.name());
     }
 
     // ---- flush --------------------------------------------------------------
