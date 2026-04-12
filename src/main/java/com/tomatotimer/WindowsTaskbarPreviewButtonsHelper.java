@@ -573,24 +573,39 @@ public final class WindowsTaskbarPreviewButtonsHelper {
         buttonIcons     = new WinDef.HICON[ICON_COUNT];
         buttonIconFiles = new Path[ICON_COUNT];
 
-        // Slot 0 – Reset (replay arrow)  – teal
-        buttonIcons[0] = loadButtonIconFromSvg(SVG_RESET,  new Color(0x2D, 0xD4, 0xBF), 0);
-        // Slot 1 – Pause (two bars)       – amber
-        buttonIcons[1] = loadButtonIconFromSvg(SVG_PAUSE,  new Color(0xF5, 0x9E, 0x0B), 1);
-        // Slot 2 – Finish work (clock)    – violet
-        buttonIcons[2] = loadButtonIconFromSvg(SVG_CLOCK,  new Color(0x8B, 0x5C, 0xF6), 2);
-        // Slot 3 – Take a break (gamepad) – green
-        buttonIcons[3] = loadButtonIconFromSvg(SVG_RELAX,  new Color(0x22, 0xC5, 0x5E), 3);
-        // Slot 4 – Go to Work (briefcase) – red
-        buttonIcons[4] = loadButtonIconFromSvg(SVG_WORK,   new Color(0xEF, 0x44, 0x44), 4);
-        // Slot 5 – Resume (play triangle) – bright green; alternate for BUTTON_PAUSE slot when paused
-        buttonIcons[ICON_SLOT_RESUME] = loadButtonIconFromSvg(SVG_RESUME, new Color(0x4A, 0xDE, 0x80), ICON_SLOT_RESUME);
+        // Colors are derived from IconFactory constants so thumbnail-toolbar icons
+        // stay in sync with the main UI without manual hex drift.
+        // Slot 0 – Reset (replay arrow)  – salmon-orange (IconFactory.COLOR_RESET)
+        buttonIcons[0] = loadButtonIconFromSvg(SVG_RESET,  hexToAwtColor(IconFactory.COLOR_RESET),    0);
+        // Slot 1 – Pause (two bars)       – warm yellow (IconFactory.COLOR_PAUSE)
+        buttonIcons[1] = loadButtonIconFromSvg(SVG_PAUSE,  hexToAwtColor(IconFactory.COLOR_PAUSE),    1);
+        // Slot 2 – Finish work (clock)    – mint (IconFactory.COLOR_CALENDAR, matches btnFinishWork)
+        buttonIcons[2] = loadButtonIconFromSvg(SVG_CLOCK,  hexToAwtColor(IconFactory.COLOR_CALENDAR), 2);
+        // Slot 3 – Take a break (gamepad) – sky blue (IconFactory.COLOR_RELAX)
+        buttonIcons[3] = loadButtonIconFromSvg(SVG_RELAX,  hexToAwtColor(IconFactory.COLOR_RELAX),    3);
+        // Slot 4 – Go to Work (briefcase) – coral/tomato (IconFactory.COLOR_WORK)
+        buttonIcons[4] = loadButtonIconFromSvg(SVG_WORK,   hexToAwtColor(IconFactory.COLOR_WORK),     4);
+        // Slot 5 – Resume (play triangle) – teal (IconFactory.COLOR_PLAY); alternate for BUTTON_PAUSE slot when paused
+        buttonIcons[ICON_SLOT_RESUME] = loadButtonIconFromSvg(SVG_RESUME, hexToAwtColor(IconFactory.COLOR_PLAY), ICON_SLOT_RESUME);
 
         configureButton(buttons[0], BUTTON_RESET,       buttonIcons[0], "Reset");
         configureButton(buttons[1], BUTTON_PAUSE,       buttonIcons[1], "Pause");
         configureButton(buttons[2], BUTTON_FINISH_WORK, buttonIcons[2], "Finish work and start short break");
         configureButton(buttons[3], BUTTON_TAKE_BREAK,  buttonIcons[3], "Take a break");
         configureButton(buttons[4], BUTTON_GO_TO_WORK,  buttonIcons[4], "Go to Work");
+    }
+
+    /**
+     * Converts an {@link IconFactory} CSS hex colour string (e.g. {@code "#FFA07A"})
+     * to a {@link Color java.awt.Color} for use in the AWT thumbnail-icon rendering
+     * pipeline.  Accepts both {@code "#RRGGBB"} and {@code "RRGGBB"} forms.
+     */
+    private static Color hexToAwtColor(String hex) {
+        final String clean = hex.startsWith("#") ? hex.substring(1) : hex;
+        return new Color(
+                Integer.parseInt(clean.substring(0, 2), 16),
+                Integer.parseInt(clean.substring(2, 4), 16),
+                Integer.parseInt(clean.substring(4, 6), 16));
     }
 
     /**
