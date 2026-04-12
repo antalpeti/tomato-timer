@@ -76,9 +76,11 @@ public final class WindowsTaskbarPreviewButtonsHelper {
     private static final int THB_TOOLTIP = 0x00000004;
     private static final int THB_FLAGS = 0x00000008;
 
-    private static final int THBF_ENABLED = 0x0000;
-    private static final int THBF_DISABLED = 0x0001;
+    private static final int THBF_ENABLED        = 0x0000;
+    private static final int THBF_DISABLED       = 0x0001;
     private static final int THBF_DISMISSONCLICK = 0x0002;
+    /** THUMBBUTTONFLAGS: button is not rendered and cannot receive input. */
+    private static final int THBF_HIDDEN         = 0x0008;
 
     private static final int IMAGE_ICON = 1;
     private static final int LR_LOADFROMFILE = 0x0010;
@@ -256,26 +258,41 @@ public final class WindowsTaskbarPreviewButtonsHelper {
      * Pushes current {@link #lastMode}/{@link #lastIsPaused} state to the
      * native thumbnail toolbar via {@code ThumbBarUpdateButtons}.
      *
+     * <p>Visibility rules:</p>
      * <ul>
-     *   <li>Reset   – always enabled</li>
-     *   <li>Pause   – enabled only when in WORK mode and not paused</li>
-     *   <li>Finish Work / Take a Break – enabled only in WORK mode</li>
-     *   <li>Go to Work – enabled only in REST mode</li>
+     *   <li><b>Work phase</b> – visible: Reset, Pause, Finish Work, Take a Break;
+     *       Go to Work is <em>hidden</em>.
+     *       Pause is disabled (but still visible) while the timer is already paused.</li>
+     *   <li><b>Rest phase</b> – visible: Reset, Go to Work;
+     *       Pause, Finish Work, Take a Break are <em>hidden</em>.</li>
      * </ul>
+     * Buttons are hidden via {@code THBF_HIDDEN} so they occupy no space in the
+     * thumbnail toolbar rather than appearing greyed-out.
      */
     private void applyButtonStates() {
         final boolean inWorkMode = (lastMode == TimerMode.WORK);
 
+        // Reset is always visible and enabled
         setButtonFlags(BUTTON_RESET,
                 THBF_ENABLED | THBF_DISMISSONCLICK);
+
+        // Pause: visible in work phase (disabled while already paused), hidden in rest phase
         setButtonFlags(BUTTON_PAUSE,
-                (inWorkMode && !lastIsPaused ? THBF_ENABLED : THBF_DISABLED) | THBF_DISMISSONCLICK);
+                inWorkMode
+                        ? ((!lastIsPaused ? THBF_ENABLED : THBF_DISABLED) | THBF_DISMISSONCLICK)
+                        : THBF_HIDDEN);
+
+        // Finish work: visible and enabled in work phase, hidden in rest phase
         setButtonFlags(BUTTON_FINISH_WORK,
-                (inWorkMode ? THBF_ENABLED : THBF_DISABLED) | THBF_DISMISSONCLICK);
+                inWorkMode ? (THBF_ENABLED | THBF_DISMISSONCLICK) : THBF_HIDDEN);
+
+        // Take a break: visible and enabled in work phase, hidden in rest phase
         setButtonFlags(BUTTON_TAKE_BREAK,
-                (inWorkMode ? THBF_ENABLED : THBF_DISABLED) | THBF_DISMISSONCLICK);
+                inWorkMode ? (THBF_ENABLED | THBF_DISMISSONCLICK) : THBF_HIDDEN);
+
+        // Go to Work: hidden in work phase, visible and enabled in rest phase
         setButtonFlags(BUTTON_GO_TO_WORK,
-                (!inWorkMode ? THBF_ENABLED : THBF_DISABLED) | THBF_DISMISSONCLICK);
+                !inWorkMode ? (THBF_ENABLED | THBF_DISMISSONCLICK) : THBF_HIDDEN);
 
         try {
             final WinNT.HRESULT hr = invokeTaskbarMethod(
