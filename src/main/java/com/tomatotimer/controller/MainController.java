@@ -796,6 +796,7 @@ public class MainController {
         taskbarPreviewButtons.install(
                 this::reset,
                 this::pause,
+                this::resume,
                 this::finishWork,
                 () -> this.startRelax(false),
                 this::startWork           // Go to Work – enabled in REST mode

@@ -92,6 +92,13 @@ public final class WindowsTaskbarPreviewButtonsHelper {
     private static final int BUTTON_GO_TO_WORK  = 2005;
 
     private static final int BUTTON_COUNT = 5;
+    /**
+     * Total icon slots: 5 for the regular buttons + 1 extra for the Resume alternate
+     * icon that occupies the BUTTON_PAUSE slot when the WORK timer is paused.
+     */
+    private static final int ICON_COUNT        = 6;
+    /** Index inside {@link #buttonIcons} / {@link #buttonIconFiles} for the Resume icon. */
+    private static final int ICON_SLOT_RESUME  = 5;
 
     // ── SVG path data (Material Design 24 × 24 viewbox, mirrors IconFactory) ────
     // These paths are duplicated here to avoid a JavaFX dependency from the
@@ -115,6 +122,9 @@ public final class WindowsTaskbarPreviewButtonsHelper {
         "M20,6H16V4C16,2.89 15.11,2 14,2H10C8.89,2 8,2.89 8,4V6" +
         "H4C2.89,6 2,6.89 2,8V19C2,20.11 2.89,21 4,21H20" +
         "C21.11,21 22,20.11 22,19V8C22,6.89 21.11,6 20,6M10,4H14V6H10V4Z";
+    /** Play triangle – used as the Resume icon in the BUTTON_PAUSE slot when the timer is paused. */
+    private static final String SVG_RESUME =
+        "M8,5.14V19.14L19,12.14L8,5.14Z";
 
     /** Matches SVG number tokens (integers, decimals, scientific notation). */
     private static final Pattern NUMBER_RE =
@@ -138,6 +148,7 @@ public final class WindowsTaskbarPreviewButtonsHelper {
 
     private Runnable onReset;
     private Runnable onPause;
+    private Runnable onResume;
     private Runnable onFinishWork;
     private Runnable onTakeBreak;
     private Runnable onGoToWork;
@@ -155,6 +166,7 @@ public final class WindowsTaskbarPreviewButtonsHelper {
 
     public void install(Runnable onReset,
                         Runnable onPause,
+                        Runnable onResume,
                         Runnable onFinishWork,
                         Runnable onTakeBreak,
                         Runnable onGoToWork) {
@@ -164,6 +176,7 @@ public final class WindowsTaskbarPreviewButtonsHelper {
 
         this.onReset      = onReset;
         this.onPause      = onPause;
+        this.onResume     = onResume;
         this.onFinishWork = onFinishWork;
         this.onTakeBreak  = onTakeBreak;
         this.onGoToWork   = onGoToWork;
@@ -260,11 +273,13 @@ public final class WindowsTaskbarPreviewButtonsHelper {
      *
      * <p>Visibility rules:</p>
      * <ul>
-     *   <li><b>Work phase</b> – visible: Reset, Pause, Finish Work, Take a Break;
-     *       Go to Work is <em>hidden</em>.
-     *       Pause is disabled (but still visible) while the timer is already paused.</li>
-     *   <li><b>Rest phase</b> – visible: Reset, Go to Work;
-     *       Pause, Finish Work, Take a Break are <em>hidden</em>.</li>
+     *   <li><b>Work phase – running</b>: visible: Reset, <em>Pause</em>, Finish Work, Take a Break;
+     *       Go to Work is <em>hidden</em>.</li>
+     *   <li><b>Work phase – paused</b>: the Pause slot is replaced by an active <em>Resume</em> button
+     *       (same button ID 2002, swapped icon and tooltip) so the user can continue from the
+     *       thumbnail preview.</li>
+     *   <li><b>Rest phase</b>: visible: Reset, Go to Work;
+     *       Pause/Resume, Finish Work, Take a Break are <em>hidden</em>.</li>
      * </ul>
      * Buttons are hidden via {@code THBF_HIDDEN} so they occupy no space in the
      * thumbnail toolbar rather than appearing greyed-out.
@@ -276,11 +291,21 @@ public final class WindowsTaskbarPreviewButtonsHelper {
         setButtonFlags(BUTTON_RESET,
                 THBF_ENABLED | THBF_DISMISSONCLICK);
 
-        // Pause: visible in work phase (disabled while already paused), hidden in rest phase
-        setButtonFlags(BUTTON_PAUSE,
-                inWorkMode
-                        ? ((!lastIsPaused ? THBF_ENABLED : THBF_DISABLED) | THBF_DISMISSONCLICK)
-                        : THBF_HIDDEN);
+        // BUTTON_PAUSE slot:
+        //   • WORK + running → Pause icon, active
+        //   • WORK + paused  → Resume icon, active  (swap icon + tooltip)
+        //   • REST           → hidden
+        if (inWorkMode) {
+            if (!lastIsPaused) {
+                setButtonFull(BUTTON_PAUSE, buttonIcons[1], "Pause",
+                        THBF_ENABLED | THBF_DISMISSONCLICK);
+            } else {
+                setButtonFull(BUTTON_PAUSE, buttonIcons[ICON_SLOT_RESUME], "Resume",
+                        THBF_ENABLED | THBF_DISMISSONCLICK);
+            }
+        } else {
+            setButtonFlags(BUTTON_PAUSE, THBF_HIDDEN);
+        }
 
         // Finish work: visible and enabled in work phase, hidden in rest phase
         setButtonFlags(BUTTON_FINISH_WORK,
@@ -529,7 +554,10 @@ public final class WindowsTaskbarPreviewButtonsHelper {
     private void dispatchPreviewAction(int commandId) {
         final Runnable action = switch (commandId) {
             case BUTTON_RESET       -> onReset;
-            case BUTTON_PAUSE       -> onPause;
+            // The PAUSE slot acts as Resume when the timer is paused; the icon and
+            // tooltip have already been swapped by applyButtonStates() so the user
+            // sees "Resume" – routing the click to the matching callback is consistent.
+            case BUTTON_PAUSE       -> lastIsPaused ? onResume : onPause;
             case BUTTON_FINISH_WORK -> onFinishWork;
             case BUTTON_TAKE_BREAK  -> onTakeBreak;
             case BUTTON_GO_TO_WORK  -> onGoToWork;
@@ -542,19 +570,21 @@ public final class WindowsTaskbarPreviewButtonsHelper {
 
     private void prepareButtons() throws IOException {
         buttons         = (THUMBBUTTON[]) new THUMBBUTTON().toArray(BUTTON_COUNT);
-        buttonIcons     = new WinDef.HICON[BUTTON_COUNT];
-        buttonIconFiles = new Path[BUTTON_COUNT];
+        buttonIcons     = new WinDef.HICON[ICON_COUNT];
+        buttonIconFiles = new Path[ICON_COUNT];
 
         // Slot 0 – Reset (replay arrow)  – teal
-        buttonIcons[0] = loadButtonIconFromSvg(SVG_RESET, new Color(0x2D, 0xD4, 0xBF), 0);
+        buttonIcons[0] = loadButtonIconFromSvg(SVG_RESET,  new Color(0x2D, 0xD4, 0xBF), 0);
         // Slot 1 – Pause (two bars)       – amber
-        buttonIcons[1] = loadButtonIconFromSvg(SVG_PAUSE, new Color(0xF5, 0x9E, 0x0B), 1);
+        buttonIcons[1] = loadButtonIconFromSvg(SVG_PAUSE,  new Color(0xF5, 0x9E, 0x0B), 1);
         // Slot 2 – Finish work (clock)    – violet
-        buttonIcons[2] = loadButtonIconFromSvg(SVG_CLOCK, new Color(0x8B, 0x5C, 0xF6), 2);
+        buttonIcons[2] = loadButtonIconFromSvg(SVG_CLOCK,  new Color(0x8B, 0x5C, 0xF6), 2);
         // Slot 3 – Take a break (gamepad) – green
-        buttonIcons[3] = loadButtonIconFromSvg(SVG_RELAX, new Color(0x22, 0xC5, 0x5E), 3);
+        buttonIcons[3] = loadButtonIconFromSvg(SVG_RELAX,  new Color(0x22, 0xC5, 0x5E), 3);
         // Slot 4 – Go to Work (briefcase) – red
-        buttonIcons[4] = loadButtonIconFromSvg(SVG_WORK,  new Color(0xEF, 0x44, 0x44), 4);
+        buttonIcons[4] = loadButtonIconFromSvg(SVG_WORK,   new Color(0xEF, 0x44, 0x44), 4);
+        // Slot 5 – Resume (play triangle) – bright green; alternate for BUTTON_PAUSE slot when paused
+        buttonIcons[ICON_SLOT_RESUME] = loadButtonIconFromSvg(SVG_RESUME, new Color(0x4A, 0xDE, 0x80), ICON_SLOT_RESUME);
 
         configureButton(buttons[0], BUTTON_RESET,       buttonIcons[0], "Reset");
         configureButton(buttons[1], BUTTON_PAUSE,       buttonIcons[1], "Pause");
@@ -841,6 +871,27 @@ public final class WindowsTaskbarPreviewButtonsHelper {
     private void setButtonFlags(int buttonId, int flags) {
         for (THUMBBUTTON button : buttons) {
             if (button.iId != null && button.iId.intValue() == buttonId) {
+                button.dwFlags = new WinDef.DWORD(flags);
+                button.write();
+                return;
+            }
+        }
+    }
+
+    /**
+     * Updates the icon, tooltip, <em>and</em> flags for the THUMBBUTTON identified by
+     * {@code buttonId} in a single call.  Sets {@code dwMask} to
+     * {@code THB_ICON | THB_TOOLTIP | THB_FLAGS} so that {@code ThumbBarUpdateButtons}
+     * picks up all three changes atomically.
+     *
+     * <p>Used to swap the Pause slot between the Pause and Resume icons.</p>
+     */
+    private void setButtonFull(int buttonId, WinDef.HICON icon, String tooltip, int flags) {
+        for (THUMBBUTTON button : buttons) {
+            if (button.iId != null && button.iId.intValue() == buttonId) {
+                button.dwMask  = new WinDef.DWORD(THB_ICON | THB_TOOLTIP | THB_FLAGS);
+                button.hIcon   = icon;
+                button.szTip   = toTooltip(tooltip);
                 button.dwFlags = new WinDef.DWORD(flags);
                 button.write();
                 return;
