@@ -56,24 +56,13 @@
                 </valueFactory>
             </Spinner>
 
-            <!-- Neon theme preset -->
+            <!-- Theme settings button – navigates to dedicated Theme/Glow/Selection settings page -->
             <Separator orientation="VERTICAL" prefHeight="30"/>
-            <Label fx:id="lblPreset" text="Theme:" styleClass="setting-label"/>
-            <ComboBox fx:id="cbNeonPreset" prefWidth="120" focusTraversable="false">
-                <tooltip><Tooltip text="Neon visual theme preset"/></tooltip>
-            </ComboBox>
-
-            <!-- Neon glow intensity profile -->
-            <Label fx:id="lblGlow" text="Glow:" styleClass="setting-label"/>
-            <ComboBox fx:id="cbNeonGlowProfile" prefWidth="100" focusTraversable="false">
-                <tooltip><Tooltip text="Glow intensity profile: Soft / Balanced / Vivid"/></tooltip>
-            </ComboBox>
-
-            <!-- Theme selection mode – applied on each WORK phase start -->
-            <Label fx:id="lblSelection" text="Selection:" styleClass="setting-label"/>
-            <ComboBox fx:id="cbThemeSelectionMode" prefWidth="100" focusTraversable="false">
-                <tooltip><Tooltip text="Theme selection on WORK start: Static / Sequential / Random / Shuffle"/></tooltip>
-            </ComboBox>
+            <Button fx:id="btnThemeSettings"
+                    styleClass="icon-btn" onAction="#onThemeSettings"
+                    focusTraversable="false">
+                <tooltip><Tooltip text="Theme settings (preset, glow, selection mode)"/></tooltip>
+            </Button>
 
             <!-- Calendar settings button – navigates to dedicated Google Calendar settings page -->
             <!-- margin left=2 right=2: symmetric breathing room around separators -->

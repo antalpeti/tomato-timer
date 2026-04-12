@@ -81,11 +81,13 @@ public class MainController {
     private Node                       soundSettingsView;
     private Node                       taskbarSettingsView;
     private Node                       calendarSettingsView;
+    private Node                       themeSettingsView;
     private ButtonsController          buttonsController;
     private SettingsController         settingsController;
     private SoundSettingsController    soundSettingsController;
     private TaskbarSettingsController  taskbarSettingsController;
     private CalendarSettingsController calendarSettingsController;
+    private ThemeSettingsController    themeSettingsController;
 
     // ---- drag support -------------------------------------------------------
     private double dragBaseX, dragBaseY;
@@ -163,6 +165,11 @@ public class MainController {
             calendarSettingsView = cs.load();
             calendarSettingsController = cs.getController();
             calendarSettingsController.setMainController(this);
+
+            FXMLLoader ths = new FXMLLoader(getClass().getResource("/com/tomatotimer/theme_settings.fxml"));
+            themeSettingsView = ths.load();
+            themeSettingsController = ths.getController();
+            themeSettingsController.setMainController(this);
         } catch (IOException e) {
             throw new RuntimeException("Cannot load sub-views", e);
         }
@@ -541,9 +548,9 @@ public class MainController {
      *                            refills and reshuffles when the deck is empty.</li>
      * </ul>
      *
-     * <p>After updating {@link AppSettings}, the Settings-panel combo box is refreshed
-     * via {@link SettingsController#syncPresetComboBox()} so the UI stays consistent
-     * even when the settings page is open (e.g. triggered from the taskbar thumbnail).</p>
+     * <p>After updating {@link AppSettings}, the Theme Settings combo box is refreshed
+     * via {@link ThemeSettingsController#syncPresetComboBox()} so the UI stays consistent
+     * even when the theme-settings page is open (e.g. triggered from the taskbar thumbnail).</p>
      */
     private void advanceThemeForWorkStart() {
         final ThemeSelectionMode selMode = settings.getThemeSelectionMode();
@@ -574,9 +581,9 @@ public class MainController {
         };
 
         settings.setNeonPreset(next);
-        // Keep the Settings-panel combo box in sync (no-op when the panel is hidden)
-        if (settingsController != null) {
-            settingsController.syncPresetComboBox();
+        // Keep the Theme-Settings-panel combo box in sync (no-op when the panel is hidden)
+        if (themeSettingsController != null) {
+            themeSettingsController.syncPresetComboBox();
         }
     }
 
@@ -666,6 +673,11 @@ public class MainController {
     public void showCalendarSettings() {
         calendarSettingsController.syncFromSettings();
         contentPane.getChildren().setAll(calendarSettingsView);
+    }
+
+    public void showThemeSettings() {
+        themeSettingsController.syncFromSettings();
+        contentPane.getChildren().setAll(themeSettingsView);
     }
 
     // =========================================================================

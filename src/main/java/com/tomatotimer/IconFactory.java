@@ -56,6 +56,8 @@ public final class IconFactory {
     public static final String COLOR_CLOSE    = "#FF7675";
     /** Ice teal – taskbar / display settings. */
     public static final String COLOR_TASKBAR  = "#81ECEC";
+    /** Orchid / magenta – theme settings navigation. */
+    public static final String COLOR_THEME    = "#E056FD";
 
     // ── SVG path data (Material Design spec, 24 × 24 viewbox) ─────────────────
 
@@ -139,6 +141,17 @@ public final class IconFactory {
     public static final String PATH_TASKBAR =
         "M21,2H3C1.9,2 1,2.9 1,4V16C1,17.1 1.9,18 3,18H10L8,21V22H16V21L14,18H21" +
         "C22.1,18 23,17.1 23,16V4C23,2.9 22.1,2 21,2M21,16H3V4H21V16Z";
+
+    /** Artist's palette – theme / colour settings navigation. */
+    public static final String PATH_PALETTE =
+        "M12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2C17.52,2 22,6.48 22,12" +
+        "A6,6 0 0,1 16,18H14.85C14.69,18 14.56,18.13 14.56,18.29" +
+        "C14.56,18.36 14.58,18.43 14.62,18.5C14.96,18.96 15.17,19.53 15.17,20.13" +
+        "C15.17,21.18 14.37,22 13.33,22H12" +
+        "M7,10A1,1 0 0,0 6,11A1,1 0 0,0 7,12A1,1 0 0,0 8,11A1,1 0 0,0 7,10" +
+        "M9,6A1,1 0 0,0 8,7A1,1 0 0,0 9,8A1,1 0 0,0 10,7A1,1 0 0,0 9,6" +
+        "M15,6A1,1 0 0,0 14,7A1,1 0 0,0 15,8A1,1 0 0,0 16,7A1,1 0 0,0 15,6" +
+        "M17,10A1,1 0 0,0 16,11A1,1 0 0,0 17,12A1,1 0 0,0 18,11A1,1 0 0,0 17,10Z";
 
     // ── Factory ───────────────────────────────────────────────────────────────
 
