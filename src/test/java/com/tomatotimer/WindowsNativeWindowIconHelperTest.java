@@ -121,5 +121,67 @@ class WindowsNativeWindowIconHelperTest extends WindowsNativeWindowIconHelperHel
         assertEquals((byte) 0xBB, ico[xorStart + 2]);
         assertEquals((byte) 0xAA, ico[xorStart + 3]);
     }
-}
 
+    // ── resetCache ────────────────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("resetCache sets cacheInitialized to false regardless of prior state")
+    void testResetCacheClearsCacheInitializedFlag() throws Exception {
+        // Pre-seed the cache as though a prior successful apply() had run.
+        setCacheInitialized(true);
+        assertTrue(getCacheInitialized(), "pre-condition: cacheInitialized must be true before reset");
+
+        invokeResetCache();
+
+        assertFalse(getCacheInitialized(),
+                "resetCache() must set cacheInitialized to false so the next apply() "
+                + "unconditionally writes the ICO file and sends WM_SETICON");
+    }
+
+    @Test
+    @DisplayName("resetCache is idempotent – calling it twice leaves cacheInitialized false")
+    void testResetCacheIsIdempotent() throws Exception {
+        setCacheInitialized(true);
+        invokeResetCache();
+        invokeResetCache(); // second call must not throw or flip back to true
+        assertFalse(getCacheInitialized(), "cacheInitialized must remain false after double reset");
+    }
+
+    @Test
+    @DisplayName("resetCache on an already-false cache is a safe no-op")
+    void testResetCacheWhenAlreadyFalseIsNoop() throws Exception {
+        setCacheInitialized(false);
+        invokeResetCache(); // must not throw
+        assertFalse(getCacheInitialized());
+    }
+
+    // ── clearNativeIcon (non-Windows no-op) ───────────────────────────────────
+
+    @Test
+    @DisplayName("clearNativeIcon is a no-op on non-Windows platforms (does not throw)")
+    void testClearNativeIconIsNoOpOnNonWindows() {
+        final var original = setOsName(OS_LINUX);
+        try {
+            // Must complete without exception on non-Windows platforms.
+            WindowsNativeWindowIconHelper.clearNativeIcon();
+        } finally {
+            setOsName(original);
+        }
+    }
+
+    @Test
+    @DisplayName("clearNativeIcon does not mutate cacheInitialized (cache reset is resetCache's job)")
+    void testClearNativeIconDoesNotMutateCacheFlag() throws Exception {
+        // Run on non-Windows (Linux) so no real native calls are made.
+        final var original = setOsName(OS_LINUX);
+        try {
+            setCacheInitialized(true);
+            WindowsNativeWindowIconHelper.clearNativeIcon();
+            // clearNativeIcon is a no-op on non-Windows; cache flag unchanged.
+            assertTrue(getCacheInitialized(),
+                    "clearNativeIcon must not alter the CRC cache flag – that is resetCache()'s responsibility");
+        } finally {
+            setOsName(original);
+        }
+    }
+}

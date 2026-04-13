@@ -15,6 +15,8 @@ import java.nio.ByteOrder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
@@ -97,6 +99,25 @@ public final class WindowsNativeWindowIconHelper {
     private static final int IMAGE_ICON      = 1;
     /** {@code LR_LOADFROMFILE} – {@code LoadImageW} flag: load the image from a file path. */
     private static final int LR_LOADFROMFILE = 0x0010;
+
+    // ── Win32 extended-style constants ────────────────────────────────────────
+    /**
+     * {@code GWL_EXSTYLE} – index for {@code GetWindowLong}: retrieves the extended
+     * window styles. 32-bit on both 32-bit and 64-bit Windows.
+     */
+    private static final int GWL_EXSTYLE      = -20;
+    /**
+     * {@code WS_EX_TOOLWINDOW} – extended style: the window is a floating toolbar.
+     * Tool windows do not appear in the taskbar or in the dialog box that appears
+     * when the user presses {@code Alt+Tab}.
+     */
+    private static final int WS_EX_TOOLWINDOW = 0x00000080;
+    /**
+     * {@code WS_EX_APPWINDOW} – extended style: forces a top-level window onto
+     * the taskbar when the window is minimised or visible.  When present, this
+     * overrides {@code WS_EX_TOOLWINDOW} for taskbar-participation purposes.
+     */
+    private static final int WS_EX_APPWINDOW  = 0x00040000;
 
     // ── State ─────────────────────────────────────────────────────────────────
     /**
@@ -214,6 +235,16 @@ public final class WindowsNativeWindowIconHelper {
          * {@code LR_SHARED}.  Must be called to release the GDI object.
          */
         boolean DestroyIcon(WinDef.HICON hIcon);
+
+        /**
+         * Retrieves information about the specified window.  {@code nIndex} is one
+         * of the {@code GWL_*} / {@code GWL_EX*} constants.  Returns the value as a
+         * signed 32-bit integer.  Use to read {@code GWL_EXSTYLE} (extended styles).
+         *
+         * <p>On 64-bit Windows, pointer-sized values require {@code GetWindowLongPtr};
+         * for {@code GWL_EXSTYLE} the value is always 32-bit so this overload suffices.</p>
+         */
+        int GetWindowLong(WinDef.HWND hWnd, int nIndex);
     }
 
     private WindowsNativeWindowIconHelper() { /* utility class – no instances */ }
@@ -271,13 +302,23 @@ public final class WindowsNativeWindowIconHelper {
     // ── Public API ────────────────────────────────────────────────────────────
 
     /**
-     * Applies {@code icon} as the native {@code HICON} on the top-level visible window
-     * that belongs to the current JVM process, bypassing the JavaFX icon layer and
-     * talking directly to Win32.
+     * Applies {@code icon} as the native {@code HICON} on all eligible top-level
+     * windows that belong to the current JVM process, bypassing the JavaFX icon
+     * layer and talking directly to Win32.
      *
-     * <p>The HWND is resolved at call-time via {@code EnumWindows} +
-     * {@code GetWindowThreadProcessId} so this method is robust against title changes,
-     * title localisation, and races during stage initialisation.</p>
+     * <p>Unlike the previous single-window approach, this method broadcasts
+     * {@code WM_SETICON} to <em>every</em> visible, non-tool-window top-level window
+     * owned by the process.  JavaFX may create several windows (glass panel,
+     * accessibility, focus-trap helper) and on a transparent stage the "first"
+     * window returned by {@code EnumWindows} is not always the window that owns
+     * the taskbar button.  Broadcasting ensures the correct target is reached
+     * regardless of enumeration order.</p>
+     *
+     * <p>Tool windows ({@code WS_EX_TOOLWINDOW} set and {@code WS_EX_APPWINDOW}
+     * absent) are explicitly skipped because they never receive a taskbar button.</p>
+     *
+     * <p>The HWND set is resolved at call-time via {@code EnumWindows} so this
+     * method is robust against title changes and races during stage initialisation.</p>
      *
      * <p>This is a no-op on non-Windows platforms, when JNA is unavailable, or
      * when any native call fails.  All failures are logged at {@code WARNING} level
@@ -307,33 +348,76 @@ public final class WindowsNativeWindowIconHelper {
         }
     }
 
+    /**
+     * Invalidates the internal CRC cache so that the next call to {@link #apply}
+     * unconditionally writes the ICO file and sends {@code WM_SETICON}, even if
+     * the rendered icon bytes happen to be identical to the last applied icon.
+     *
+     * <p>Call this whenever the taskbar-icon feature is toggled off and then back on,
+     * or after the native window has been recreated (e.g. stage re-shown), to
+     * guarantee that the live countdown icon is immediately reapplied.</p>
+     *
+     * <p>Thread-safe: safe to call from any thread.  The flag is {@code volatile}
+     * so the next {@link #apply} call on the FX thread will observe the reset.</p>
+     */
+    public static void resetCache() {
+        cacheInitialized = false;
+        debug("resetCache: cacheInitialized cleared – next apply() will force WM_SETICON");
+    }
+
+    /**
+     * Removes the custom countdown icon from all eligible top-level windows of
+     * this process by sending {@code WM_SETICON} with an {@code HICON} value of
+     * {@code NULL} (zero) for all three icon slots.
+     *
+     * <p>This restores the default window icon (typically the Java logo from
+     * {@code javaw.exe}) on the native level, complementing the JavaFX-level
+     * {@code stage.getIcons().clear()} call.  Should be called whenever the
+     * taskbar-icon feature is disabled so that the Windows taskbar reverts to
+     * showing the standard icon immediately.</p>
+     *
+     * <p>Also destroys the previously loaded {@code HICON} handle (if any) to
+     * prevent GDI handle leaks.</p>
+     *
+     * <p>No-op on non-Windows or when JNA is unavailable.  Failures are logged at
+     * {@code WARNING} level and never propagate as exceptions.</p>
+     *
+     * <p><strong>Must be called on the JavaFX Application Thread.</strong></p>
+     */
+    public static void clearNativeIcon() {
+        if (!isWindows()) {
+            debug("clearNativeIcon: skipped – not a Windows platform");
+            return;
+        }
+        try {
+            clearNativeIconUnsafe();
+        } catch (Throwable t) {
+            LOG.log(Level.WARNING,
+                    "WindowsNativeWindowIconHelper: clearNativeIcon failed – {0}",
+                    t.getMessage());
+        }
+    }
+
     // ── Private implementation ────────────────────────────────────────────────
 
     private static void applyUnsafe(final Image icon) throws IOException {
 
-        // ── Step 1: locate native HWND for this process ───────────────────────
+        // ── Step 1: locate all eligible native HWNDs for this process ─────────
+        // Broadcast to EVERY non-tool visible window rather than stopping at the
+        // first match.  On a transparent FXML stage JavaFX may create auxiliary
+        // windows (accessibility, glass panel); the "first" one found by
+        // EnumWindows is not guaranteed to be the taskbar-button owner.
         final int currentPid = (int) ProcessHandle.current().pid();
-        final WinDef.HWND[] found = { null };
-        final IntByReference pidRef = new IntByReference();
+        final List<WinDef.HWND> windows = resolveProcessWindows(currentPid);
 
-        User32Icon.INSTANCE.EnumWindows((hwnd, data) -> {
-            if (!User32Icon.INSTANCE.IsWindowVisible(hwnd)) return true; // skip invisible
-            pidRef.setValue(0);
-            User32Icon.INSTANCE.GetWindowThreadProcessId(hwnd, pidRef);
-            if (pidRef.getValue() == currentPid) {
-                found[0] = hwnd;
-                return false; // stop – first visible top-level window of this process found
-            }
-            return true; // continue enumeration
-        }, null);
-
-        final WinDef.HWND hwnd = found[0];
-        if (hwnd == null) {
-            LOG.fine("EnumWindows: no visible top-level window found for current process");
-            debug("applyUnsafe: HWND not found for pid=%d – aborting", currentPid);
+        if (windows.isEmpty()) {
+            // Stage not yet shown (init() called before show()) – will retry on next tick.
+            LOG.fine("resolveProcessWindows: no eligible visible windows found for current process");
+            debug("applyUnsafe: no eligible HWNDs found for pid=%d – aborting (stage not shown yet?)",
+                    currentPid);
             return;
         }
-        debug("applyUnsafe: HWND found for pid=%d → %s", currentPid, hwnd);
+        debug("applyUnsafe: resolved %d eligible window(s) for pid=%d", windows.size(), currentPid);
 
         // ── Step 2: extract ARGB pixels from the JavaFX Image ─────────────────
         final int w = (int) icon.getWidth();
@@ -378,14 +462,18 @@ public final class WindowsNativeWindowIconHelper {
         }
         debug("LoadImageW OK → HICON ptr=0x%X", Pointer.nativeValue(hIcon.getPointer()));
 
-        // ── Step 7: broadcast WM_SETICON for all three icon slots ─────────────
+        // ── Step 7: broadcast WM_SETICON to ALL eligible windows ─────────────
+        // Sending to every candidate ensures the taskbar-button owner is reached
+        // regardless of which window EnumWindows happens to return first.
         final WinDef.LPARAM hIconLParam =
                 new WinDef.LPARAM(Pointer.nativeValue(hIcon.getPointer()));
-        for (final int slot : new int[]{ ICON_SMALL, ICON_BIG, ICON_SMALL2 }) {
-            User32Icon.INSTANCE.SendMessageW(
-                    hwnd, WM_SETICON, new WinDef.WPARAM(slot), hIconLParam);
+        for (final WinDef.HWND hwnd : windows) {
+            for (final int slot : new int[]{ ICON_SMALL, ICON_BIG, ICON_SMALL2 }) {
+                User32Icon.INSTANCE.SendMessageW(
+                        hwnd, WM_SETICON, new WinDef.WPARAM(slot), hIconLParam);
+            }
         }
-        debug("WM_SETICON broadcast complete (slots SMALL/BIG/SMALL2) for HWND %s", hwnd);
+        debug("WM_SETICON broadcast complete (%d window(s), slots SMALL/BIG/SMALL2)", windows.size());
 
         // ── Step 8: rotate out stale handle to release the GDI object ─────────
         final WinDef.HICON stale = previousHIcon;
@@ -395,6 +483,87 @@ public final class WindowsNativeWindowIconHelper {
             debug("DestroyIcon stale HICON ptr=0x%X → %s",
                     Pointer.nativeValue(stale.getPointer()), destroyed ? "OK" : "FAILED");
         }
+    }
+
+    /**
+     * Removes the custom countdown icon from all eligible process windows by
+     * sending {@code WM_SETICON(NULL)} for each icon slot, then destroys the
+     * previously loaded {@code HICON} to prevent GDI handle leaks.
+     */
+    private static void clearNativeIconUnsafe() {
+        final int currentPid = (int) ProcessHandle.current().pid();
+        final List<WinDef.HWND> windows = resolveProcessWindows(currentPid);
+        if (windows.isEmpty()) {
+            debug("clearNativeIconUnsafe: no eligible windows found for pid=%d", currentPid);
+            return;
+        }
+
+        final WinDef.LPARAM zero = new WinDef.LPARAM(0L);
+        for (final WinDef.HWND hwnd : windows) {
+            for (final int slot : new int[]{ ICON_SMALL, ICON_BIG, ICON_SMALL2 }) {
+                User32Icon.INSTANCE.SendMessageW(
+                        hwnd, WM_SETICON, new WinDef.WPARAM(slot), zero);
+            }
+        }
+        debug("clearNativeIconUnsafe: WM_SETICON(NULL) sent to %d window(s)", windows.size());
+
+        final WinDef.HICON stale = previousHIcon;
+        previousHIcon = null;
+        if (stale != null && !isNullHandle(stale)) {
+            final boolean destroyed = User32Icon.INSTANCE.DestroyIcon(stale);
+            debug("DestroyIcon stale HICON ptr=0x%X → %s",
+                    Pointer.nativeValue(stale.getPointer()), destroyed ? "OK" : "FAILED");
+        }
+    }
+
+    /**
+     * Collects all eligible top-level visible windows that belong to the current
+     * JVM process and should receive a taskbar button.
+     *
+     * <p>A window is <em>eligible</em> if it satisfies all of the following:</p>
+     * <ol>
+     *   <li>{@code IsWindowVisible} returns {@code true}.</li>
+     *   <li>Its owning process ID matches {@code pid}.</li>
+     *   <li>It is <em>not</em> a pure tool window – i.e., it does not have
+     *       {@code WS_EX_TOOLWINDOW} set without also having {@code WS_EX_APPWINDOW}.
+     *       Tool windows are floating toolbars that never appear in the taskbar.</li>
+     * </ol>
+     *
+     * <p>This algorithm mirrors {@code WindowsTaskbarPreviewButtonsHelper.resolveCurrentProcessWindow()}'s
+     * candidate-collection phase and avoids the "wrong HWND" bug present in the
+     * original single-first-match approach.</p>
+     *
+     * @param pid the current JVM process ID
+     * @return mutable list of eligible HWNDs (may be empty if the stage is not yet shown)
+     */
+    private static List<WinDef.HWND> resolveProcessWindows(final int pid) {
+        final List<WinDef.HWND> candidates = new ArrayList<>();
+        final IntByReference pidRef = new IntByReference();
+
+        User32Icon.INSTANCE.EnumWindows((hwnd, data) -> {
+            if (!User32Icon.INSTANCE.IsWindowVisible(hwnd)) return true; // skip invisible
+
+            pidRef.setValue(0);
+            User32Icon.INSTANCE.GetWindowThreadProcessId(hwnd, pidRef);
+            if (pidRef.getValue() != pid) return true; // skip other processes
+
+            // Skip pure tool windows – they do not get a Windows taskbar button.
+            // A window with BOTH WS_EX_TOOLWINDOW and WS_EX_APPWINDOW is kept because
+            // WS_EX_APPWINDOW forces taskbar participation regardless of the tool-window flag.
+            final int exStyle = User32Icon.INSTANCE.GetWindowLong(hwnd, GWL_EXSTYLE);
+            if ((exStyle & WS_EX_TOOLWINDOW) != 0 && (exStyle & WS_EX_APPWINDOW) == 0) {
+                debug("resolveProcessWindows: HWND 0x%X skipped – WS_EX_TOOLWINDOW (exStyle=0x%X)",
+                        Pointer.nativeValue(hwnd.getPointer()), exStyle);
+                return true; // skip
+            }
+
+            candidates.add(hwnd);
+            debug("resolveProcessWindows: HWND 0x%X added (exStyle=0x%X)",
+                    Pointer.nativeValue(hwnd.getPointer()), exStyle);
+            return true; // continue enumeration – collect ALL eligible windows
+        }, null);
+
+        return candidates;
     }
 
     // ── ICO / BMP format builder ──────────────────────────────────────────────

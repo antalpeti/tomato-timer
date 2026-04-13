@@ -1,6 +1,6 @@
 package com.tomatotimer;
 
-import java.lang.reflect.Method;
+import java.lang.reflect.Field;
 
 public class WindowsNativeWindowIconHelperHelper {
 
@@ -34,6 +34,37 @@ public class WindowsNativeWindowIconHelperHelper {
         final var original = System.getProperty(OS_NAME_PROPERTY, "");
         System.setProperty(OS_NAME_PROPERTY, newName);
         return original;
+    }
+
+    /**
+     * Reads the private static {@code cacheInitialized} field via reflection.
+     * Used to assert cache state in unit tests without modifying production code.
+     */
+    protected static boolean getCacheInitialized() throws Exception {
+        final Field f = WindowsNativeWindowIconHelper.class
+                .getDeclaredField("cacheInitialized");
+        f.setAccessible(true);
+        return f.getBoolean(null);
+    }
+
+    /**
+     * Sets the private static {@code cacheInitialized} field via reflection,
+     * allowing tests to pre-seed a specific cache state.
+     */
+    protected static void setCacheInitialized(boolean value) throws Exception {
+        final Field f = WindowsNativeWindowIconHelper.class
+                .getDeclaredField("cacheInitialized");
+        f.setAccessible(true);
+        f.setBoolean(null, value);
+    }
+
+    /**
+     * Invokes the public {@link WindowsNativeWindowIconHelper#resetCache()} method.
+     * Provided as a helper so tests don't need to call the static method directly
+     * (keeping the test pattern consistent with the other helper methods).
+     */
+    protected static void invokeResetCache() {
+        WindowsNativeWindowIconHelper.resetCache();
     }
 }
 

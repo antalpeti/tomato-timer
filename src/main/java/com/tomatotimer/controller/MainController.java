@@ -281,6 +281,26 @@ public class MainController {
         // Install Windows taskbar preview action buttons once the native window exists.
         Platform.runLater(this::installTaskbarPreviewButtons);
 
+        // ── Post-show native-icon refresh ─────────────────────────────────────
+        // updateUI() is called below (and every second thereafter), but the very
+        // first call happens *before* stage.show().  At that point EnumWindows
+        // finds no visible HWND and WindowsNativeWindowIconHelper silently skips
+        // WM_SETICON, so the window opens with the Java icon.
+        //
+        // The showingProperty listener fires as soon as the stage becomes visible
+        // (i.e. after App.start() calls stage.show()), and Platform.runLater
+        // ensures we run after the native window has been fully created.  We reset
+        // the CRC cache so that WM_SETICON is sent unconditionally even if the
+        // icon bytes happen to match the (never-successfully-applied) previous value.
+        stage.showingProperty().addListener((obs, wasShowing, nowShowing) -> {
+            if (nowShowing && settings.isTaskbarIconEnable()) {
+                Platform.runLater(() -> {
+                    WindowsNativeWindowIconHelper.resetCache();
+                    updateUI();
+                });
+            }
+        });
+
         updateUI();
     }
 
@@ -382,11 +402,20 @@ public class MainController {
         if (stage == null) return;
 
         if (!settings.isTaskbarIconEnable()) {
-            // Feature disabled – restore the default JVM icon
+            // Feature disabled – restore the default JVM icon on both the JavaFX
+            // and native (Win32) layers.
             if (!stage.getIcons().isEmpty()) {
                 stage.getIcons().clear();
             }
-            // Reset cache so re-enabling triggers an immediate redraw
+            // Send WM_SETICON(NULL) so the native taskbar button immediately
+            // reverts to the default process icon instead of keeping the last
+            // countdown HICON that WM_SETICON had installed.
+            WindowsNativeWindowIconHelper.clearNativeIcon();
+            // Invalidate the CRC cache so that re-enabling the feature forces an
+            // unconditional WM_SETICON even if the rendered bytes happen to match
+            // the previously applied (and now cleared) icon.
+            WindowsNativeWindowIconHelper.resetCache();
+            // Reset MainController's own cache so re-enabling triggers a fresh render.
             lastIconText     = "";
             lastIconColor    = null;
             lastIconLayout   = null;
