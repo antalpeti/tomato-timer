@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -85,6 +86,22 @@ class IconFactoryTest extends IconFactoryHelper {
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
+
+    // ── Null-safety ───────────────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("recolor(null, hexColor) is a no-op and does not throw")
+    void testRecolorNullIconIsNoOp() {
+        assertDoesNotThrow(() -> IconFactory.recolor(null, IconFactory.COLOR_WORK));
+    }
+
+    @Test
+    @DisplayName("resize(null, size) is a no-op and does not throw")
+    void testResizeNullIconIsNoOp() {
+        assertDoesNotThrow(() -> IconFactory.resize(null, IconFactory.NOMINAL));
+    }
+
+    // ── Internal helpers ──────────────────────────────────────────────────────
 
     private static void assertNonEmpty(String s) {
         assertNotNull(s);

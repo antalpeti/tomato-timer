@@ -211,6 +211,28 @@ class TimerBackgroundHelperTest extends TimerBackgroundHelperHelper {
         assertFalse(css.isBlank());
     }
 
+    @Test
+    @DisplayName("computeRootGradientCss (preset+profile) with isOverTime=true returns valid CSS")
+    void testComputeRootGradientCssWithPresetAndProfileAndOvertimeReturnsValidCss() {
+        final var css = TimerBackgroundHelper.computeRootGradientCss(
+                NeonPreset.AURORA_DRIFT, NeonGlowProfile.BALANCED,
+                TimerMode.WORK, PCT_FULL, false, true);
+        assertNotNull(css);
+        assertFalse(css.isBlank());
+        assertTrue(css.contains("linear-gradient"));
+    }
+
+    @Test
+    @DisplayName("computeRootGradientCss (preset+profile) with isPaused=true returns valid CSS")
+    void testComputeRootGradientCssWithPresetAndProfileAndPausedReturnsValidCss() {
+        final var css = TimerBackgroundHelper.computeRootGradientCss(
+                NeonPreset.AURORA_DRIFT, NeonGlowProfile.BALANCED,
+                TimerMode.RELAX, PCT_HALF, true, false);
+        assertNotNull(css);
+        assertFalse(css.isBlank());
+        assertTrue(css.contains("linear-gradient"));
+    }
+
     // ── computeBarCss ─────────────────────────────────────────────────────────
 
     @Test
