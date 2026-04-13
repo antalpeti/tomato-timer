@@ -534,3 +534,114 @@ On Windows, values are stored under:
 - The active in-app icon system is vector-based (`IconFactory`) and scales with UI size.
 - The `archive/` folder contains the original WPF solution and historical assets.
 
+## Manual QA Checklist (Windows Taskbar Icon)
+
+### Goal
+
+Validate that the Windows taskbar icon shows the live countdown (instead of the Java icon)
+and that its appearance follows the currently active theme.
+
+### Preconditions
+
+- Windows environment
+- App starts via `TomatoTimer.exe` or fat JAR
+- Taskbar icon setting is available in `Settings -> Taskbar Settings`
+
+### Test Steps
+
+#### 1) First icon after app start
+
+- [ ] Start the app (`TomatoTimer.exe` or fat JAR).
+- [ ] Check the taskbar icon immediately after the window appears.
+
+**Expected**
+
+- The Java icon is not shown.
+- The countdown icon appears on startup (immediately or within ~1 second).
+
+---
+
+#### 2) Enable/Disable toggle behavior
+
+- [ ] Open `Settings -> Taskbar Settings`.
+- [ ] Disable `Enable taskbar icon`.
+- [ ] Check the taskbar icon.
+- [ ] Re-enable `Enable taskbar icon`.
+- [ ] Check the taskbar icon again.
+
+**Expected**
+
+- On disable, the icon reverts to the default app/process icon.
+- On re-enable, the countdown icon returns immediately (or within ~1 second).
+
+---
+
+#### 3) Theme-dependent color update
+
+- [ ] Open `Settings -> Theme Settings`.
+- [ ] Change preset (for example `Aurora Drift` -> `Scarlet Surge`).
+- [ ] Observe the taskbar icon accent color.
+- [ ] Change glow profile (`Soft`, `Balanced`, `Vivid`).
+
+**Expected**
+
+- Taskbar icon accent follows the active theme/preset.
+- Visual intensity remains consistent with the current UI style.
+
+---
+
+#### 4) Correct timer phase mapping
+
+- [ ] Run `Work` mode.
+- [ ] Switch to `Relax` mode.
+- [ ] Start long relax (long-press relax button).
+
+**Expected**
+
+- Taskbar icon always shows the countdown for the currently active phase.
+
+---
+
+#### 5) Layout and font-size validation
+
+- [ ] In `Taskbar Settings`, switch to `Vertical`.
+- [ ] Verify icon text layout.
+- [ ] Switch to `Horizontal`.
+- [ ] Verify icon text layout.
+- [ ] Change `Font size` (for example `12` -> `22`).
+
+**Expected**
+
+- `Vertical`: 2 lines (`MM` / `SS`) or 3 lines (`HH` / `MM` / `SS`).
+- `Horizontal`: `MM:SS` or `HH:MM:SS`.
+- Font-size change is visible on the icon.
+
+---
+
+#### 6) Pause/Resume/Reset consistency
+
+- [ ] Press Pause.
+- [ ] Press Resume.
+- [ ] Press Reset.
+
+**Expected**
+
+- Taskbar countdown updates remain consistent with each state transition.
+
+---
+
+#### 7) Restart regression check
+
+- [ ] Close the app.
+- [ ] Start it again.
+
+**Expected**
+
+- On restart, countdown icon appears again (not the Java icon).
+
+### If a failure occurs, record
+
+- Launch mode: `TomatoTimer.exe` or fat JAR
+- Exact failed step number
+- Expected vs actual behavior
+- Optional screenshot of the taskbar icon
