@@ -498,6 +498,49 @@ class AppSettingsTest extends AppSettingsHelper {
     }
 
     @Test
+    @DisplayName("migrateIfNeeded() heals stale registry values (gcal_enable, taskbar, font, theme) when settings_version is 2")
+    void testMigrationFromV2StampsHealingDefaults() {
+        final var prefs          = java.util.prefs.Preferences.userNodeForPackage(AppSettings.class);
+        final var s              = AppSettings.getInstance();
+        final var savedVer       = prefs.get("settings_version",      null);
+        final var savedWork      = prefs.get("work_time",             null);
+        final var savedGcal      = prefs.get("gcal_enable",           null);
+        final var savedTbIcon    = prefs.get("taskbar_icon_enable",   null);
+        final var savedTbFont    = prefs.get("taskbar_font_size",     null);
+        final var savedOnTop     = prefs.get("always_on_top",         null);
+        final var savedTheme     = prefs.get("theme_selection_mode",  null);
+        try {
+            // Simulate a v2 install that retained stale / corrupted values
+            prefs.putInt    ("settings_version",     2);
+            prefs.putInt    ("work_time",            99);
+            prefs.putBoolean("gcal_enable",         false);
+            prefs.putBoolean("taskbar_icon_enable", false);
+            prefs.putDouble ("taskbar_font_size",   17.0);
+            prefs.putBoolean("always_on_top",       true);
+            prefs.put       ("theme_selection_mode", ThemeSelectionMode.STATIC.name());
+
+            s.migrateIfNeeded();
+
+            assertEquals(DEFAULT_WORK_TIME,           s.getWorkTime(),           "work_time after v2→v3 healing");
+            assertEquals(DEFAULT_GCAL_ENABLE,         s.isGCalEnable(),          "gcal_enable after v2→v3 healing");
+            assertEquals(DEFAULT_TASKBAR_ICON_ENABLE, s.isTaskbarIconEnable(),   "taskbar_icon_enable after v2→v3 healing");
+            assertEquals(DEFAULT_TASKBAR_FONT_SIZE,   s.getTaskbarFontSize(), DELTA);
+            assertEquals(DEFAULT_ALWAYS_ON_TOP,       s.isAlwaysOnTop(),         "always_on_top after v2→v3 healing");
+            assertEquals(DEFAULT_THEME_SELECTION_MODE, s.getThemeSelectionMode(),"theme_selection_mode after v2→v3 healing");
+            assertEquals(3, prefs.getInt("settings_version", -1),
+                    "settings_version must be 3 after v2→v3 migration");
+        } finally {
+            restore(prefs, "settings_version",    savedVer);
+            restore(prefs, "work_time",           savedWork);
+            restore(prefs, "gcal_enable",         savedGcal);
+            restore(prefs, "taskbar_icon_enable", savedTbIcon);
+            restore(prefs, "taskbar_font_size",   savedTbFont);
+            restore(prefs, "always_on_top",       savedOnTop);
+            restore(prefs, "theme_selection_mode", savedTheme);
+        }
+    }
+
+    @Test
     @DisplayName("migrateIfNeeded() stamps work_time=25 and always_on_top=false when settings_version is 1")
     void testMigrationFromV1StampsNewDefaults() {
         final var prefs       = java.util.prefs.Preferences.userNodeForPackage(AppSettings.class);

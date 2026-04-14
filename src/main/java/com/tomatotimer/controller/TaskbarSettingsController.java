@@ -71,6 +71,12 @@ public class TaskbarSettingsController {
         rootBox.heightProperty().addListener((obs, ov, nv) -> updateDynamicSizing(nv.doubleValue()));
         javafx.application.Platform.runLater(() -> updateDynamicSizing(rootBox.getHeight()));
 
+        // ── Pre-populate controls from AppSettings BEFORE attaching the font-size
+        //    change-listener.  This prevents syncToSettings() (triggered by onBack or
+        //    any nav handler) from writing the FXML stub initialValue (17) rather than
+        //    the correctly migrated AppSettings value (23) to the preferences store.
+        syncFromSettings();
+
         // Persist font size on each spinner commit; trigger immediate icon redraw
         spFontSize.valueProperty().addListener((obs, ov, nv) -> {
             if (nv != null) {

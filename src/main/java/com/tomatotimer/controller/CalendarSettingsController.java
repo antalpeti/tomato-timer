@@ -59,6 +59,11 @@ public class CalendarSettingsController {
         // Resize all scalable elements once laid out, and whenever height changes
         rootBox.heightProperty().addListener((obs, ov, nv) -> updateDynamicSizing(nv.doubleValue()));
         javafx.application.Platform.runLater(() -> updateDynamicSizing(rootBox.getHeight()));
+
+        // ── Pre-populate controls from AppSettings so that syncToSettings() (triggered
+        //    by onBack / onGCalEnableChanged etc.) always writes back the correct persisted
+        //    values rather than the FXML stub defaults (checkboxes unchecked, text empty).
+        syncFromSettings();
     }
 
     // =========================================================================

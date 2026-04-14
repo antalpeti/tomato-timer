@@ -39,7 +39,7 @@ public class AppSettings {
      * <p>Package-private so {@code AppSettingsTest} can read and reset it
      * without reflection.</p>
      */
-    static final int CURRENT_SETTINGS_VERSION = 2;
+    static final int CURRENT_SETTINGS_VERSION = 3;
 
     // ---- keys ---------------------------------------------------------------
     private static final String KEY_WORK_TIME          = "work_time";
@@ -117,6 +117,21 @@ public class AppSettings {
         if (stored < 2) {
             prefs.putInt    (KEY_WORK_TIME,        25);
             prefs.putBoolean(KEY_ALWAYS_ON_TOP, false);
+        }
+
+        // ── v2 → v3 : auto-heal users whose registry retained stale values
+        //              (gcal_enable=false, taskbar disabled, font=17, etc.)
+        //              while settings_version was already at 2.
+        if (stored < 3) {
+            prefs.putInt    (KEY_WORK_TIME,                   25);
+            prefs.putBoolean(KEY_GCAL_ENABLE,               true);
+            prefs.putBoolean(KEY_TASKBAR_ICON_ENABLE,       true);
+            prefs.putDouble (KEY_TASKBAR_FONT_SIZE,         23.0);
+            prefs.putBoolean(KEY_ALWAYS_ON_TOP,            false);
+            prefs.put       (KEY_THEME_SELECTION_MODE, ThemeSelectionMode.SHUFFLE.name());
+            // NOT overwriting (user-specific / runtime state):
+            //   KEY_WIN_X/Y/W/H, KEY_SOUND_*, KEY_GCAL_SRC, KEY_GCAL_TEXT,
+            //   KEY_TIMER_RESTORE_DT, KEY_TIMER_RESTORE_MODE
         }
 
         prefs.putInt(KEY_SETTINGS_VERSION, CURRENT_SETTINGS_VERSION);

@@ -60,6 +60,14 @@ public class SettingsController {
         rootBox.heightProperty().addListener((obs, ov, nv) -> updateDynamicSizing(nv.doubleValue()));
         javafx.application.Platform.runLater(() -> updateDynamicSizing(rootBox.getHeight()));
 
+        // ── Pre-populate spinners from AppSettings BEFORE attaching change-listeners.
+        //    This ensures that even if syncToSettings() is called (e.g. via onBack / onThemeSettings
+        //    etc.) before an explicit syncFromSettings() call, the spinner values already hold the
+        //    correct persisted values rather than the FXML stub initialValue.  Without this guard
+        //    the FXML stubs (work=30, relax=5, etc.) would be written to java.util.prefs.Preferences
+        //    and therefore to the Windows Registry, silently overriding the migration defaults.
+        syncFromSettings();
+
         // Spinners: value-factory is defined in FXML; hook change-listeners here
         spWorkTime.valueProperty().addListener((o, ov, nv) -> settings.setWorkTime(nv));
         spRelaxTime.valueProperty().addListener((o, ov, nv) -> settings.setRelaxTime(nv));

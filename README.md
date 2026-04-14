@@ -538,7 +538,7 @@ The most relevant persisted keys are:
 | `gcal_enable` | Whether Google Calendar integration is enabled | `true` |
 | `taskbar_icon_enable` | Whether the live taskbar countdown icon is enabled | `true` |
 | `taskbar_font_size` | Base font size for the taskbar icon renderer | `23.0` |
-| `settings_version` | Internal settings schema version used for startup migration | `2` |
+| `settings_version` | Internal settings schema version used for startup migration | `3` |
 
 ### Factory defaults / first-run defaults
 
@@ -573,7 +573,7 @@ user-specific / runtime state and are only written when the user changes them ex
 | `taskbar_font_size` | `double` | `23.0` | Taskbar icon font size (at 64 px reference canvas; range 8–28) |
 | `taskbar_layout` | `string` | `VERTICAL` | Taskbar countdown layout (`VERTICAL` / `HORIZONTAL`) |
 | `theme_selection_mode` | `string` | `SHUFFLE` | Theme rotation strategy on each new Work phase |
-| `settings_version` | `int` | `2` | Internal schema version; drives the startup migration |
+| `settings_version` | `int` | `3` | Internal schema version; drives the startup migration |
 
 > **†** User-specific / runtime keys: the startup migration never overwrites these —
 > only window geometry, sound file paths, GCal source/text, and timer-restore state
@@ -605,7 +605,7 @@ Typical values to verify after launching the app:
 - `gcal_enable` = `true`
 - `taskbar_icon_enable` = `true`
 - `taskbar_font_size` = `23.0`
-- `settings_version` = `2`
+- `settings_version` = `3`
 
 ### Simulating a clean first run
 

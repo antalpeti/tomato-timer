@@ -25,6 +25,8 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@SuppressWarnings("unchecked")
+
 /**
  * TestFX-based UI integration tests for {@code taskbar_settings.fxml} /
  * {@link TaskbarSettingsController}.
@@ -324,6 +326,79 @@ class TaskbarSettingsViewUiTest {
         WaitForAsyncUtils.waitForFxEvents();
         Mockito.verify(mockMc, Mockito.times(1)).showSettings();
         Mockito.verify(mockMc, Mockito.atLeastOnce()).updateUI();
+    }
+
+    // =========================================================================
+    //  Test 12 – regression: initialize() must pre-populate controls from AppSettings
+    //             (not FXML stubs) so that btnBack.fire() → syncToSettings() never
+    //             overwrites the registry with stale FXML initial values.
+    // =========================================================================
+
+    @Test
+    @DisplayName("initialize() pre-populates cbTaskbarEnable and spFontSize from AppSettings, not FXML stubs – " +
+            "btnBack.fire() must preserve taskbar_icon_enable=true and taskbar_font_size=23")
+    void initializePrePopulatesTaskbarControlsAndBtnBackPreservesThem() throws Exception {
+        // Regression: TaskbarSettingsController.initialize() used to attach the spFontSize
+        // change-listener without first calling syncFromSettings().  Firing btnBack then
+        // triggered syncToSettings() which wrote the FXML stubs (cbTaskbarEnable=false,
+        // spFontSize=17) directly to the Windows Registry (java.util.prefs.Preferences),
+        // overriding the migration defaults (true / 23).
+        final var settings   = AppSettings.getInstance();
+        final var origEnable = settings.isTaskbarIconEnable();
+        final var origFont   = settings.getTaskbarFontSize();
+        final Stage[] freshStage = new Stage[1];
+        try {
+            settings.setTaskbarIconEnable(true);
+            settings.setTaskbarFontSize(23.0);
+
+            // Load a FRESH FXML instance *after* setting the values so initialize() picks them up.
+            final TaskbarSettingsController[] freshCtrl = new TaskbarSettingsController[1];
+            JavaFxTestHelper.runOnFxThread(() -> {
+                final var loader = new FXMLLoader(App.class.getResource("taskbar_settings.fxml"));
+                final HBox freshRoot = loader.load();
+                freshCtrl[0] = loader.getController();
+                freshStage[0] = new Stage();
+                freshStage[0].setScene(new Scene(freshRoot, 400, 44));
+                freshStage[0].show();
+                return null;
+            });
+            WaitForAsyncUtils.waitForFxEvents();
+
+            // Controls must already reflect AppSettings (initialize() calls syncFromSettings()).
+            final var cb = (CheckBox)         freshStage[0].getScene().getRoot().lookup("#cbTaskbarEnable");
+            final var sp = (Spinner<Integer>) freshStage[0].getScene().getRoot().lookup("#spFontSize");
+            assertNotNull(cb, "#cbTaskbarEnable must be present");
+            assertNotNull(sp, "#spFontSize must be present");
+            assertTrue(cb.isSelected(),
+                    "cbTaskbarEnable must be true (AppSettings value) immediately after FXML load; " +
+                    "initialize() must call syncFromSettings() so the FXML stub default-unchecked is overridden");
+            assertEquals(23, (int) sp.getValue(),
+                    "spFontSize must be 23 (AppSettings value) immediately after FXML load; " +
+                    "initialize() must call syncFromSettings() so the FXML stub initialValue=17 is overridden");
+
+            // Fire Back WITHOUT an explicit syncFromSettings() – must not corrupt settings.
+            final var mockMc = Mockito.mock(MainController.class);
+            JavaFxTestHelper.runOnFxThread(() -> {
+                freshCtrl[0].setMainController(mockMc);
+                ((Button) freshStage[0].getScene().getRoot().lookup("#btnBack")).fire();
+                return null;
+            });
+            WaitForAsyncUtils.waitForFxEvents();
+
+            assertTrue(settings.isTaskbarIconEnable(),
+                    "taskbar_icon_enable must remain true; syncToSettings() must not write the FXML stub false");
+            assertEquals(23.0, settings.getTaskbarFontSize(), 1e-9,
+                    "taskbar_font_size must remain 23.0; syncToSettings() must not write the FXML stub 17");
+        } finally {
+            settings.setTaskbarIconEnable(origEnable);
+            settings.setTaskbarFontSize(origFont);
+            if (freshStage[0] != null) {
+                JavaFxTestHelper.runOnFxThread(() -> {
+                    freshStage[0].hide();
+                    return null;
+                });
+            }
+        }
     }
 }
 

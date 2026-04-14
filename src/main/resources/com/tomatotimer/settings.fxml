@@ -36,7 +36,7 @@
             <Label fx:id="lblWork" text="Work:" styleClass="setting-label"/>
             <Spinner fx:id="spWorkTime" prefWidth="60" editable="true" focusTraversable="false">
                 <valueFactory>
-                    <SpinnerValueFactory.IntegerSpinnerValueFactory min="1" max="120" initialValue="30"/>
+                    <SpinnerValueFactory.IntegerSpinnerValueFactory min="1" max="120" initialValue="25"/>
                 </valueFactory>
             </Spinner>
 

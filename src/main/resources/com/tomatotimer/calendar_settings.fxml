@@ -34,6 +34,7 @@
             <VBox alignment="CENTER_LEFT" spacing="2">
                 <CheckBox fx:id="cbEnableGCal"
                           text="GCal"
+                          selected="true"
                           onAction="#onGCalEnableChanged"
                           focusTraversable="false">
                     <tooltip><Tooltip text="Open Google Calendar on work session end"/></tooltip>

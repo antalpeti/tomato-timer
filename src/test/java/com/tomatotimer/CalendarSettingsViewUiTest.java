@@ -274,14 +274,27 @@ class CalendarSettingsViewUiTest {
     @Test
     @DisplayName("btnBack.fire() triggers mainController.showSettings()")
     void btnBackFiresShowSettings() throws Exception {
-        final var mockMc = Mockito.mock(MainController.class);
-        JavaFxTestHelper.runOnFxThread(() -> {
-            controller.setMainController(mockMc);
-            ((Button) stage.getScene().getRoot().lookup("#btnBack")).fire();
-            return null;
-        });
-        WaitForAsyncUtils.waitForFxEvents();
-        Mockito.verify(mockMc, Mockito.times(1)).showSettings();
+        // Save and restore all settings that syncToSettings() might write on Back.
+        final var settings   = AppSettings.getInstance();
+        final var origEnable = settings.isGCalEnable();
+        final var origCopy   = settings.isGCalCopyToClipboard();
+        final var origSrc    = settings.getGCalSrc();
+        final var origText   = settings.getGCalText();
+        try {
+            final var mockMc = Mockito.mock(MainController.class);
+            JavaFxTestHelper.runOnFxThread(() -> {
+                controller.setMainController(mockMc);
+                ((Button) stage.getScene().getRoot().lookup("#btnBack")).fire();
+                return null;
+            });
+            WaitForAsyncUtils.waitForFxEvents();
+            Mockito.verify(mockMc, Mockito.times(1)).showSettings();
+        } finally {
+            settings.setGCalEnable(origEnable);
+            settings.setGCalCopyToClipboard(origCopy);
+            settings.setGCalSrc(origSrc);
+            settings.setGCalText(origText);
+        }
     }
 
     // =========================================================================
@@ -294,6 +307,8 @@ class CalendarSettingsViewUiTest {
         final var settings   = AppSettings.getInstance();
         final var origSrc    = settings.getGCalSrc();
         final var origText   = settings.getGCalText();
+        final var origEnable = settings.isGCalEnable();
+        final var origCopy   = settings.isGCalCopyToClipboard();
         final var mockMc     = Mockito.mock(MainController.class);
         try {
             // Type into text fields on FX thread, then fire Back
@@ -313,6 +328,78 @@ class CalendarSettingsViewUiTest {
         } finally {
             settings.setGCalSrc(origSrc);
             settings.setGCalText(origText);
+            settings.setGCalEnable(origEnable);
+            settings.setGCalCopyToClipboard(origCopy);
+        }
+    }
+
+    // =========================================================================
+    //  Test 10 – regression: initialize() must pre-populate cbEnableGCal from
+    //              AppSettings (not the FXML default "unchecked") so that
+    //              btnBack.fire() → syncToSettings() never writes false to the registry.
+    // =========================================================================
+
+    @Test
+    @DisplayName("initialize() pre-populates cbEnableGCal from AppSettings, not FXML default – " +
+            "btnBack.fire() must preserve gcal_enable=true")
+    void initializePrePopulatesGCalEnableAndBtnBackPreservesIt() throws Exception {
+        // Regression: CalendarSettingsController.initialize() used to do nothing with
+        // AppSettings (no syncFromSettings() call).  The cbEnableGCal FXML default was
+        // unchecked (false).  Firing btnBack triggered syncToSettings() which wrote false
+        // to gcal_enable in java.util.prefs.Preferences (Windows Registry), overriding
+        // the migration default of true.
+        final var settings   = AppSettings.getInstance();
+        final var origEnable = settings.isGCalEnable();
+        final var origCopy   = settings.isGCalCopyToClipboard();
+        final var origSrc    = settings.getGCalSrc();
+        final var origText   = settings.getGCalText();
+        final Stage[] freshStage = new Stage[1];
+        try {
+            settings.setGCalEnable(true);
+
+            // Load a FRESH FXML instance *after* setting the value so initialize() picks it up.
+            final CalendarSettingsController[] freshCtrl = new CalendarSettingsController[1];
+            JavaFxTestHelper.runOnFxThread(() -> {
+                final var loader = new FXMLLoader(App.class.getResource("calendar_settings.fxml"));
+                final HBox freshRoot = loader.load();
+                freshCtrl[0] = loader.getController();
+                freshStage[0] = new Stage();
+                freshStage[0].setScene(new Scene(freshRoot, 520, 44));
+                freshStage[0].show();
+                return null;
+            });
+            WaitForAsyncUtils.waitForFxEvents();
+
+            // cbEnableGCal must already reflect AppSettings (initialize() calls syncFromSettings()).
+            final var cb = (CheckBox) freshStage[0].getScene().getRoot().lookup("#cbEnableGCal");
+            assertNotNull(cb, "#cbEnableGCal must be present");
+            assertTrue(cb.isSelected(),
+                    "cbEnableGCal must be true (AppSettings value) immediately after FXML load; " +
+                    "initialize() must call syncFromSettings() so the FXML default unchecked is overridden");
+
+            // Fire Back WITHOUT an explicit syncFromSettings() – must not write false to registry.
+            final var mockMc = Mockito.mock(MainController.class);
+            JavaFxTestHelper.runOnFxThread(() -> {
+                freshCtrl[0].setMainController(mockMc);
+                ((Button) freshStage[0].getScene().getRoot().lookup("#btnBack")).fire();
+                return null;
+            });
+            WaitForAsyncUtils.waitForFxEvents();
+
+            assertTrue(settings.isGCalEnable(),
+                    "gcal_enable must remain true after btnBack fires; " +
+                    "syncToSettings() must not write the FXML stub false to prefs");
+        } finally {
+            settings.setGCalEnable(origEnable);
+            settings.setGCalCopyToClipboard(origCopy);
+            settings.setGCalSrc(origSrc);
+            settings.setGCalText(origText);
+            if (freshStage[0] != null) {
+                JavaFxTestHelper.runOnFxThread(() -> {
+                    freshStage[0].hide();
+                    return null;
+                });
+            }
         }
     }
 }

@@ -23,6 +23,8 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@SuppressWarnings("unchecked")
+
 /**
  * TestFX-based UI integration tests for {@code settings.fxml} /
  * {@link SettingsController}.
@@ -274,6 +276,70 @@ class SettingsViewUiTest {
         });
         WaitForAsyncUtils.waitForFxEvents();
         Mockito.verify(mockMc, Mockito.times(1)).showTaskbarSettings();
+    }
+
+    // =========================================================================
+    //  Test 12 – regression: initialize() must pre-populate spinners from AppSettings
+    //             (not from the FXML initialValue stubs) so that firing any navigation
+    //             button (which calls syncToSettings()) never overwrites the registry
+    //             with a stale FXML stub value.
+    // =========================================================================
+
+    @Test
+    @DisplayName("initialize() pre-populates spWorkTime from AppSettings, not FXML stub – " +
+            "btnBack.fire() must preserve the stored work_time")
+    void initializePrePopulatesWorkTimeAndBtnBackPreservesIt() throws Exception {
+        // Regression for: SettingsController.initialize() registered change-listeners
+        // without first calling syncFromSettings().  Firing any nav button (onBack,
+        // onThemeSettings, etc.) invoked syncToSettings() which wrote the FXML stub
+        // initialValue="30" to the Windows Registry, overriding the migration default 25.
+        final var settings = AppSettings.getInstance();
+        final int origWork = settings.getWorkTime();
+        final Stage[] freshStage = new Stage[1];
+        try {
+            settings.setWorkTime(42); // value different from both current FXML stub (25) and old stub (30)
+
+            // Load a FRESH FXML instance *after* setting the value so initialize() picks it up.
+            final SettingsController[] freshCtrl = new SettingsController[1];
+            JavaFxTestHelper.runOnFxThread(() -> {
+                final var loader = new FXMLLoader(App.class.getResource("settings.fxml"));
+                final HBox freshRoot = loader.load();
+                freshCtrl[0] = loader.getController();
+                freshStage[0] = new Stage();
+                freshStage[0].setScene(new Scene(freshRoot, 520, 44));
+                freshStage[0].show();
+                return null;
+            });
+            WaitForAsyncUtils.waitForFxEvents();
+
+            // Spinner must already reflect AppSettings (initialize() calls syncFromSettings()).
+            final var sp = (Spinner<Integer>) freshStage[0].getScene().getRoot().lookup("#spWorkTime");
+            assertNotNull(sp, "#spWorkTime must be present");
+            assertEquals(42, (int) sp.getValue(),
+                    "spWorkTime must show 42 (AppSettings value) immediately after FXML load; " +
+                    "initialize() must call syncFromSettings() before returning");
+
+            // Fire Back WITHOUT an explicit syncFromSettings() – must not corrupt work_time.
+            final var mockMc = Mockito.mock(MainController.class);
+            JavaFxTestHelper.runOnFxThread(() -> {
+                freshCtrl[0].setMainController(mockMc);
+                ((Button) freshStage[0].getScene().getRoot().lookup("#btnBack")).fire();
+                return null;
+            });
+            WaitForAsyncUtils.waitForFxEvents();
+
+            assertEquals(42, settings.getWorkTime(),
+                    "work_time must remain 42 after btnBack fires without explicit syncFromSettings(); " +
+                    "syncToSettings() must not write the old FXML initialValue stub to prefs");
+        } finally {
+            settings.setWorkTime(origWork);
+            if (freshStage[0] != null) {
+                JavaFxTestHelper.runOnFxThread(() -> {
+                    freshStage[0].hide();
+                    return null;
+                });
+            }
+        }
     }
 }
 

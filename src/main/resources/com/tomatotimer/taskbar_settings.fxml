@@ -37,6 +37,7 @@
             <!-- Enable / disable taskbar icon -->
             <CheckBox fx:id="cbTaskbarEnable"
                       text="Enable"
+                      selected="true"
                       onAction="#onEnableChanged"
                       focusTraversable="false">
                 <tooltip><Tooltip text="Show countdown in the Windows taskbar icon"/></tooltip>
@@ -48,7 +49,7 @@
             <Label fx:id="lblFontSize" text="Font:" styleClass="setting-label"/>
             <Spinner fx:id="spFontSize" prefWidth="60" editable="true" focusTraversable="false">
                 <valueFactory>
-                    <SpinnerValueFactory.IntegerSpinnerValueFactory min="8" max="28" initialValue="17"/>
+                    <SpinnerValueFactory.IntegerSpinnerValueFactory min="8" max="28" initialValue="23"/>
                 </valueFactory>
                 <tooltip><Tooltip text="Base font size at 64 px (range 8–28). Scales with icon size."/></tooltip>
             </Spinner>
