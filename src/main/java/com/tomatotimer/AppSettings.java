@@ -39,7 +39,7 @@ public class AppSettings {
      * <p>Package-private so {@code AppSettingsTest} can read and reset it
      * without reflection.</p>
      */
-    static final int CURRENT_SETTINGS_VERSION = 1;
+    static final int CURRENT_SETTINGS_VERSION = 2;
 
     // ---- keys ---------------------------------------------------------------
     private static final String KEY_WORK_TIME          = "work_time";
@@ -94,11 +94,7 @@ public class AppSettings {
         final int stored = prefs.getInt(KEY_SETTINGS_VERSION, 0);
         if (stored >= CURRENT_SETTINGS_VERSION) return;
 
-        // ── v0 → v1 : introduce versioning; stamp all current factory defaults ─
-        // Any user whose registry still has an old value (written by a build
-        // that used a different default) will receive the new value on the next
-        // app launch.  Increment CURRENT_SETTINGS_VERSION and add a new block
-        // below whenever a default is changed in a subsequent release.
+        // ── v0 → v1 : introduce versioning; stamp all factory defaults as of v1 ─
         if (stored < 1) {
             prefs.putInt    (KEY_WORK_TIME,             30);
             prefs.putInt    (KEY_RELAX_TIME,             5);
@@ -117,6 +113,12 @@ public class AppSettings {
             //   KEY_TIMER_RESTORE_DT, KEY_TIMER_RESTORE_MODE
         }
 
+        // ── v1 → v2 : work_time default 30 → 25; always_on_top default true → false ─
+        if (stored < 2) {
+            prefs.putInt    (KEY_WORK_TIME,        25);
+            prefs.putBoolean(KEY_ALWAYS_ON_TOP, false);
+        }
+
         prefs.putInt(KEY_SETTINGS_VERSION, CURRENT_SETTINGS_VERSION);
         save();
     }
@@ -124,7 +126,7 @@ public class AppSettings {
     public static AppSettings getInstance() { return INSTANCE; }
 
     // ---- timer durations ----------------------------------------------------
-    public int  getWorkTime()          { return prefs.getInt(KEY_WORK_TIME, 30); }
+    public int  getWorkTime()          { return prefs.getInt(KEY_WORK_TIME, 25); }
     public void setWorkTime(int v)     { prefs.putInt(KEY_WORK_TIME, v); }
 
     public int  getRelaxTime()         { return prefs.getInt(KEY_RELAX_TIME, 5); }
@@ -147,7 +149,7 @@ public class AppSettings {
     public void    setGCalCopyToClipboard(boolean v){ prefs.putBoolean(KEY_GCAL_COPY_CLIP, v); }
 
     // ---- window state -------------------------------------------------------
-    public boolean isAlwaysOnTop()          { return prefs.getBoolean(KEY_ALWAYS_ON_TOP, true); }
+    public boolean isAlwaysOnTop()          { return prefs.getBoolean(KEY_ALWAYS_ON_TOP, false); }
     public void    setAlwaysOnTop(boolean v){ prefs.putBoolean(KEY_ALWAYS_ON_TOP, v); }
 
     public double getWindowX()         { return prefs.getDouble(KEY_WIN_X, -1); }

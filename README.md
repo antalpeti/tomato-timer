@@ -538,7 +538,7 @@ The most relevant persisted keys are:
 | `gcal_enable` | Whether Google Calendar integration is enabled | `true` |
 | `taskbar_icon_enable` | Whether the live taskbar countdown icon is enabled | `true` |
 | `taskbar_font_size` | Base font size for the taskbar icon renderer | `23.0` |
-| `settings_version` | Internal settings schema version used for startup migration | `1` |
+| `settings_version` | Internal settings schema version used for startup migration | `2` |
 
 ### Factory defaults / first-run defaults
 
@@ -549,14 +549,14 @@ user-specific / runtime state and are only written when the user changes them ex
 
 | Registry key | Type | Factory default | Description |
 |---|---|---|---|
-| `work_time` | `int` | `30` | Work timer duration (minutes) |
+| `work_time` | `int` | `25` | Work timer duration (minutes) |
 | `relax_time` | `int` | `5` | Short rest duration (minutes) |
 | `relax_time_long` | `int` | `15` | Long rest duration (minutes) |
 | `gcal_enable` | `boolean` | `true` | Google Calendar integration enabled |
 | `gcal_copy_clipboard` | `boolean` | `false` | Also copy generated GCal URL to clipboard |
 | `gcal_src` **†** | `string` | *(empty)* | Calendar source / ID embedded in event URL |
 | `gcal_text` **†** | `string` | *(empty)* | Default title for created calendar events |
-| `always_on_top` | `boolean` | `true` | Window stays above all other windows |
+| `always_on_top` | `boolean` | `false` | Window stays above all other windows |
 | `window_x` **†** | `double` | `-1` | Saved window X position; `-1` = let OS decide |
 | `window_y` **†** | `double` | `-1` | Saved window Y position; `-1` = let OS decide |
 | `window_width` **†** | `double` | `260` | Saved window width (logical px) |
@@ -573,7 +573,7 @@ user-specific / runtime state and are only written when the user changes them ex
 | `taskbar_font_size` | `double` | `23.0` | Taskbar icon font size (at 64 px reference canvas; range 8–28) |
 | `taskbar_layout` | `string` | `VERTICAL` | Taskbar countdown layout (`VERTICAL` / `HORIZONTAL`) |
 | `theme_selection_mode` | `string` | `SHUFFLE` | Theme rotation strategy on each new Work phase |
-| `settings_version` | `int` | `1` | Internal schema version; drives the startup migration |
+| `settings_version` | `int` | `2` | Internal schema version; drives the startup migration |
 
 > **†** User-specific / runtime keys: the startup migration never overwrites these —
 > only window geometry, sound file paths, GCal source/text, and timer-restore state
@@ -599,11 +599,13 @@ reg query "HKCU\Software\JavaSoft\Prefs\com\tomatotimer" /s
 
 Typical values to verify after launching the app:
 
+- `work_time` = `25`
+- `always_on_top` = `false`
 - `theme_selection_mode` = `SHUFFLE`
 - `gcal_enable` = `true`
 - `taskbar_icon_enable` = `true`
 - `taskbar_font_size` = `23.0`
-- `settings_version` = `1`
+- `settings_version` = `2`
 
 ### Simulating a clean first run
 

@@ -497,6 +497,31 @@ class AppSettingsTest extends AppSettingsHelper {
         }
     }
 
+    @Test
+    @DisplayName("migrateIfNeeded() stamps work_time=25 and always_on_top=false when settings_version is 1")
+    void testMigrationFromV1StampsNewDefaults() {
+        final var prefs       = java.util.prefs.Preferences.userNodeForPackage(AppSettings.class);
+        final var s           = AppSettings.getInstance();
+        final var savedVer    = prefs.get("settings_version", null);
+        final var savedWork   = prefs.get("work_time",        null);
+        final var savedOnTop  = prefs.get("always_on_top",   null);
+        try {
+            // Simulate a v1 install (old defaults already written, but v2 not yet applied)
+            prefs.putInt    ("settings_version", 1);
+            prefs.putInt    ("work_time",       30);   // old v1 default
+            prefs.putBoolean("always_on_top", true);   // old v1 default
+
+            s.migrateIfNeeded();
+
+            assertEquals(DEFAULT_WORK_TIME,   s.getWorkTime(),    "work_time after v1→v2 migration");
+            assertEquals(DEFAULT_ALWAYS_ON_TOP, s.isAlwaysOnTop(), "always_on_top after v1→v2 migration");
+        } finally {
+            restore(prefs, "settings_version", savedVer);
+            restore(prefs, "work_time",        savedWork);
+            restore(prefs, "always_on_top",    savedOnTop);
+        }
+    }
+
     // ── first-run defaults ────────────────────────────────────────────────────
 
     @Test
@@ -509,6 +534,32 @@ class AppSettingsTest extends AppSettingsHelper {
             assertEquals(DEFAULT_GCAL_ENABLE, AppSettings.getInstance().isGCalEnable());
         } finally {
             if (saved != null) prefs.put("gcal_enable", saved);
+        }
+    }
+
+    @Test
+    @DisplayName("isAlwaysOnTop() default is false on first run")
+    void testAlwaysOnTopDefaultIsFalse() {
+        final var prefs = Preferences.userNodeForPackage(AppSettings.class);
+        final var saved = prefs.get("always_on_top", null);
+        try {
+            prefs.remove("always_on_top");
+            assertEquals(DEFAULT_ALWAYS_ON_TOP, AppSettings.getInstance().isAlwaysOnTop());
+        } finally {
+            if (saved != null) prefs.put("always_on_top", saved);
+        }
+    }
+
+    @Test
+    @DisplayName("getWorkTime() default is 25 on first run")
+    void testWorkTimeDefaultIs25() {
+        final var prefs = Preferences.userNodeForPackage(AppSettings.class);
+        final var saved = prefs.get("work_time", null);
+        try {
+            prefs.remove("work_time");
+            assertEquals(DEFAULT_WORK_TIME, AppSettings.getInstance().getWorkTime());
+        } finally {
+            if (saved != null) prefs.put("work_time", saved);
         }
     }
 
