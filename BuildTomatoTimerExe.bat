@@ -13,7 +13,7 @@
 ::
 ::  Requirements:
 ::    * JDK 14+  (jpackage is bundled with the JDK)
-::    * A fat JAR must exist under target\  (run: mvn package)
+::    * Maven on PATH  (the script runs "mvn package" automatically)
 ::
 ::  The EXE produced here is a good candidate to pin to the
 ::  Windows Taskbar: right-click TomatoTimer.exe -> Pin to taskbar.
@@ -44,11 +44,27 @@ set "STAGING_DIR=%TARGET_DIR%\jpackage-input"
 set "APP_NAME=TomatoTimer"
 set "MAIN_CLASS=com.tomatotimer.Launcher"
 set "DRY_RUN=0"
+set "MVN_EXE="
 
 if /i "%~1"=="--dry-run" set "DRY_RUN=1"
 
 :: ------------------------------------------------------------
-:: 1. Locate newest fat JAR inside target\
+:: 1. Locate Maven on the PATH
+:: ------------------------------------------------------------
+for /f "delims=" %%X in ('where mvn 2^>nul') do (
+    if not defined MVN_EXE (
+        set "MVN_EXE=%%X"
+    )
+)
+
+if not defined MVN_EXE (
+    echo [ERROR] Maven ^(mvn^) not found on PATH.
+    echo         Make sure Maven is installed and available via:  where mvn
+    exit /b 1
+)
+
+:: ------------------------------------------------------------
+:: 2. Locate newest fat JAR inside target\
 :: ------------------------------------------------------------
 set "JAR_FILE="
 set "JAR_NAME="
@@ -60,13 +76,11 @@ for /f "delims=" %%F in ('dir /b /o-d "%TARGET_DIR%\*-fat.jar" 2^>nul') do (
 )
 
 if not defined JAR_FILE (
-    echo [ERROR] No fat JAR found in "%TARGET_DIR%".
-    echo         Build the project first with:  mvn package
-    exit /b 1
+    echo [WARN] No fat JAR found in "%TARGET_DIR%" yet.
 )
 
 :: ------------------------------------------------------------
-:: 2. Locate jpackage on the PATH
+:: 3. Locate jpackage on the PATH
 :: ------------------------------------------------------------
 set "JPACKAGE_EXE="
 for /f "delims=" %%X in ('where jpackage 2^>nul') do (
@@ -84,14 +98,15 @@ if not defined JPACKAGE_EXE (
 )
 
 :: ------------------------------------------------------------
-:: 3. Resolve final EXE path (for display / dry-run)
+:: 4. Resolve final EXE path (for display / dry-run)
 :: ------------------------------------------------------------
 set "EXE_PATH=%DEST_DIR%\%APP_NAME%\%APP_NAME%.exe"
 
 :: ------------------------------------------------------------
-:: 4. Dry-run: print diagnostics and exit without building
+:: 5. Dry-run: print diagnostics and exit without building
 :: ------------------------------------------------------------
 if "%DRY_RUN%"=="1" (
+    echo [DRY-RUN] MVN        : %MVN_EXE%
     echo [DRY-RUN] JAR        : %JAR_FILE%
     echo [DRY-RUN] JAR name   : %JAR_NAME%
     echo [DRY-RUN] JPACKAGE   : %JPACKAGE_EXE%
@@ -99,6 +114,9 @@ if "%DRY_RUN%"=="1" (
     echo [DRY-RUN] DEST       : %DEST_DIR%
     echo [DRY-RUN] Output EXE : %EXE_PATH%
     echo [DRY-RUN] Command:
+    echo           pushd "%SCRIPT_DIR%"
+    echo           "%MVN_EXE%" -DskipTests package
+    echo           popd
     echo           "%JPACKAGE_EXE%"
     echo               --type app-image
     echo               --name %APP_NAME%
@@ -116,7 +134,36 @@ if "%DRY_RUN%"=="1" (
 )
 
 :: ------------------------------------------------------------
-:: 5. Remove previous app-image output (best-effort)
+:: 6. Build fresh fat JAR from current sources
+:: ------------------------------------------------------------
+echo Building fresh fat JAR with Maven ...
+pushd "%SCRIPT_DIR%"
+call "%MVN_EXE%" -DskipTests package
+set "MVN_EXIT=%errorlevel%"
+popd
+
+if "%MVN_EXIT%" NEQ "0" (
+    echo [ERROR] Maven package failed ^(exit code %MVN_EXIT%^). See output above for details.
+    exit /b 3
+)
+
+:: Refresh fat-JAR path after packaging so jpackage always uses the latest build.
+set "JAR_FILE="
+set "JAR_NAME="
+for /f "delims=" %%F in ('dir /b /o-d "%TARGET_DIR%\*-fat.jar" 2^>nul') do (
+    if not defined JAR_FILE (
+        set "JAR_FILE=%TARGET_DIR%\%%F"
+        set "JAR_NAME=%%F"
+    )
+)
+
+if not defined JAR_FILE (
+    echo [ERROR] Maven package completed, but no fat JAR was found in "%TARGET_DIR%".
+    exit /b 4
+)
+
+:: ------------------------------------------------------------
+:: 7. Remove previous app-image output (best-effort)
 :: ------------------------------------------------------------
 if exist "%DEST_DIR%\%APP_NAME%" (
     echo Removing previous app-image: "%DEST_DIR%\%APP_NAME%" ...
@@ -124,7 +171,7 @@ if exist "%DEST_DIR%\%APP_NAME%" (
 )
 
 :: ------------------------------------------------------------
-:: 6. Prepare staging directory – copy ONLY the fat JAR
+:: 8. Prepare staging directory – copy ONLY the fat JAR
 ::    (prevents duplicate app.classpath= in TomatoTimer.cfg and
 ::     avoids copying the Maven build output tree into the bundle)
 :: ------------------------------------------------------------
@@ -137,11 +184,11 @@ copy /y "%JAR_FILE%" "%STAGING_DIR%\%JAR_NAME%" >nul
 if errorlevel 1 (
     echo [ERROR] Failed to copy fat JAR to staging directory "%STAGING_DIR%".
     rmdir /s /q "%STAGING_DIR%" 2>nul
-    exit /b 3
+    exit /b 5
 )
 
 :: ------------------------------------------------------------
-:: 7. Build the app-image with jpackage
+:: 9. Build the app-image with jpackage
 :: ------------------------------------------------------------
 echo Building TomatoTimer app-image ...
 echo JAR      : %JAR_FILE%
@@ -179,17 +226,17 @@ echo.
 set "JPACKAGE_EXIT=%errorlevel%"
 
 :: ------------------------------------------------------------
-:: 8. Clean up staging directory (always, even on failure)
+:: 10. Clean up staging directory (always, even on failure)
 :: ------------------------------------------------------------
 rmdir /s /q "%STAGING_DIR%" 2>nul
 
 if "%JPACKAGE_EXIT%" NEQ "0" (
     echo [ERROR] jpackage failed ^(exit code %JPACKAGE_EXIT%^). See output above for details.
-    exit /b 4
+    exit /b 6
 )
 
 :: ------------------------------------------------------------
-:: 9. Done
+:: 11. Done
 :: ------------------------------------------------------------
 echo.
 echo [OK] Build succeeded.

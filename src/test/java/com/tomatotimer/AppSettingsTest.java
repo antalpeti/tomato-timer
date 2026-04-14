@@ -343,6 +343,160 @@ class AppSettingsTest extends AppSettingsHelper {
         assertDoesNotThrow(() -> AppSettings.getInstance().save());
     }
 
+    // ── settings migration ────────────────────────────────────────────────────
+    //
+    // These tests verify that migrateIfNeeded() correctly stamps factory
+    // defaults over stale registry values so that changed defaults in
+    // AppSettings.java also take effect for users upgrading from an older build.
+    //
+    // Pattern: save → corrupt → migrate → assert → restore (in finally).
+    // migrateIfNeeded() is package-private so same-package tests can call it
+    // directly after manually resetting the stored schema version to 0.
+
+    /** Restores a key to its saved state (removes it again if it was absent). */
+    private static void restore(java.util.prefs.Preferences p, String key, String saved) {
+        if (saved != null) p.put(key, saved); else p.remove(key);
+    }
+
+    @Test
+    @DisplayName("migrateIfNeeded() stamps timer-duration defaults when settings_version is 0")
+    void testMigrationFromV0StampsTimerDefaults() {
+        final var prefs      = java.util.prefs.Preferences.userNodeForPackage(AppSettings.class);
+        final var s          = AppSettings.getInstance();
+        final var savedVer   = prefs.get("settings_version", null);
+        final var savedWork  = prefs.get("work_time",       null);
+        final var savedRelax = prefs.get("relax_time",      null);
+        final var savedLong  = prefs.get("relax_time_long", null);
+        try {
+            // Simulate stale registry from an older build
+            prefs.remove("settings_version");
+            prefs.putInt("work_time",       99);
+            prefs.putInt("relax_time",       2);
+            prefs.putInt("relax_time_long",  3);
+
+            s.migrateIfNeeded();
+
+            assertEquals(DEFAULT_WORK_TIME,       s.getWorkTime(),       "work_time after migration");
+            assertEquals(DEFAULT_RELAX_TIME,      s.getRelaxTime(),      "relax_time after migration");
+            assertEquals(DEFAULT_RELAX_TIME_LONG, s.getRelaxTimeLong(),  "relax_time_long after migration");
+        } finally {
+            restore(prefs, "settings_version",  savedVer);
+            restore(prefs, "work_time",         savedWork);
+            restore(prefs, "relax_time",        savedRelax);
+            restore(prefs, "relax_time_long",   savedLong);
+        }
+    }
+
+    @Test
+    @DisplayName("migrateIfNeeded() stamps feature-flag defaults when settings_version is 0")
+    void testMigrationFromV0StampsFeatureFlagDefaults() {
+        final var prefs        = java.util.prefs.Preferences.userNodeForPackage(AppSettings.class);
+        final var s            = AppSettings.getInstance();
+        final var savedVer     = prefs.get("settings_version",      null);
+        final var savedGcal    = prefs.get("gcal_enable",           null);
+        final var savedClip    = prefs.get("gcal_copy_clipboard",   null);
+        final var savedOnTop   = prefs.get("always_on_top",         null);
+        final var savedTbIcon  = prefs.get("taskbar_icon_enable",   null);
+        try {
+            prefs.remove("settings_version");
+            prefs.putBoolean("gcal_enable",         !DEFAULT_GCAL_ENABLE);
+            prefs.putBoolean("gcal_copy_clipboard", !DEFAULT_GCAL_COPY_CLIP);
+            prefs.putBoolean("always_on_top",       !DEFAULT_ALWAYS_ON_TOP);
+            prefs.putBoolean("taskbar_icon_enable", !DEFAULT_TASKBAR_ICON_ENABLE);
+
+            s.migrateIfNeeded();
+
+            assertEquals(DEFAULT_GCAL_ENABLE,         s.isGCalEnable(),         "gcal_enable after migration");
+            assertEquals(DEFAULT_GCAL_COPY_CLIP,      s.isGCalCopyToClipboard(),"gcal_copy_clipboard after migration");
+            assertEquals(DEFAULT_ALWAYS_ON_TOP,       s.isAlwaysOnTop(),        "always_on_top after migration");
+            assertEquals(DEFAULT_TASKBAR_ICON_ENABLE, s.isTaskbarIconEnable(),  "taskbar_icon_enable after migration");
+        } finally {
+            restore(prefs, "settings_version",    savedVer);
+            restore(prefs, "gcal_enable",         savedGcal);
+            restore(prefs, "gcal_copy_clipboard", savedClip);
+            restore(prefs, "always_on_top",       savedOnTop);
+            restore(prefs, "taskbar_icon_enable", savedTbIcon);
+        }
+    }
+
+    @Test
+    @DisplayName("migrateIfNeeded() stamps visual and layout defaults when settings_version is 0")
+    void testMigrationFromV0StampsVisualDefaults() {
+        final var prefs          = java.util.prefs.Preferences.userNodeForPackage(AppSettings.class);
+        final var s              = AppSettings.getInstance();
+        final var savedVer       = prefs.get("settings_version",      null);
+        final var savedPreset    = prefs.get("neon_preset",           null);
+        final var savedGlow      = prefs.get("neon_glow_profile",     null);
+        final var savedTbLayout  = prefs.get("taskbar_layout",        null);
+        final var savedTbFont    = prefs.get("taskbar_font_size",     null);
+        final var savedTheme     = prefs.get("theme_selection_mode",  null);
+        try {
+            prefs.remove("settings_version");
+            // Use values that differ from each factory default
+            prefs.put   ("neon_preset",          NeonPreset.SCARLET_SURGE.name());
+            prefs.put   ("neon_glow_profile",    NeonGlowProfile.SOFT.name());
+            prefs.put   ("taskbar_layout",       TaskbarTimeLayout.HORIZONTAL.name());
+            prefs.putDouble("taskbar_font_size", 10.0);
+            prefs.put   ("theme_selection_mode", ThemeSelectionMode.STATIC.name());
+
+            s.migrateIfNeeded();
+
+            assertEquals(DEFAULT_NEON_PRESET,          s.getNeonPreset(),          "neon_preset after migration");
+            assertEquals(DEFAULT_NEON_GLOW_PROFILE,    s.getNeonGlowProfile(),     "neon_glow_profile after migration");
+            assertEquals(DEFAULT_TASKBAR_LAYOUT,       s.getTaskbarLayout(),       "taskbar_layout after migration");
+            assertEquals(DEFAULT_TASKBAR_FONT_SIZE,    s.getTaskbarFontSize(), DELTA);
+            assertEquals(DEFAULT_THEME_SELECTION_MODE, s.getThemeSelectionMode(),  "theme_selection_mode after migration");
+        } finally {
+            restore(prefs, "settings_version",     savedVer);
+            restore(prefs, "neon_preset",          savedPreset);
+            restore(prefs, "neon_glow_profile",    savedGlow);
+            restore(prefs, "taskbar_layout",       savedTbLayout);
+            restore(prefs, "taskbar_font_size",    savedTbFont);
+            restore(prefs, "theme_selection_mode", savedTheme);
+        }
+    }
+
+    @Test
+    @DisplayName("migrateIfNeeded() is a no-op when settings_version equals CURRENT_SETTINGS_VERSION")
+    void testMigrationIsNoOpWhenVersionIsCurrent() {
+        final var prefs    = java.util.prefs.Preferences.userNodeForPackage(AppSettings.class);
+        final var s        = AppSettings.getInstance();
+        final var savedVer  = prefs.get("settings_version", null);
+        final var savedWork = prefs.get("work_time",        null);
+        try {
+            prefs.putInt("settings_version", AppSettings.CURRENT_SETTINGS_VERSION);
+            prefs.putInt("work_time", TEST_WORK_TIME);  // value that differs from factory default
+
+            s.migrateIfNeeded();
+
+            // Migration must NOT overwrite – user's (non-default) value is preserved
+            assertEquals(TEST_WORK_TIME, s.getWorkTime(),
+                    "work_time must not be overwritten when version is already current");
+        } finally {
+            restore(prefs, "settings_version", savedVer);
+            restore(prefs, "work_time",        savedWork);
+        }
+    }
+
+    @Test
+    @DisplayName("migrateIfNeeded() writes CURRENT_SETTINGS_VERSION to preferences store")
+    void testMigrationWritesSettingsVersionToCurrent() {
+        final var prefs    = java.util.prefs.Preferences.userNodeForPackage(AppSettings.class);
+        final var s        = AppSettings.getInstance();
+        final var savedVer = prefs.get("settings_version", null);
+        try {
+            prefs.remove("settings_version");  // simulate pre-versioning install
+
+            s.migrateIfNeeded();
+
+            assertEquals(AppSettings.CURRENT_SETTINGS_VERSION,
+                    prefs.getInt("settings_version", -1),
+                    "settings_version must be stamped with CURRENT_SETTINGS_VERSION after migration");
+        } finally {
+            restore(prefs, "settings_version", savedVer);
+        }
+    }
+
     // ── first-run defaults ────────────────────────────────────────────────────
 
     @Test

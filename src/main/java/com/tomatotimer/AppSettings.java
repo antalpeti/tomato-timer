@@ -5,11 +5,41 @@ import java.util.prefs.Preferences;
 /**
  * Persistent application settings backed by java.util.prefs.Preferences.
  * Equivalent to TimerSettings in the WPF project.
+ *
+ * <h3>Changing a factory default</h3>
+ * <ol>
+ *   <li>Update the {@code defaultValue} argument in the getter (e.g.
+ *       {@code prefs.getInt(KEY_WORK_TIME, NEW_VALUE)}).</li>
+ *   <li>Increment {@link #CURRENT_SETTINGS_VERSION}.</li>
+ *   <li>Add a {@code if (stored < N)} block in {@link #migrateIfNeeded()}
+ *       that overwrites each changed key with its new factory value.</li>
+ *   <li>Mirror the new version constant in
+ *       {@code AppSettingsHelper#CURRENT_SETTINGS_VERSION} (test helper).</li>
+ * </ol>
+ *
+ * <p>Without this migration, existing users whose Windows Registry already
+ * contains the old value would never see the updated default, because
+ * {@link Preferences#getInt(String, int)} ignores the default argument
+ * whenever the key is already present.</p>
  */
 public class AppSettings {
 
     private static final AppSettings INSTANCE = new AppSettings();
     private final Preferences prefs = Preferences.userNodeForPackage(AppSettings.class);
+
+    // ---- schema version -----------------------------------------------------
+
+    private static final String KEY_SETTINGS_VERSION = "settings_version";
+
+    /**
+     * Schema version written to the preferences store after every successful
+     * migration run.  Increment this constant and add a matching migration
+     * block in {@link #migrateIfNeeded()} whenever any factory default changes.
+     *
+     * <p>Package-private so {@code AppSettingsTest} can read and reset it
+     * without reflection.</p>
+     */
+    static final int CURRENT_SETTINGS_VERSION = 1;
 
     // ---- keys ---------------------------------------------------------------
     private static final String KEY_WORK_TIME          = "work_time";
@@ -37,7 +67,59 @@ public class AppSettings {
     private static final String KEY_TASKBAR_LAYOUT           = "taskbar_layout";
     private static final String KEY_THEME_SELECTION_MODE     = "theme_selection_mode";
 
-    private AppSettings() {}
+    private AppSettings() {
+        migrateIfNeeded();
+    }
+
+    /**
+     * Applies all pending schema migrations so that changed factory defaults
+     * take effect on machines that already have a stale value in the
+     * preferences store (Windows Registry).
+     *
+     * <p>Called once from the private constructor of this singleton.
+     * Package-private so {@code AppSettingsTest} can invoke it again after
+     * manually resetting {@link #KEY_SETTINGS_VERSION} to simulate a legacy
+     * preferences store.</p>
+     *
+     * <p>Only app-behaviour settings are touched by migrations; user-specific
+     * data is always preserved:</p>
+     * <ul>
+     *   <li>window geometry ({@code window_x/y/width/height})</li>
+     *   <li>custom sound file paths</li>
+     *   <li>Google Calendar source URL and event text</li>
+     *   <li>timer-restore datetime and mode</li>
+     * </ul>
+     */
+    void migrateIfNeeded() {
+        final int stored = prefs.getInt(KEY_SETTINGS_VERSION, 0);
+        if (stored >= CURRENT_SETTINGS_VERSION) return;
+
+        // ── v0 → v1 : introduce versioning; stamp all current factory defaults ─
+        // Any user whose registry still has an old value (written by a build
+        // that used a different default) will receive the new value on the next
+        // app launch.  Increment CURRENT_SETTINGS_VERSION and add a new block
+        // below whenever a default is changed in a subsequent release.
+        if (stored < 1) {
+            prefs.putInt    (KEY_WORK_TIME,             30);
+            prefs.putInt    (KEY_RELAX_TIME,             5);
+            prefs.putInt    (KEY_RELAX_TIME_LONG,       15);
+            prefs.putBoolean(KEY_GCAL_ENABLE,         true);
+            prefs.putBoolean(KEY_GCAL_COPY_CLIP,     false);
+            prefs.putBoolean(KEY_ALWAYS_ON_TOP,       true);
+            prefs.put       (KEY_NEON_PRESET,       NeonPreset.AURORA_DRIFT.name());
+            prefs.put       (KEY_NEON_GLOW_PROFILE, NeonGlowProfile.BALANCED.name());
+            prefs.putBoolean(KEY_TASKBAR_ICON_ENABLE, true);
+            prefs.putDouble (KEY_TASKBAR_FONT_SIZE,  23.0);
+            prefs.put       (KEY_TASKBAR_LAYOUT,     TaskbarTimeLayout.VERTICAL.name());
+            prefs.put       (KEY_THEME_SELECTION_MODE, ThemeSelectionMode.SHUFFLE.name());
+            // NOT overwriting (user-specific / runtime state):
+            //   KEY_WIN_X/Y/W/H, KEY_SOUND_*, KEY_GCAL_SRC, KEY_GCAL_TEXT,
+            //   KEY_TIMER_RESTORE_DT, KEY_TIMER_RESTORE_MODE
+        }
+
+        prefs.putInt(KEY_SETTINGS_VERSION, CURRENT_SETTINGS_VERSION);
+        save();
+    }
 
     public static AppSettings getInstance() { return INSTANCE; }
 
