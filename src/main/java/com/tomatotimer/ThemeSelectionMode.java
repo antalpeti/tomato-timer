@@ -4,7 +4,7 @@ package com.tomatotimer;
  * Controls how the active {@link NeonPreset} is chosen at the start of each WORK phase.
  *
  * <ul>
- *   <li>{@link #STATIC}     – keep the currently selected preset (default).</li>
+ *   <li>{@link #STATIC}     – keep the currently selected preset.</li>
  *   <li>{@link #SEQUENTIAL} – advance to the next preset in {@link NeonPreset#values()} order.</li>
  *   <li>{@link #RANDOM}     – pick a uniformly-random preset that differs from the current one.</li>
  *   <li>{@link #SHUFFLE}    – walk a randomised, non-repeating cycle of all presets; reshuffle
@@ -17,7 +17,7 @@ package com.tomatotimer;
  */
 public enum ThemeSelectionMode {
 
-    /** Keep the currently selected {@link NeonPreset}. This is the application default. */
+    /** Keep the currently selected {@link NeonPreset}. */
     STATIC("Static"),
 
     /** Advance to the next item in {@link NeonPreset#values()} order on each WORK start. */
@@ -51,7 +51,8 @@ public enum ThemeSelectionMode {
 
     /**
      * Resolves a saved enum constant name back to a {@link ThemeSelectionMode},
-     * returning {@link #STATIC} as the safe default when no match is found.
+     * returning {@link #STATIC} as the safe fallback for unknown/corrupt data.
+     * The first-run prefs default is {@link #SHUFFLE} (set in {@link AppSettings}).
      *
      * @param savedName the value previously returned by {@link #name()} and stored in prefs
      * @return the matching mode, never {@code null}

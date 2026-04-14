@@ -20,7 +20,7 @@ import javafx.scene.layout.HBox;
  * <ul>
  *   <li><em>Enable</em> – whether the dynamic countdown icon is shown at all.</li>
  *   <li><em>Font size</em> – base font size in pixels at the 64 px reference canvas
- *       (range {@value #FONT_MIN}–{@value #FONT_MAX}, default 17).</li>
+ *       (range {@value #FONT_MIN}–{@value #FONT_MAX}, default 23).</li>
  *   <li><em>Layout</em> – {@link TaskbarTimeLayout#VERTICAL} (stacked MM/SS or HH/MM/SS)
  *       versus {@link TaskbarTimeLayout#HORIZONTAL} (single-line MM:SS or HH:MM:SS).</li>
  * </ul>

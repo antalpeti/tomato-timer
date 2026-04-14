@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.prefs.Preferences;
+
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -339,6 +341,60 @@ class AppSettingsTest extends AppSettingsHelper {
     @DisplayName("save() does not throw any exception")
     void testSaveDoesNotThrow() {
         assertDoesNotThrow(() -> AppSettings.getInstance().save());
+    }
+
+    // ── first-run defaults ────────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("isGCalEnable() default is true on first run")
+    void testGCalEnableDefaultIsTrue() {
+        final var prefs = Preferences.userNodeForPackage(AppSettings.class);
+        final var saved = prefs.get("gcal_enable", null);
+        try {
+            prefs.remove("gcal_enable");
+            assertEquals(DEFAULT_GCAL_ENABLE, AppSettings.getInstance().isGCalEnable());
+        } finally {
+            if (saved != null) prefs.put("gcal_enable", saved);
+        }
+    }
+
+    @Test
+    @DisplayName("isTaskbarIconEnable() default is true on first run")
+    void testTaskbarIconEnableDefaultIsTrue() {
+        final var prefs = Preferences.userNodeForPackage(AppSettings.class);
+        final var saved = prefs.get("taskbar_icon_enable", null);
+        try {
+            prefs.remove("taskbar_icon_enable");
+            assertEquals(DEFAULT_TASKBAR_ICON_ENABLE, AppSettings.getInstance().isTaskbarIconEnable());
+        } finally {
+            if (saved != null) prefs.put("taskbar_icon_enable", saved);
+        }
+    }
+
+    @Test
+    @DisplayName("getTaskbarFontSize() default is 23.0 on first run")
+    void testTaskbarFontSizeDefaultIs23() {
+        final var prefs = Preferences.userNodeForPackage(AppSettings.class);
+        final var saved = prefs.get("taskbar_font_size", null);
+        try {
+            prefs.remove("taskbar_font_size");
+            assertEquals(DEFAULT_TASKBAR_FONT_SIZE, AppSettings.getInstance().getTaskbarFontSize(), DELTA);
+        } finally {
+            if (saved != null) prefs.put("taskbar_font_size", saved);
+        }
+    }
+
+    @Test
+    @DisplayName("getThemeSelectionMode() default is SHUFFLE on first run")
+    void testThemeSelectionModeDefaultIsShuffle() {
+        final var prefs = Preferences.userNodeForPackage(AppSettings.class);
+        final var saved = prefs.get("theme_selection_mode", null);
+        try {
+            prefs.remove("theme_selection_mode");
+            assertEquals(DEFAULT_THEME_SELECTION_MODE, AppSettings.getInstance().getThemeSelectionMode());
+        } finally {
+            if (saved != null) prefs.put("theme_selection_mode", saved);
+        }
     }
 }
 

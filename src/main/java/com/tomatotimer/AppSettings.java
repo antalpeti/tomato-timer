@@ -58,7 +58,7 @@ public class AppSettings {
     public String getGCalText()            { return prefs.get(KEY_GCAL_TEXT, ""); }
     public void   setGCalText(String v)    { prefs.put(KEY_GCAL_TEXT, v); }
 
-    public boolean isGCalEnable()          { return prefs.getBoolean(KEY_GCAL_ENABLE, false); }
+    public boolean isGCalEnable()          { return prefs.getBoolean(KEY_GCAL_ENABLE, true); }
     public void    setGCalEnable(boolean v){ prefs.putBoolean(KEY_GCAL_ENABLE, v); }
 
     public boolean isGCalCopyToClipboard()          { return prefs.getBoolean(KEY_GCAL_COPY_CLIP, false); }
@@ -134,9 +134,9 @@ public class AppSettings {
 
     /**
      * Base font size used when rendering the taskbar icon (at the 64 px reference canvas).
-     * Range [8, 28], default 17.0.  Applies to both vertical and horizontal layouts.
+     * Range [8, 28], default 23.0.  Applies to both vertical and horizontal layouts.
      */
-    public double getTaskbarFontSize()         { return prefs.getDouble(KEY_TASKBAR_FONT_SIZE, 17.0); }
+    public double getTaskbarFontSize()         { return prefs.getDouble(KEY_TASKBAR_FONT_SIZE, 23.0); }
     public void   setTaskbarFontSize(double v) { prefs.putDouble(KEY_TASKBAR_FONT_SIZE, v); }
 
     /** Layout orientation for the taskbar countdown display. Defaults to {@link TaskbarTimeLayout#VERTICAL}. */
@@ -151,12 +151,12 @@ public class AppSettings {
     // ---- theme selection mode -----------------------------------------------
 
     /**
-     * Returns the active {@link ThemeSelectionMode}, defaulting to {@link ThemeSelectionMode#STATIC}
+     * Returns the active {@link ThemeSelectionMode}, defaulting to {@link ThemeSelectionMode#SHUFFLE}
      * when no value has been saved yet.
      */
     public ThemeSelectionMode getThemeSelectionMode() {
         return ThemeSelectionMode.fromName(
-                prefs.get(KEY_THEME_SELECTION_MODE, ThemeSelectionMode.STATIC.name()));
+                prefs.get(KEY_THEME_SELECTION_MODE, ThemeSelectionMode.SHUFFLE.name()));
     }
 
     public void setThemeSelectionMode(ThemeSelectionMode mode) {
