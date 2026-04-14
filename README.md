@@ -111,10 +111,10 @@ so existing `NeonPreset` constants remain unchanged.  All scaled values are clam
 
 | Mode | Behavior |
 |---|---|
-| **Static** | Keep the currently selected preset (**default**) |
+| **Static** | Keep the currently selected preset |
 | **Sequential** | Move to the next preset in enum order, wrapping at the end |
 | **Random** | Pick a random preset that differs from the current one |
-| **Shuffle** | Walk a randomized non-repeating cycle of all presets, then reshuffle |
+| **Shuffle** | Walk a randomized non-repeating cycle of all presets, then reshuffle (**default**) |
 
 ### Calendar Settings (`calendar_settings.fxml`)
 
@@ -143,8 +143,8 @@ Back button returns to the main Settings page.
 
 | Control | Purpose |
 |---|---|
-| **Enable taskbar icon** | Toggles the live-countdown icon in the Windows taskbar |
-| **Font size** | Base font size (px at the 64 px reference canvas, range 8–28, default 17) |
+| **Enable taskbar icon** | Toggles the live-countdown icon in the Windows taskbar (**default: enabled**) |
+| **Font size** | Base font size (px at the 64 px reference canvas, range 8–28, default 23) |
 | **Layout — Vertical** | Stacked multi-line: 2 lines (MM / SS) when hours = 0; 3 lines (HH / MM / SS) when hours > 0 |
 | **Layout — Horizontal** | Single-line: `MM:SS` when hours = 0; `HH:MM:SS` when hours > 0 |
 
@@ -213,22 +213,22 @@ bundled JRE.  No Java installation is required on the target machine.
 **Prerequisites**
 
 - JDK 21+ (project baseline; includes `jpackage`) — its `bin\` directory must be on `PATH`.
-- A fat JAR must already exist under `target\` (run `mvn package` first).
+- Maven 3.8+ on `PATH`.
 
 **Steps**
 
-1. Build the fat JAR:
-   ```bat
-   mvn package
-   ```
-2. Verify the environment without building (dry-run):
+1. Verify the environment without building (dry-run):
    ```bat
    BuildTomatoTimerExe.bat --dry-run
    ```
-3. Build the app-image:
+2. Build the app-image:
    ```bat
    BuildTomatoTimerExe.bat
    ```
+
+`BuildTomatoTimerExe.bat` now runs `mvn -DskipTests package` automatically before
+calling `jpackage`, so the generated EXE always packages the latest sources instead
+of a stale `target\*-fat.jar`.
 
 The resulting executable is placed at:
 
@@ -527,6 +527,94 @@ tomato-timer/
 The app uses `java.util.prefs.Preferences` for persistence.
 On Windows, values are stored under:
 `HKCU\Software\JavaSoft\Prefs\com\tomatotimer`
+
+### Important Windows registry keys
+
+The most relevant persisted keys are:
+
+| Registry key | Meaning | Current factory default |
+|---|---|---|
+| `theme_selection_mode` | Theme rotation mode used when a new **Work** phase starts | `SHUFFLE` |
+| `gcal_enable` | Whether Google Calendar integration is enabled | `true` |
+| `taskbar_icon_enable` | Whether the live taskbar countdown icon is enabled | `true` |
+| `taskbar_font_size` | Base font size for the taskbar icon renderer | `23.0` |
+| `settings_version` | Internal settings schema version used for startup migration | `1` |
+
+### Factory defaults / first-run defaults
+
+Complete list of every key persisted by `AppSettings`, the Java type used for storage,
+and the factory default that is written on the very first run (or after a migration bump).
+Keys marked **†** are **not** overwritten by the schema migration — they are treated as
+user-specific / runtime state and are only written when the user changes them explicitly.
+
+| Registry key | Type | Factory default | Description |
+|---|---|---|---|
+| `work_time` | `int` | `30` | Work timer duration (minutes) |
+| `relax_time` | `int` | `5` | Short rest duration (minutes) |
+| `relax_time_long` | `int` | `15` | Long rest duration (minutes) |
+| `gcal_enable` | `boolean` | `true` | Google Calendar integration enabled |
+| `gcal_copy_clipboard` | `boolean` | `false` | Also copy generated GCal URL to clipboard |
+| `gcal_src` **†** | `string` | *(empty)* | Calendar source / ID embedded in event URL |
+| `gcal_text` **†** | `string` | *(empty)* | Default title for created calendar events |
+| `always_on_top` | `boolean` | `true` | Window stays above all other windows |
+| `window_x` **†** | `double` | `-1` | Saved window X position; `-1` = let OS decide |
+| `window_y` **†** | `double` | `-1` | Saved window Y position; `-1` = let OS decide |
+| `window_width` **†** | `double` | `260` | Saved window width (logical px) |
+| `window_height` **†** | `double` | `44` | Saved window height (logical px) |
+| `timer_restore_datetime` **†** | `string` | *(empty)* | ISO datetime of the saved Work session for restore |
+| `timer_restore_mode` **†** | `int` | `0` | Saved timer-mode ordinal (`0` = Work) |
+| `sound_resume` **†** | `string` | *(empty)* | Absolute path to sound file for Resume event |
+| `sound_pause` **†** | `string` | *(empty)* | Absolute path to sound file for Pause event |
+| `sound_work_done` **†** | `string` | *(empty)* | Absolute path to sound file for Work Done event |
+| `sound_rest_timeout` **†** | `string` | *(empty)* | Absolute path to sound file for Rest End event |
+| `neon_preset` | `string` | `AURORA_DRIFT` | Active neon color preset |
+| `neon_glow_profile` | `string` | `BALANCED` | Active glow intensity profile |
+| `taskbar_icon_enable` | `boolean` | `true` | Live countdown taskbar icon enabled |
+| `taskbar_font_size` | `double` | `23.0` | Taskbar icon font size (at 64 px reference canvas; range 8–28) |
+| `taskbar_layout` | `string` | `VERTICAL` | Taskbar countdown layout (`VERTICAL` / `HORIZONTAL`) |
+| `theme_selection_mode` | `string` | `SHUFFLE` | Theme rotation strategy on each new Work phase |
+| `settings_version` | `int` | `1` | Internal schema version; drives the startup migration |
+
+> **†** User-specific / runtime keys: the startup migration never overwrites these —
+> only window geometry, sound file paths, GCal source/text, and timer-restore state
+> fall into this category.
+
+### Why changed defaults may not appear immediately on an existing machine
+
+`java.util.prefs.Preferences` on Windows stores values in the current user's registry.
+If an older build has already written a value once, changing the default in source code
+alone is not enough, because the stored registry value takes precedence.
+
+To handle this, `AppSettings` performs a startup migration using the `settings_version`
+key. This lets the built `TomatoTimer.exe` update selected factory defaults for existing
+users as well.
+
+### Manual verification
+
+List the whole settings branch:
+
+```bat
+reg query "HKCU\Software\JavaSoft\Prefs\com\tomatotimer" /s
+```
+
+Typical values to verify after launching the app:
+
+- `theme_selection_mode` = `SHUFFLE`
+- `gcal_enable` = `true`
+- `taskbar_icon_enable` = `true`
+- `taskbar_font_size` = `23.0`
+- `settings_version` = `1`
+
+### Simulating a clean first run
+
+To remove the entire per-user settings branch for this app:
+
+```bat
+reg delete "HKCU\Software\JavaSoft\Prefs\com\tomatotimer" /f
+```
+
+Use this only when you intentionally want to reset all saved TomatoTimer settings
+for the current Windows user.
 
 ## Notes
 
