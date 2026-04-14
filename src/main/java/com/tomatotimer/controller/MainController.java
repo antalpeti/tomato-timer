@@ -393,7 +393,9 @@ public class MainController {
      *   <li>{@link TaskbarTimeLayout#HORIZONTAL} – single-line {@code "MM:SS"} / {@code "HH:MM:SS"}.</li>
      *   <li>{@link TaskbarTimeLayout#VERTICAL} – 2-line (hours == 0) or 3-line (hours &gt; 0) stacked.</li>
      * </ul>
-     * Font size is read from {@link AppSettings#getTaskbarFontSize()} (base px at 64 px canvas).</p>
+     * Font size is role-specific:
+     * {@link AppSettings#getTaskbarFontSizeMmss()} is used when hours == 0,
+     * {@link AppSettings#getTaskbarFontSizeHhmmss()} when hours &gt; 0.</p>
      *
      * @param preset      the currently active {@link NeonPreset}
      * @param progressPct elapsed progress percentage in [0, 100]
@@ -442,8 +444,12 @@ public class MainController {
                 : iconHour + ":" + iconMinute + ":" + iconSecond;
 
         // ── Layout and font size from user settings ───────────────────────────
-        final TaskbarTimeLayout layout      = settings.getTaskbarLayout();
-        final double            baseFontSz  = settings.getTaskbarFontSize();
+        // The font size is role-specific: MM:SS display uses getTaskbarFontSizeMmss(),
+        // HH:MM:SS display (hours > 0) uses getTaskbarFontSizeHhmmss().
+        final TaskbarTimeLayout layout     = settings.getTaskbarLayout();
+        final double            baseFontSz = (hours == 0)
+                ? settings.getTaskbarFontSizeMmss()
+                : settings.getTaskbarFontSizeHhmmss();
 
         // ── Accent colour ─────────────────────────────────────────────────────
         final Color accentColor = TimerBackgroundHelper.computeAccentColor(

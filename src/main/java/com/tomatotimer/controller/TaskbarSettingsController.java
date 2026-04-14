@@ -16,11 +16,14 @@ import javafx.scene.layout.HBox;
 /**
  * Controller for taskbar_settings.fxml.
  *
- * <p>Manages three persisted taskbar icon settings:
+ * <p>Manages four persisted taskbar icon settings:
  * <ul>
  *   <li><em>Enable</em> – whether the dynamic countdown icon is shown at all.</li>
- *   <li><em>Font size</em> – base font size in pixels at the 64 px reference canvas
- *       (range {@value #FONT_MIN}–{@value #FONT_MAX}, default 23).</li>
+ *   <li><em>MM:SS font size</em> – base font size (px at 64 px canvas) used when the
+ *       remaining time has no hours component; range {@value #FONT_MIN}–{@value #FONT_MAX},
+ *       default 23.</li>
+ *   <li><em>HH:MM:SS font size</em> – base font size used when hours are present;
+ *       range {@value #FONT_MIN}–{@value #FONT_MAX}, default 17.</li>
  *   <li><em>Layout</em> – {@link TaskbarTimeLayout#VERTICAL} (stacked MM/SS or HH/MM/SS)
  *       versus {@link TaskbarTimeLayout#HORIZONTAL} (single-line MM:SS or HH:MM:SS).</li>
  * </ul>
@@ -38,15 +41,17 @@ public class TaskbarSettingsController {
     static final int FONT_MAX = 28;
 
     // ── FXML bindings ─────────────────────────────────────────────────────────
-    @FXML private HBox            rootBox;
-    @FXML private HBox            taskbarRow;
-    @FXML private Button          btnBack;
-    @FXML private CheckBox        cbTaskbarEnable;
-    @FXML private Label           lblFontSize;
-    @FXML private Label           lblLayout;
-    @FXML private Spinner<Integer> spFontSize;
-    @FXML private RadioButton     rbVertical;
-    @FXML private RadioButton     rbHorizontal;
+    @FXML private HBox             rootBox;
+    @FXML private HBox             taskbarRow;
+    @FXML private Button           btnBack;
+    @FXML private CheckBox         cbTaskbarEnable;
+    @FXML private Label            lblFontSizeMmss;
+    @FXML private Label            lblFontSizeHhmmss;
+    @FXML private Label            lblLayout;
+    @FXML private Spinner<Integer> spFontSizeMmss;
+    @FXML private Spinner<Integer> spFontSizeHhmmss;
+    @FXML private RadioButton      rbVertical;
+    @FXML private RadioButton      rbHorizontal;
 
     private MainController mainController;
     private final AppSettings settings = AppSettings.getInstance();
@@ -72,16 +77,25 @@ public class TaskbarSettingsController {
         javafx.application.Platform.runLater(() -> updateDynamicSizing(rootBox.getHeight()));
 
         // ── Pre-populate controls from AppSettings BEFORE attaching the font-size
-        //    change-listener.  This prevents syncToSettings() (triggered by onBack or
-        //    any nav handler) from writing the FXML stub initialValue (17) rather than
-        //    the correctly migrated AppSettings value (23) to the preferences store.
+        //    change-listeners.  This prevents syncToSettings() (triggered by onBack or
+        //    any nav handler) from writing the FXML stub initialValues rather than
+        //    the correctly migrated AppSettings values to the preferences store.
         syncFromSettings();
 
-        // Persist font size on each spinner commit; trigger immediate icon redraw
-        spFontSize.valueProperty().addListener((obs, ov, nv) -> {
+        // Persist MM:SS font size on each spinner commit; trigger immediate icon redraw
+        spFontSizeMmss.valueProperty().addListener((obs, ov, nv) -> {
             if (nv != null) {
                 final int clamped = (int) UiScaleHelper.clamp(nv, FONT_MIN, FONT_MAX);
-                settings.setTaskbarFontSize(clamped);
+                settings.setTaskbarFontSizeMmss(clamped);
+                if (mainController != null) mainController.updateUI();
+            }
+        });
+
+        // Persist HH:MM:SS font size on each spinner commit; trigger immediate icon redraw
+        spFontSizeHhmmss.valueProperty().addListener((obs, ov, nv) -> {
+            if (nv != null) {
+                final int clamped = (int) UiScaleHelper.clamp(nv, FONT_MIN, FONT_MAX);
+                settings.setTaskbarFontSizeHhmmss(clamped);
                 if (mainController != null) mainController.updateUI();
             }
         });
@@ -104,14 +118,17 @@ public class TaskbarSettingsController {
         // ── Labels ────────────────────────────────────────────────────────────
         final String lblStyle = String.format("-fx-font-size: %.1fpx;",
                 UiScaleHelper.settingLabelFontPx(eff));
-        lblFontSize.setStyle(lblStyle);
+        lblFontSizeMmss.setStyle(lblStyle);
+        lblFontSizeHhmmss.setStyle(lblStyle);
         lblLayout.setStyle(lblStyle);
         cbTaskbarEnable.setStyle(lblStyle);
         rbVertical.setStyle(lblStyle);
         rbHorizontal.setStyle(lblStyle);
 
-        // ── Font-size spinner width ───────────────────────────────────────────
-        spFontSize.setPrefWidth(UiScaleHelper.spinnerWidthPx(eff));
+        // ── Font-size spinner widths ──────────────────────────────────────────
+        final double spinnerW = UiScaleHelper.spinnerWidthPx(eff);
+        spFontSizeMmss.setPrefWidth(spinnerW);
+        spFontSizeHhmmss.setPrefWidth(spinnerW);
 
         // ── Row spacing and padding ───────────────────────────────────────────
         taskbarRow.setSpacing(UiScaleHelper.settingsSpacingPx(eff));
@@ -126,9 +143,13 @@ public class TaskbarSettingsController {
     public void syncFromSettings() {
         cbTaskbarEnable.setSelected(settings.isTaskbarIconEnable());
 
-        final int savedSize = (int) UiScaleHelper.clamp(
-                settings.getTaskbarFontSize(), FONT_MIN, FONT_MAX);
-        spFontSize.getValueFactory().setValue(savedSize);
+        final int savedMmss = (int) UiScaleHelper.clamp(
+                settings.getTaskbarFontSizeMmss(), FONT_MIN, FONT_MAX);
+        spFontSizeMmss.getValueFactory().setValue(savedMmss);
+
+        final int savedHhmmss = (int) UiScaleHelper.clamp(
+                settings.getTaskbarFontSizeHhmmss(), FONT_MIN, FONT_MAX);
+        spFontSizeHhmmss.getValueFactory().setValue(savedHhmmss);
 
         final boolean vertical = settings.getTaskbarLayout() == TaskbarTimeLayout.VERTICAL;
         rbVertical.setSelected(vertical);
@@ -139,9 +160,14 @@ public class TaskbarSettingsController {
     private void syncToSettings() {
         settings.setTaskbarIconEnable(cbTaskbarEnable.isSelected());
 
-        if (spFontSize.getValue() != null) {
-            final int clamped = (int) UiScaleHelper.clamp(spFontSize.getValue(), FONT_MIN, FONT_MAX);
-            settings.setTaskbarFontSize(clamped);
+        if (spFontSizeMmss.getValue() != null) {
+            final int clamped = (int) UiScaleHelper.clamp(spFontSizeMmss.getValue(), FONT_MIN, FONT_MAX);
+            settings.setTaskbarFontSizeMmss(clamped);
+        }
+
+        if (spFontSizeHhmmss.getValue() != null) {
+            final int clamped = (int) UiScaleHelper.clamp(spFontSizeHhmmss.getValue(), FONT_MIN, FONT_MAX);
+            settings.setTaskbarFontSizeHhmmss(clamped);
         }
 
         settings.setTaskbarLayout(

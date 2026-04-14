@@ -37,11 +37,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * <h3>Coverage targets</h3>
  * <ul>
  *   <li>Structural node presence and correct types.</li>
- *   <li>Font size spinner range: min&nbsp;8 / max&nbsp;28 (verified via the FXML SpinnerValueFactory).</li>
+ *   <li>MM:SS font-size spinner range: min&nbsp;8 / max&nbsp;28.</li>
+ *   <li>HH:MM:SS font-size spinner range: min&nbsp;8 / max&nbsp;28.</li>
  *   <li>{@link TaskbarSettingsController#syncFromSettings()} reflects persisted enable flag and layout.</li>
  *   <li>Enable checkbox {@code fire()} propagates to {@link MainController#updateUI()}.</li>
  *   <li>Layout radio button {@code fire()} persists the new layout to settings.</li>
  *   <li>Back button calls {@link MainController#showSettings()} and {@link MainController#updateUI()}.</li>
+ *   <li>MM:SS spinner change persists to {@link AppSettings#getTaskbarFontSizeMmss()}.</li>
+ *   <li>HH:MM:SS spinner change persists to {@link AppSettings#getTaskbarFontSizeHhmmss()}.</li>
  * </ul>
  */
 @DisplayName("TaskbarSettingsView – TestFX UI integration tests")
@@ -68,7 +71,7 @@ class TaskbarSettingsViewUiTest {
             final HBox root = loader.load();
             controller = loader.getController();
             stage = new Stage();
-            stage.setScene(new Scene(root, 400, 44));
+            stage.setScene(new Scene(root, 500, 44));
             stage.show();
             return null;
         });
@@ -99,37 +102,51 @@ class TaskbarSettingsViewUiTest {
     // =========================================================================
 
     @Test
-    @DisplayName("Key nodes are present (btnBack, cbTaskbarEnable, spFontSize, rbVertical, rbHorizontal)")
+    @DisplayName("Key nodes are present (btnBack, cbTaskbarEnable, spFontSizeMmss, spFontSizeHhmmss, rbVertical, rbHorizontal)")
     void keyNodesArePresent() {
         final var root = stage.getScene().getRoot();
-        assertNotNull(root.lookup("#btnBack"),         "#btnBack must be present");
-        assertNotNull(root.lookup("#cbTaskbarEnable"), "#cbTaskbarEnable must be present");
-        assertNotNull(root.lookup("#spFontSize"),      "#spFontSize must be present");
-        assertNotNull(root.lookup("#rbVertical"),      "#rbVertical must be present");
-        assertNotNull(root.lookup("#rbHorizontal"),    "#rbHorizontal must be present");
+        assertNotNull(root.lookup("#btnBack"),           "#btnBack must be present");
+        assertNotNull(root.lookup("#cbTaskbarEnable"),   "#cbTaskbarEnable must be present");
+        assertNotNull(root.lookup("#spFontSizeMmss"),    "#spFontSizeMmss must be present");
+        assertNotNull(root.lookup("#spFontSizeHhmmss"),  "#spFontSizeHhmmss must be present");
+        assertNotNull(root.lookup("#rbVertical"),        "#rbVertical must be present");
+        assertNotNull(root.lookup("#rbHorizontal"),      "#rbHorizontal must be present");
     }
 
     // =========================================================================
-    //  Test 3 – Font size range constants
+    //  Test 3 – MM:SS font-size spinner range
     // =========================================================================
 
     @Test
-    @DisplayName("spFontSize spinner min is 8 and max is 28 (matches FONT_MIN / FONT_MAX)")
-    @SuppressWarnings("unchecked")
-    void fontSizeSpinnerRangeMatchesConstants() {
-        // Verify the spinner factory range through the FXML-defined SpinnerValueFactory,
-        // which is driven by the same FONT_MIN=8 / FONT_MAX=28 constants used in the controller.
+    @DisplayName("spFontSizeMmss spinner min is 8 and max is 28 (matches FONT_MIN / FONT_MAX)")
+    void fontSizeMmssSpinnerRangeMatchesConstants() {
         final var sp = (javafx.scene.control.Spinner<Integer>)
-                stage.getScene().getRoot().lookup("#spFontSize");
-        assertNotNull(sp, "#spFontSize must be present");
+                stage.getScene().getRoot().lookup("#spFontSizeMmss");
+        assertNotNull(sp, "#spFontSizeMmss must be present");
         final var factory = (javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory)
                 sp.getValueFactory();
-        assertEquals(8,  factory.getMin(), "spFontSize min must be 8");
-        assertEquals(28, factory.getMax(), "spFontSize max must be 28");
+        assertEquals(8,  factory.getMin(), "spFontSizeMmss min must be 8");
+        assertEquals(28, factory.getMax(), "spFontSizeMmss max must be 28");
     }
 
     // =========================================================================
-    //  Test 4 – syncFromSettings() reflects isTaskbarIconEnable() == false
+    //  Test 4 – HH:MM:SS font-size spinner range
+    // =========================================================================
+
+    @Test
+    @DisplayName("spFontSizeHhmmss spinner min is 8 and max is 28 (matches FONT_MIN / FONT_MAX)")
+    void fontSizeHhmmssSpinnerRangeMatchesConstants() {
+        final var sp = (javafx.scene.control.Spinner<Integer>)
+                stage.getScene().getRoot().lookup("#spFontSizeHhmmss");
+        assertNotNull(sp, "#spFontSizeHhmmss must be present");
+        final var factory = (javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory)
+                sp.getValueFactory();
+        assertEquals(8,  factory.getMin(), "spFontSizeHhmmss min must be 8");
+        assertEquals(28, factory.getMax(), "spFontSizeHhmmss max must be 28");
+    }
+
+    // =========================================================================
+    //  Test 5 – syncFromSettings() reflects isTaskbarIconEnable() == false
     // =========================================================================
 
     @Test
@@ -154,7 +171,7 @@ class TaskbarSettingsViewUiTest {
     }
 
     // =========================================================================
-    //  Test 5 – syncFromSettings() selects rbVertical for VERTICAL layout
+    //  Test 6 – syncFromSettings() selects rbVertical for VERTICAL layout
     // =========================================================================
 
     @Test
@@ -180,7 +197,7 @@ class TaskbarSettingsViewUiTest {
     }
 
     // =========================================================================
-    //  Test 6 – syncFromSettings() selects rbHorizontal for HORIZONTAL layout
+    //  Test 7 – syncFromSettings() selects rbHorizontal for HORIZONTAL layout
     // =========================================================================
 
     @Test
@@ -206,7 +223,7 @@ class TaskbarSettingsViewUiTest {
     }
 
     // =========================================================================
-    //  Test 7 – cbTaskbarEnable.fire() calls mainController.updateUI()
+    //  Test 8 – cbTaskbarEnable.fire() calls mainController.updateUI()
     // =========================================================================
 
     @Test
@@ -219,7 +236,7 @@ class TaskbarSettingsViewUiTest {
             JavaFxTestHelper.runOnFxThread(() -> {
                 controller.setMainController(mockMc);
                 final var cb = (CheckBox) stage.getScene().getRoot().lookup("#cbTaskbarEnable");
-                cb.fire(); // triggers onEnableChanged()
+                cb.fire();
                 return null;
             });
             WaitForAsyncUtils.waitForFxEvents();
@@ -230,7 +247,7 @@ class TaskbarSettingsViewUiTest {
     }
 
     // =========================================================================
-    //  Test 8 – rbHorizontal.fire() persists HORIZONTAL layout and calls updateUI()
+    //  Test 9 – rbHorizontal.fire() persists HORIZONTAL layout and calls updateUI()
     // =========================================================================
 
     @Test
@@ -243,7 +260,7 @@ class TaskbarSettingsViewUiTest {
             JavaFxTestHelper.runOnFxThread(() -> {
                 controller.setMainController(mockMc);
                 final var rb = (RadioButton) stage.getScene().getRoot().lookup("#rbHorizontal");
-                rb.fire(); // triggers onLayoutChanged()
+                rb.fire();
                 return null;
             });
             WaitForAsyncUtils.waitForFxEvents();
@@ -257,7 +274,7 @@ class TaskbarSettingsViewUiTest {
     }
 
     // =========================================================================
-    //  Test 9 – rbVertical.fire() persists VERTICAL layout
+    //  Test 10 – rbVertical.fire() persists VERTICAL layout
     // =========================================================================
 
     @Test
@@ -267,7 +284,6 @@ class TaskbarSettingsViewUiTest {
         final var origLayout = settings.getTaskbarLayout();
         final var mockMc     = Mockito.mock(MainController.class);
         try {
-            // First switch to HORIZONTAL, then switch back to VERTICAL via rbVertical.fire()
             JavaFxTestHelper.runOnFxThread(() -> {
                 controller.setMainController(mockMc);
                 ((RadioButton) stage.getScene().getRoot().lookup("#rbHorizontal")).fire();
@@ -284,34 +300,59 @@ class TaskbarSettingsViewUiTest {
     }
 
     // =========================================================================
-    //  Test 10 – spFontSize change persists to AppSettings
+    //  Test 11 – spFontSizeMmss change persists to AppSettings
     // =========================================================================
 
     @Test
-    @DisplayName("spFontSize value change persists the clamped font size to AppSettings")
-    @SuppressWarnings("unchecked")
-    void fontSizeSpinnerPersistsToSettings() throws Exception {
+    @DisplayName("spFontSizeMmss value change persists the clamped MM:SS font size to AppSettings")
+    void fontSizeMmssSpinnerPersistsToSettings() throws Exception {
         final var settings     = AppSettings.getInstance();
-        final var origFontSize = settings.getTaskbarFontSize();
+        final var origFontSize = settings.getTaskbarFontSizeMmss();
         final var mockMc       = Mockito.mock(MainController.class);
         try {
             JavaFxTestHelper.runOnFxThread(() -> {
                 controller.setMainController(mockMc);
-                final var sp = (Spinner<Integer>) stage.getScene().getRoot().lookup("#spFontSize");
-                sp.getValueFactory().setValue(20); // triggers the valueProperty listener
+                final var sp = (Spinner<Integer>) stage.getScene().getRoot().lookup("#spFontSizeMmss");
+                sp.getValueFactory().setValue(20);
                 return null;
             });
             WaitForAsyncUtils.waitForFxEvents();
 
-            assertEquals(20.0, settings.getTaskbarFontSize(), 1e-9,
-                    "AppSettings.getTaskbarFontSize() must be 20 after spinner changes to 20");
+            assertEquals(20.0, settings.getTaskbarFontSizeMmss(), 1e-9,
+                    "AppSettings.getTaskbarFontSizeMmss() must be 20 after spinner changes to 20");
         } finally {
-            settings.setTaskbarFontSize(origFontSize);
+            settings.setTaskbarFontSizeMmss(origFontSize);
         }
     }
 
     // =========================================================================
-    //  Test 11 – btnBack.fire() calls showSettings() and updateUI()
+    //  Test 12 – spFontSizeHhmmss change persists to AppSettings
+    // =========================================================================
+
+    @Test
+    @DisplayName("spFontSizeHhmmss value change persists the clamped HH:MM:SS font size to AppSettings")
+    void fontSizeHhmmssSpinnerPersistsToSettings() throws Exception {
+        final var settings     = AppSettings.getInstance();
+        final var origFontSize = settings.getTaskbarFontSizeHhmmss();
+        final var mockMc       = Mockito.mock(MainController.class);
+        try {
+            JavaFxTestHelper.runOnFxThread(() -> {
+                controller.setMainController(mockMc);
+                final var sp = (Spinner<Integer>) stage.getScene().getRoot().lookup("#spFontSizeHhmmss");
+                sp.getValueFactory().setValue(15);
+                return null;
+            });
+            WaitForAsyncUtils.waitForFxEvents();
+
+            assertEquals(15.0, settings.getTaskbarFontSizeHhmmss(), 1e-9,
+                    "AppSettings.getTaskbarFontSizeHhmmss() must be 15 after spinner changes to 15");
+        } finally {
+            settings.setTaskbarFontSizeHhmmss(origFontSize);
+        }
+    }
+
+    // =========================================================================
+    //  Test 13 – btnBack.fire() calls showSettings() and updateUI()
     // =========================================================================
 
     @Test
@@ -329,54 +370,50 @@ class TaskbarSettingsViewUiTest {
     }
 
     // =========================================================================
-    //  Test 12 – regression: initialize() must pre-populate controls from AppSettings
-    //             (not FXML stubs) so that btnBack.fire() → syncToSettings() never
-    //             overwrites the registry with stale FXML initial values.
+    //  Test 14 – regression: initialize() must pre-populate controls from AppSettings
+    //             so that btnBack.fire() → syncToSettings() never overwrites the registry
+    //             with stale FXML initial values.
     // =========================================================================
 
     @Test
-    @DisplayName("initialize() pre-populates cbTaskbarEnable and spFontSize from AppSettings, not FXML stubs – " +
-            "btnBack.fire() must preserve taskbar_icon_enable=true and taskbar_font_size=23")
+    @DisplayName("initialize() pre-populates cbTaskbarEnable and both font spinners from AppSettings, not FXML stubs – " +
+            "btnBack.fire() must preserve taskbar_icon_enable=true, font_mmss=23, font_hhmmss=17")
     void initializePrePopulatesTaskbarControlsAndBtnBackPreservesThem() throws Exception {
-        // Regression: TaskbarSettingsController.initialize() used to attach the spFontSize
-        // change-listener without first calling syncFromSettings().  Firing btnBack then
-        // triggered syncToSettings() which wrote the FXML stubs (cbTaskbarEnable=false,
-        // spFontSize=17) directly to the Windows Registry (java.util.prefs.Preferences),
-        // overriding the migration defaults (true / 23).
-        final var settings   = AppSettings.getInstance();
-        final var origEnable = settings.isTaskbarIconEnable();
-        final var origFont   = settings.getTaskbarFontSize();
+        final var settings      = AppSettings.getInstance();
+        final var origEnable    = settings.isTaskbarIconEnable();
+        final var origFontMmss  = settings.getTaskbarFontSizeMmss();
+        final var origFontHhmm  = settings.getTaskbarFontSizeHhmmss();
         final Stage[] freshStage = new Stage[1];
         try {
             settings.setTaskbarIconEnable(true);
-            settings.setTaskbarFontSize(23.0);
+            settings.setTaskbarFontSizeMmss(23.0);
+            settings.setTaskbarFontSizeHhmmss(17.0);
 
-            // Load a FRESH FXML instance *after* setting the values so initialize() picks them up.
             final TaskbarSettingsController[] freshCtrl = new TaskbarSettingsController[1];
             JavaFxTestHelper.runOnFxThread(() -> {
                 final var loader = new FXMLLoader(App.class.getResource("taskbar_settings.fxml"));
                 final HBox freshRoot = loader.load();
                 freshCtrl[0] = loader.getController();
                 freshStage[0] = new Stage();
-                freshStage[0].setScene(new Scene(freshRoot, 400, 44));
+                freshStage[0].setScene(new Scene(freshRoot, 500, 44));
                 freshStage[0].show();
                 return null;
             });
             WaitForAsyncUtils.waitForFxEvents();
 
-            // Controls must already reflect AppSettings (initialize() calls syncFromSettings()).
-            final var cb = (CheckBox)         freshStage[0].getScene().getRoot().lookup("#cbTaskbarEnable");
-            final var sp = (Spinner<Integer>) freshStage[0].getScene().getRoot().lookup("#spFontSize");
-            assertNotNull(cb, "#cbTaskbarEnable must be present");
-            assertNotNull(sp, "#spFontSize must be present");
+            final var cb    = (CheckBox)         freshStage[0].getScene().getRoot().lookup("#cbTaskbarEnable");
+            final var spMm  = (Spinner<Integer>) freshStage[0].getScene().getRoot().lookup("#spFontSizeMmss");
+            final var spHh  = (Spinner<Integer>) freshStage[0].getScene().getRoot().lookup("#spFontSizeHhmmss");
+            assertNotNull(cb,   "#cbTaskbarEnable must be present");
+            assertNotNull(spMm, "#spFontSizeMmss must be present");
+            assertNotNull(spHh, "#spFontSizeHhmmss must be present");
             assertTrue(cb.isSelected(),
-                    "cbTaskbarEnable must be true (AppSettings value) immediately after FXML load; " +
-                    "initialize() must call syncFromSettings() so the FXML stub default-unchecked is overridden");
-            assertEquals(23, (int) sp.getValue(),
-                    "spFontSize must be 23 (AppSettings value) immediately after FXML load; " +
-                    "initialize() must call syncFromSettings() so the FXML stub initialValue=17 is overridden");
+                    "cbTaskbarEnable must be true (AppSettings value) immediately after FXML load");
+            assertEquals(23, (int) spMm.getValue(),
+                    "spFontSizeMmss must be 23 (AppSettings value) immediately after FXML load");
+            assertEquals(17, (int) spHh.getValue(),
+                    "spFontSizeHhmmss must be 17 (AppSettings value) immediately after FXML load");
 
-            // Fire Back WITHOUT an explicit syncFromSettings() – must not corrupt settings.
             final var mockMc = Mockito.mock(MainController.class);
             JavaFxTestHelper.runOnFxThread(() -> {
                 freshCtrl[0].setMainController(mockMc);
@@ -387,11 +424,14 @@ class TaskbarSettingsViewUiTest {
 
             assertTrue(settings.isTaskbarIconEnable(),
                     "taskbar_icon_enable must remain true; syncToSettings() must not write the FXML stub false");
-            assertEquals(23.0, settings.getTaskbarFontSize(), 1e-9,
-                    "taskbar_font_size must remain 23.0; syncToSettings() must not write the FXML stub 17");
+            assertEquals(23.0, settings.getTaskbarFontSizeMmss(), 1e-9,
+                    "taskbar_font_size_mmss must remain 23.0; syncToSettings() must not overwrite");
+            assertEquals(17.0, settings.getTaskbarFontSizeHhmmss(), 1e-9,
+                    "taskbar_font_size_hhmmss must remain 17.0; syncToSettings() must not overwrite");
         } finally {
             settings.setTaskbarIconEnable(origEnable);
-            settings.setTaskbarFontSize(origFont);
+            settings.setTaskbarFontSizeMmss(origFontMmss);
+            settings.setTaskbarFontSizeHhmmss(origFontHhmm);
             if (freshStage[0] != null) {
                 JavaFxTestHelper.runOnFxThread(() -> {
                     freshStage[0].hide();
@@ -401,7 +441,4 @@ class TaskbarSettingsViewUiTest {
         }
     }
 }
-
-
-
 

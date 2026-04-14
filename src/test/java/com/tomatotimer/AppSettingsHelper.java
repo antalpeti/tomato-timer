@@ -14,7 +14,10 @@ public class AppSettingsHelper {
     public static final NeonPreset DEFAULT_NEON_PRESET     = NeonPreset.AURORA_DRIFT;
     public static final NeonGlowProfile DEFAULT_NEON_GLOW_PROFILE = NeonGlowProfile.BALANCED;
     public static final boolean DEFAULT_TASKBAR_ICON_ENABLE = true;
-    public static final double DEFAULT_TASKBAR_FONT_SIZE  = 23.0;
+    /** Default for {@code taskbar_font_size_mmss} (MM:SS display, hours == 0). */
+    public static final double DEFAULT_TASKBAR_FONT_SIZE_MMSS   = 23.0;
+    /** Default for {@code taskbar_font_size_hhmmss} (HH:MM:SS display, hours > 0). */
+    public static final double DEFAULT_TASKBAR_FONT_SIZE_HHMMSS = 17.0;
     public static final TaskbarTimeLayout DEFAULT_TASKBAR_LAYOUT = TaskbarTimeLayout.VERTICAL;
     public static final ThemeSelectionMode DEFAULT_THEME_SELECTION_MODE = ThemeSelectionMode.SHUFFLE;
     public static final double DEFAULT_WINDOW_X           = -1.0;
@@ -35,6 +38,6 @@ public class AppSettingsHelper {
     public static final String TEST_RESTORE_DT      = "2026-04-12T10:00:00";
     public static final int    TEST_RESTORE_MODE    = 2;
     public static final String TEST_SOUND_PATH      = "/tmp/beep.wav";
-    public static final double TEST_TASKBAR_FONT_SZ = 14.0;
+    public static final double TEST_TASKBAR_FONT_SZ_MMSS   = 14.0;
+    public static final double TEST_TASKBAR_FONT_SZ_HHMMSS = 13.0;
 }
-

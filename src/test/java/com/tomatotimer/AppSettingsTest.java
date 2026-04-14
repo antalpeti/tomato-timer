@@ -291,15 +291,28 @@ class AppSettingsTest extends AppSettingsHelper {
     }
 
     @Test
-    @DisplayName("setTaskbarFontSize / getTaskbarFontSize round-trip")
-    void testTaskbarFontSizeRoundTrip() {
+    @DisplayName("setTaskbarFontSizeMmss / getTaskbarFontSizeMmss round-trip")
+    void testTaskbarFontSizeMmssRoundTrip() {
         final var s        = AppSettings.getInstance();
-        final var original = s.getTaskbarFontSize();
+        final var original = s.getTaskbarFontSizeMmss();
         try {
-            s.setTaskbarFontSize(TEST_TASKBAR_FONT_SZ);
-            assertEquals(TEST_TASKBAR_FONT_SZ, s.getTaskbarFontSize(), DELTA);
+            s.setTaskbarFontSizeMmss(TEST_TASKBAR_FONT_SZ_MMSS);
+            assertEquals(TEST_TASKBAR_FONT_SZ_MMSS, s.getTaskbarFontSizeMmss(), DELTA);
         } finally {
-            s.setTaskbarFontSize(original);
+            s.setTaskbarFontSizeMmss(original);
+        }
+    }
+
+    @Test
+    @DisplayName("setTaskbarFontSizeHhmmss / getTaskbarFontSizeHhmmss round-trip")
+    void testTaskbarFontSizeHhmmssRoundTrip() {
+        final var s        = AppSettings.getInstance();
+        final var original = s.getTaskbarFontSizeHhmmss();
+        try {
+            s.setTaskbarFontSizeHhmmss(TEST_TASKBAR_FONT_SZ_HHMMSS);
+            assertEquals(TEST_TASKBAR_FONT_SZ_HHMMSS, s.getTaskbarFontSizeHhmmss(), DELTA);
+        } finally {
+            s.setTaskbarFontSizeHhmmss(original);
         }
     }
 
@@ -422,17 +435,18 @@ class AppSettingsTest extends AppSettingsHelper {
     @Test
     @DisplayName("migrateIfNeeded() stamps visual and layout defaults when settings_version is 0")
     void testMigrationFromV0StampsVisualDefaults() {
-        final var prefs          = java.util.prefs.Preferences.userNodeForPackage(AppSettings.class);
-        final var s              = AppSettings.getInstance();
-        final var savedVer       = prefs.get("settings_version",      null);
-        final var savedPreset    = prefs.get("neon_preset",           null);
-        final var savedGlow      = prefs.get("neon_glow_profile",     null);
-        final var savedTbLayout  = prefs.get("taskbar_layout",        null);
-        final var savedTbFont    = prefs.get("taskbar_font_size",     null);
-        final var savedTheme     = prefs.get("theme_selection_mode",  null);
+        final var prefs           = java.util.prefs.Preferences.userNodeForPackage(AppSettings.class);
+        final var s               = AppSettings.getInstance();
+        final var savedVer        = prefs.get("settings_version",       null);
+        final var savedPreset     = prefs.get("neon_preset",            null);
+        final var savedGlow       = prefs.get("neon_glow_profile",      null);
+        final var savedTbLayout   = prefs.get("taskbar_layout",         null);
+        final var savedTbFont     = prefs.get("taskbar_font_size",      null);
+        final var savedTbFontMm   = prefs.get("taskbar_font_size_mmss", null);
+        final var savedTbFontHh   = prefs.get("taskbar_font_size_hhmmss", null);
+        final var savedTheme      = prefs.get("theme_selection_mode",   null);
         try {
             prefs.remove("settings_version");
-            // Use values that differ from each factory default
             prefs.put   ("neon_preset",          NeonPreset.SCARLET_SURGE.name());
             prefs.put   ("neon_glow_profile",    NeonGlowProfile.SOFT.name());
             prefs.put   ("taskbar_layout",       TaskbarTimeLayout.HORIZONTAL.name());
@@ -441,18 +455,22 @@ class AppSettingsTest extends AppSettingsHelper {
 
             s.migrateIfNeeded();
 
-            assertEquals(DEFAULT_NEON_PRESET,          s.getNeonPreset(),          "neon_preset after migration");
-            assertEquals(DEFAULT_NEON_GLOW_PROFILE,    s.getNeonGlowProfile(),     "neon_glow_profile after migration");
-            assertEquals(DEFAULT_TASKBAR_LAYOUT,       s.getTaskbarLayout(),       "taskbar_layout after migration");
-            assertEquals(DEFAULT_TASKBAR_FONT_SIZE,    s.getTaskbarFontSize(), DELTA);
-            assertEquals(DEFAULT_THEME_SELECTION_MODE, s.getThemeSelectionMode(),  "theme_selection_mode after migration");
+            assertEquals(DEFAULT_NEON_PRESET,              s.getNeonPreset(),           "neon_preset after migration");
+            assertEquals(DEFAULT_NEON_GLOW_PROFILE,        s.getNeonGlowProfile(),      "neon_glow_profile after migration");
+            assertEquals(DEFAULT_TASKBAR_LAYOUT,           s.getTaskbarLayout(),        "taskbar_layout after migration");
+            // v1 migration overwrites taskbar_font_size → 23.0; v4 migration copies it to taskbar_font_size_mmss
+            assertEquals(DEFAULT_TASKBAR_FONT_SIZE_MMSS,   s.getTaskbarFontSizeMmss(),   DELTA);
+            assertEquals(DEFAULT_TASKBAR_FONT_SIZE_HHMMSS, s.getTaskbarFontSizeHhmmss(), DELTA);
+            assertEquals(DEFAULT_THEME_SELECTION_MODE,     s.getThemeSelectionMode(),   "theme_selection_mode after migration");
         } finally {
-            restore(prefs, "settings_version",     savedVer);
-            restore(prefs, "neon_preset",          savedPreset);
-            restore(prefs, "neon_glow_profile",    savedGlow);
-            restore(prefs, "taskbar_layout",       savedTbLayout);
-            restore(prefs, "taskbar_font_size",    savedTbFont);
-            restore(prefs, "theme_selection_mode", savedTheme);
+            restore(prefs, "settings_version",        savedVer);
+            restore(prefs, "neon_preset",             savedPreset);
+            restore(prefs, "neon_glow_profile",       savedGlow);
+            restore(prefs, "taskbar_layout",          savedTbLayout);
+            restore(prefs, "taskbar_font_size",       savedTbFont);
+            restore(prefs, "taskbar_font_size_mmss",  savedTbFontMm);
+            restore(prefs, "taskbar_font_size_hhmmss",savedTbFontHh);
+            restore(prefs, "theme_selection_mode",    savedTheme);
         }
     }
 
@@ -465,11 +483,10 @@ class AppSettingsTest extends AppSettingsHelper {
         final var savedWork = prefs.get("work_time",        null);
         try {
             prefs.putInt("settings_version", AppSettings.CURRENT_SETTINGS_VERSION);
-            prefs.putInt("work_time", TEST_WORK_TIME);  // value that differs from factory default
+            prefs.putInt("work_time", TEST_WORK_TIME);
 
             s.migrateIfNeeded();
 
-            // Migration must NOT overwrite – user's (non-default) value is preserved
             assertEquals(TEST_WORK_TIME, s.getWorkTime(),
                     "work_time must not be overwritten when version is already current");
         } finally {
@@ -485,7 +502,7 @@ class AppSettingsTest extends AppSettingsHelper {
         final var s        = AppSettings.getInstance();
         final var savedVer = prefs.get("settings_version", null);
         try {
-            prefs.remove("settings_version");  // simulate pre-versioning install
+            prefs.remove("settings_version");
 
             s.migrateIfNeeded();
 
@@ -502,15 +519,16 @@ class AppSettingsTest extends AppSettingsHelper {
     void testMigrationFromV2StampsHealingDefaults() {
         final var prefs          = java.util.prefs.Preferences.userNodeForPackage(AppSettings.class);
         final var s              = AppSettings.getInstance();
-        final var savedVer       = prefs.get("settings_version",      null);
-        final var savedWork      = prefs.get("work_time",             null);
-        final var savedGcal      = prefs.get("gcal_enable",           null);
-        final var savedTbIcon    = prefs.get("taskbar_icon_enable",   null);
-        final var savedTbFont    = prefs.get("taskbar_font_size",     null);
-        final var savedOnTop     = prefs.get("always_on_top",         null);
-        final var savedTheme     = prefs.get("theme_selection_mode",  null);
+        final var savedVer       = prefs.get("settings_version",        null);
+        final var savedWork      = prefs.get("work_time",               null);
+        final var savedGcal      = prefs.get("gcal_enable",             null);
+        final var savedTbIcon    = prefs.get("taskbar_icon_enable",     null);
+        final var savedTbFont    = prefs.get("taskbar_font_size",       null);
+        final var savedTbFontMm  = prefs.get("taskbar_font_size_mmss",  null);
+        final var savedTbFontHh  = prefs.get("taskbar_font_size_hhmmss",null);
+        final var savedOnTop     = prefs.get("always_on_top",           null);
+        final var savedTheme     = prefs.get("theme_selection_mode",    null);
         try {
-            // Simulate a v2 install that retained stale / corrupted values
             prefs.putInt    ("settings_version",     2);
             prefs.putInt    ("work_time",            99);
             prefs.putBoolean("gcal_enable",         false);
@@ -521,22 +539,26 @@ class AppSettingsTest extends AppSettingsHelper {
 
             s.migrateIfNeeded();
 
-            assertEquals(DEFAULT_WORK_TIME,           s.getWorkTime(),           "work_time after v2→v3 healing");
-            assertEquals(DEFAULT_GCAL_ENABLE,         s.isGCalEnable(),          "gcal_enable after v2→v3 healing");
-            assertEquals(DEFAULT_TASKBAR_ICON_ENABLE, s.isTaskbarIconEnable(),   "taskbar_icon_enable after v2→v3 healing");
-            assertEquals(DEFAULT_TASKBAR_FONT_SIZE,   s.getTaskbarFontSize(), DELTA);
-            assertEquals(DEFAULT_ALWAYS_ON_TOP,       s.isAlwaysOnTop(),         "always_on_top after v2→v3 healing");
-            assertEquals(DEFAULT_THEME_SELECTION_MODE, s.getThemeSelectionMode(),"theme_selection_mode after v2→v3 healing");
-            assertEquals(3, prefs.getInt("settings_version", -1),
-                    "settings_version must be 3 after v2→v3 migration");
+            assertEquals(DEFAULT_WORK_TIME,              s.getWorkTime(),           "work_time after v2→v4 healing");
+            assertEquals(DEFAULT_GCAL_ENABLE,            s.isGCalEnable(),          "gcal_enable after v2→v4 healing");
+            assertEquals(DEFAULT_TASKBAR_ICON_ENABLE,    s.isTaskbarIconEnable(),   "taskbar_icon_enable after v2→v4 healing");
+            // v3 migration heals taskbar_font_size → 23.0; v4 then stamps the new keys
+            assertEquals(DEFAULT_TASKBAR_FONT_SIZE_MMSS,   s.getTaskbarFontSizeMmss(),   DELTA);
+            assertEquals(DEFAULT_TASKBAR_FONT_SIZE_HHMMSS, s.getTaskbarFontSizeHhmmss(), DELTA);
+            assertEquals(DEFAULT_ALWAYS_ON_TOP,          s.isAlwaysOnTop(),         "always_on_top after v2→v4 healing");
+            assertEquals(DEFAULT_THEME_SELECTION_MODE,   s.getThemeSelectionMode(),"theme_selection_mode after v2→v4 healing");
+            assertEquals(4, prefs.getInt("settings_version", -1),
+                    "settings_version must be 4 after v2→v4 migration");
         } finally {
-            restore(prefs, "settings_version",    savedVer);
-            restore(prefs, "work_time",           savedWork);
-            restore(prefs, "gcal_enable",         savedGcal);
-            restore(prefs, "taskbar_icon_enable", savedTbIcon);
-            restore(prefs, "taskbar_font_size",   savedTbFont);
-            restore(prefs, "always_on_top",       savedOnTop);
-            restore(prefs, "theme_selection_mode", savedTheme);
+            restore(prefs, "settings_version",        savedVer);
+            restore(prefs, "work_time",               savedWork);
+            restore(prefs, "gcal_enable",             savedGcal);
+            restore(prefs, "taskbar_icon_enable",     savedTbIcon);
+            restore(prefs, "taskbar_font_size",       savedTbFont);
+            restore(prefs, "taskbar_font_size_mmss",  savedTbFontMm);
+            restore(prefs, "taskbar_font_size_hhmmss",savedTbFontHh);
+            restore(prefs, "always_on_top",           savedOnTop);
+            restore(prefs, "theme_selection_mode",    savedTheme);
         }
     }
 
@@ -549,19 +571,50 @@ class AppSettingsTest extends AppSettingsHelper {
         final var savedWork   = prefs.get("work_time",        null);
         final var savedOnTop  = prefs.get("always_on_top",   null);
         try {
-            // Simulate a v1 install (old defaults already written, but v2 not yet applied)
             prefs.putInt    ("settings_version", 1);
-            prefs.putInt    ("work_time",       30);   // old v1 default
-            prefs.putBoolean("always_on_top", true);   // old v1 default
+            prefs.putInt    ("work_time",       30);
+            prefs.putBoolean("always_on_top", true);
 
             s.migrateIfNeeded();
 
-            assertEquals(DEFAULT_WORK_TIME,   s.getWorkTime(),    "work_time after v1→v2 migration");
+            assertEquals(DEFAULT_WORK_TIME,     s.getWorkTime(),    "work_time after v1→v2 migration");
             assertEquals(DEFAULT_ALWAYS_ON_TOP, s.isAlwaysOnTop(), "always_on_top after v1→v2 migration");
         } finally {
             restore(prefs, "settings_version", savedVer);
             restore(prefs, "work_time",        savedWork);
             restore(prefs, "always_on_top",    savedOnTop);
+        }
+    }
+
+    @Test
+    @DisplayName("migrateIfNeeded() v3→v4: preserves existing taskbar_font_size as MM:SS size and stamps HH:MM:SS default")
+    void testMigrationFromV3StampsNewFontSizes() {
+        final var prefs          = java.util.prefs.Preferences.userNodeForPackage(AppSettings.class);
+        final var s              = AppSettings.getInstance();
+        final var savedVer       = prefs.get("settings_version",        null);
+        final var savedTbFont    = prefs.get("taskbar_font_size",       null);
+        final var savedTbFontMm  = prefs.get("taskbar_font_size_mmss",  null);
+        final var savedTbFontHh  = prefs.get("taskbar_font_size_hhmmss",null);
+        try {
+            // Simulate a v3 install where the user customised taskbar_font_size to 20
+            prefs.putInt   ("settings_version", 3);
+            prefs.putDouble("taskbar_font_size", 20.0);
+            prefs.remove("taskbar_font_size_mmss");
+            prefs.remove("taskbar_font_size_hhmmss");
+
+            s.migrateIfNeeded();
+
+            // User's customisation must be preserved as the MM:SS font size
+            assertEquals(20.0,                         s.getTaskbarFontSizeMmss(),   DELTA);
+            // HH:MM:SS always gets the factory default
+            assertEquals(DEFAULT_TASKBAR_FONT_SIZE_HHMMSS, s.getTaskbarFontSizeHhmmss(), DELTA);
+            assertEquals(4, prefs.getInt("settings_version", -1),
+                    "settings_version must be 4 after v3→v4 migration");
+        } finally {
+            restore(prefs, "settings_version",        savedVer);
+            restore(prefs, "taskbar_font_size",       savedTbFont);
+            restore(prefs, "taskbar_font_size_mmss",  savedTbFontMm);
+            restore(prefs, "taskbar_font_size_hhmmss",savedTbFontHh);
         }
     }
 
@@ -620,15 +673,28 @@ class AppSettingsTest extends AppSettingsHelper {
     }
 
     @Test
-    @DisplayName("getTaskbarFontSize() default is 23.0 on first run")
-    void testTaskbarFontSizeDefaultIs23() {
+    @DisplayName("getTaskbarFontSizeMmss() default is 23.0 on first run")
+    void testTaskbarFontSizeMmssDefaultIs23() {
         final var prefs = Preferences.userNodeForPackage(AppSettings.class);
-        final var saved = prefs.get("taskbar_font_size", null);
+        final var saved = prefs.get("taskbar_font_size_mmss", null);
         try {
-            prefs.remove("taskbar_font_size");
-            assertEquals(DEFAULT_TASKBAR_FONT_SIZE, AppSettings.getInstance().getTaskbarFontSize(), DELTA);
+            prefs.remove("taskbar_font_size_mmss");
+            assertEquals(DEFAULT_TASKBAR_FONT_SIZE_MMSS, AppSettings.getInstance().getTaskbarFontSizeMmss(), DELTA);
         } finally {
-            if (saved != null) prefs.put("taskbar_font_size", saved);
+            if (saved != null) prefs.put("taskbar_font_size_mmss", saved);
+        }
+    }
+
+    @Test
+    @DisplayName("getTaskbarFontSizeHhmmss() default is 17.0 on first run")
+    void testTaskbarFontSizeHhmmssDefaultIs17() {
+        final var prefs = Preferences.userNodeForPackage(AppSettings.class);
+        final var saved = prefs.get("taskbar_font_size_hhmmss", null);
+        try {
+            prefs.remove("taskbar_font_size_hhmmss");
+            assertEquals(DEFAULT_TASKBAR_FONT_SIZE_HHMMSS, AppSettings.getInstance().getTaskbarFontSizeHhmmss(), DELTA);
+        } finally {
+            if (saved != null) prefs.put("taskbar_font_size_hhmmss", saved);
         }
     }
 

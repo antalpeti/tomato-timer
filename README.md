@@ -19,7 +19,7 @@ A Maven-based JavaFX Pomodoro timer, rewritten from the original C# WPF **Tomato
 | **State persistence** | Window position/size and saved **Work** session state can be restored on next start |
 | **Sounds** | Custom sound file per event (`mp3`, `wav`, `ogg`, `wma`) with play/stop/mute controls on the Sound Settings page |
 | **Google Calendar** | Opens event creation after work overtime or via manual **Finish Work** action; configured on the dedicated Calendar Settings page |
-| **Taskbar countdown icon** | Dynamic live-countdown icon in the Windows taskbar; layout (vertical/horizontal) and font size configurable on the dedicated Taskbar Settings page |
+| **Taskbar countdown icon** | Dynamic live-countdown icon in the Windows taskbar; layout (vertical/horizontal) and separate font sizes for MM:SS / HH:MM:SS display configurable on the dedicated Taskbar Settings page |
 | **Taskbar preview buttons (Windows)** | Thumbnail toolbar actions: `Reset`, `Pause`, `Finish Work`, `Take a break`, `Go to Work` |
 
 ## Usage
@@ -144,11 +144,12 @@ Back button returns to the main Settings page.
 | Control | Purpose |
 |---|---|
 | **Enable taskbar icon** | Toggles the live-countdown icon in the Windows taskbar (**default: enabled**) |
-| **Font size** | Base font size (px at the 64 px reference canvas, range 8–28, default 23) |
+| **MM:SS font** | Base font size (px at the 64 px reference canvas, range 8–28, **default 23**) used when the remaining time is below one hour (`MM:SS` display) |
+| **HH:MM:SS font** | Base font size (px at the 64 px reference canvas, range 8–28, **default 17**) used when the remaining time is one hour or more (`HH:MM:SS` display) |
 | **Layout — Vertical** | Stacked multi-line: 2 lines (MM / SS) when hours = 0; 3 lines (HH / MM / SS) when hours > 0 |
 | **Layout — Horizontal** | Single-line: `MM:SS` when hours = 0; `HH:MM:SS` when hours > 0 |
 
-Changes to layout and font size take effect on the next icon redraw (within ~1 second, or immediately on Back).
+Changes to layout and font sizes take effect on the next icon redraw (within ~1 second, or immediately on Back).
 Back button saves settings, triggers an immediate icon redraw, and returns to the main Settings page.
 
 ## Run
@@ -537,8 +538,9 @@ The most relevant persisted keys are:
 | `theme_selection_mode` | Theme rotation mode used when a new **Work** phase starts | `SHUFFLE` |
 | `gcal_enable` | Whether Google Calendar integration is enabled | `true` |
 | `taskbar_icon_enable` | Whether the live taskbar countdown icon is enabled | `true` |
-| `taskbar_font_size` | Base font size for the taskbar icon renderer | `23.0` |
-| `settings_version` | Internal settings schema version used for startup migration | `3` |
+| `taskbar_font_size_mmss` | Font size for the `MM:SS` taskbar icon (hours = 0) | `23.0` |
+| `taskbar_font_size_hhmmss` | Font size for the `HH:MM:SS` taskbar icon (hours > 0) | `17.0` |
+| `settings_version` | Internal settings schema version used for startup migration | `4` |
 
 ### Factory defaults / first-run defaults
 
@@ -570,10 +572,11 @@ user-specific / runtime state and are only written when the user changes them ex
 | `neon_preset` | `string` | `AURORA_DRIFT` | Active neon color preset |
 | `neon_glow_profile` | `string` | `BALANCED` | Active glow intensity profile |
 | `taskbar_icon_enable` | `boolean` | `true` | Live countdown taskbar icon enabled |
-| `taskbar_font_size` | `double` | `23.0` | Taskbar icon font size (at 64 px reference canvas; range 8–28) |
+| `taskbar_font_size_mmss` | `double` | `23.0` | Taskbar icon font size when showing `MM:SS` (hours = 0; range 8–28) |
+| `taskbar_font_size_hhmmss` | `double` | `17.0` | Taskbar icon font size when showing `HH:MM:SS` (hours > 0; range 8–28) |
 | `taskbar_layout` | `string` | `VERTICAL` | Taskbar countdown layout (`VERTICAL` / `HORIZONTAL`) |
 | `theme_selection_mode` | `string` | `SHUFFLE` | Theme rotation strategy on each new Work phase |
-| `settings_version` | `int` | `3` | Internal schema version; drives the startup migration |
+| `settings_version` | `int` | `4` | Internal schema version; drives the startup migration |
 
 > **†** User-specific / runtime keys: the startup migration never overwrites these —
 > only window geometry, sound file paths, GCal source/text, and timer-restore state
@@ -604,8 +607,9 @@ Typical values to verify after launching the app:
 - `theme_selection_mode` = `SHUFFLE`
 - `gcal_enable` = `true`
 - `taskbar_icon_enable` = `true`
-- `taskbar_font_size` = `23.0`
-- `settings_version` = `3`
+- `taskbar_font_size_mmss` = `23.0`
+- `taskbar_font_size_hhmmss` = `17.0`
+- `settings_version` = `4`
 
 ### Simulating a clean first run
 
@@ -698,13 +702,15 @@ and that its appearance follows the currently active theme.
 - [ ] Verify icon text layout.
 - [ ] Switch to `Horizontal`.
 - [ ] Verify icon text layout.
-- [ ] Change `Font size` (for example `12` -> `22`).
+- [ ] Change `MM:SS font` (for example `12` → `22`).
+- [ ] Change `HH:MM:SS font` (for example `10` → `17`).
 
 **Expected**
 
 - `Vertical`: 2 lines (`MM` / `SS`) or 3 lines (`HH` / `MM` / `SS`).
 - `Horizontal`: `MM:SS` or `HH:MM:SS`.
-- Font-size change is visible on the icon.
+- `MM:SS font` change is visible on the icon when remaining time has no hours component.
+- `HH:MM:SS font` change is visible on the icon when remaining time is ≥ 1 hour.
 
 ---
 

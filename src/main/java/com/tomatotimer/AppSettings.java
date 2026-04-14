@@ -17,6 +17,16 @@ import java.util.prefs.Preferences;
  *       {@code AppSettingsHelper#CURRENT_SETTINGS_VERSION} (test helper).</li>
  * </ol>
  *
+ * <h3>Taskbar font sizes (v4+)</h3>
+ * <p>The single {@code taskbar_font_size} key was split in schema v4 into two
+ * role-specific keys:</p>
+ * <ul>
+ *   <li>{@code taskbar_font_size_mmss}   – used when the icon shows {@code MM:SS}; default&nbsp;23.</li>
+ *   <li>{@code taskbar_font_size_hhmmss} – used when the icon shows {@code HH:MM:SS}; default&nbsp;17.</li>
+ * </ul>
+ * <p>On upgrade from a v3 install the old {@code taskbar_font_size} value is preserved
+ * as the new {@code taskbar_font_size_mmss} value so existing user customisations are kept.</p>
+ *
  * <p>Without this migration, existing users whose Windows Registry already
  * contains the old value would never see the updated default, because
  * {@link Preferences#getInt(String, int)} ignores the default argument
@@ -39,7 +49,7 @@ public class AppSettings {
      * <p>Package-private so {@code AppSettingsTest} can read and reset it
      * without reflection.</p>
      */
-    static final int CURRENT_SETTINGS_VERSION = 3;
+    static final int CURRENT_SETTINGS_VERSION = 4;
 
     // ---- keys ---------------------------------------------------------------
     private static final String KEY_WORK_TIME          = "work_time";
@@ -63,7 +73,10 @@ public class AppSettings {
     private static final String KEY_NEON_PRESET           = "neon_preset";
     private static final String KEY_NEON_GLOW_PROFILE     = "neon_glow_profile";
     private static final String KEY_TASKBAR_ICON_ENABLE      = "taskbar_icon_enable";
+    /** Legacy single-font key – kept only for the v3→v4 migration read. */
     private static final String KEY_TASKBAR_FONT_SIZE        = "taskbar_font_size";
+    private static final String KEY_TASKBAR_FONT_SIZE_MMSS   = "taskbar_font_size_mmss";
+    private static final String KEY_TASKBAR_FONT_SIZE_HHMMSS = "taskbar_font_size_hhmmss";
     private static final String KEY_TASKBAR_LAYOUT           = "taskbar_layout";
     private static final String KEY_THEME_SELECTION_MODE     = "theme_selection_mode";
 
@@ -132,6 +145,16 @@ public class AppSettings {
             // NOT overwriting (user-specific / runtime state):
             //   KEY_WIN_X/Y/W/H, KEY_SOUND_*, KEY_GCAL_SRC, KEY_GCAL_TEXT,
             //   KEY_TIMER_RESTORE_DT, KEY_TIMER_RESTORE_MODE
+        }
+
+        // ── v3 → v4 : split single taskbar_font_size into two role-specific keys.
+        //              Preserve the existing taskbar_font_size value (user may have customised it)
+        //              as the MM:SS font size so the change is backward-compatible.
+        //              The HH:MM:SS key always gets the new factory default (17.0).
+        if (stored < 4) {
+            final double legacyFont = prefs.getDouble(KEY_TASKBAR_FONT_SIZE, 23.0);
+            prefs.putDouble(KEY_TASKBAR_FONT_SIZE_MMSS,   legacyFont);
+            prefs.putDouble(KEY_TASKBAR_FONT_SIZE_HHMMSS, 17.0);
         }
 
         prefs.putInt(KEY_SETTINGS_VERSION, CURRENT_SETTINGS_VERSION);
@@ -232,11 +255,18 @@ public class AppSettings {
     public void    setTaskbarIconEnable(boolean v) { prefs.putBoolean(KEY_TASKBAR_ICON_ENABLE, v); }
 
     /**
-     * Base font size used when rendering the taskbar icon (at the 64 px reference canvas).
-     * Range [8, 28], default 23.0.  Applies to both vertical and horizontal layouts.
+     * Base font size used when the taskbar icon shows {@code MM:SS} (hours == 0).
+     * Range [8, 28], default 23.0.
      */
-    public double getTaskbarFontSize()         { return prefs.getDouble(KEY_TASKBAR_FONT_SIZE, 23.0); }
-    public void   setTaskbarFontSize(double v) { prefs.putDouble(KEY_TASKBAR_FONT_SIZE, v); }
+    public double getTaskbarFontSizeMmss()         { return prefs.getDouble(KEY_TASKBAR_FONT_SIZE_MMSS, 23.0); }
+    public void   setTaskbarFontSizeMmss(double v) { prefs.putDouble(KEY_TASKBAR_FONT_SIZE_MMSS, v); }
+
+    /**
+     * Base font size used when the taskbar icon shows {@code HH:MM:SS} (hours &gt; 0).
+     * Range [8, 28], default 17.0.
+     */
+    public double getTaskbarFontSizeHhmmss()         { return prefs.getDouble(KEY_TASKBAR_FONT_SIZE_HHMMSS, 17.0); }
+    public void   setTaskbarFontSizeHhmmss(double v) { prefs.putDouble(KEY_TASKBAR_FONT_SIZE_HHMMSS, v); }
 
     /** Layout orientation for the taskbar countdown display. Defaults to {@link TaskbarTimeLayout#VERTICAL}. */
     public TaskbarTimeLayout getTaskbarLayout() {

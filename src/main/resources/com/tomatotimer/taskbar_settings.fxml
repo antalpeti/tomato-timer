@@ -45,13 +45,24 @@
 
             <Separator orientation="VERTICAL" prefHeight="30"/>
 
-            <!-- Font size spinner -->
-            <Label fx:id="lblFontSize" text="Font:" styleClass="setting-label"/>
-            <Spinner fx:id="spFontSize" prefWidth="60" editable="true" focusTraversable="false">
+            <!-- Font size spinner – MM:SS display (hours == 0) -->
+            <Label fx:id="lblFontSizeMmss" text="MM:SS font:" styleClass="setting-label"/>
+            <Spinner fx:id="spFontSizeMmss" prefWidth="60" editable="true" focusTraversable="false">
                 <valueFactory>
                     <SpinnerValueFactory.IntegerSpinnerValueFactory min="8" max="28" initialValue="23"/>
                 </valueFactory>
-                <tooltip><Tooltip text="Base font size at 64 px (range 8–28). Scales with icon size."/></tooltip>
+                <tooltip><Tooltip text="Font size for MM:SS display (range 8–28, default 23). Scales with icon size."/></tooltip>
+            </Spinner>
+
+            <Separator orientation="VERTICAL" prefHeight="30"/>
+
+            <!-- Font size spinner – HH:MM:SS display (hours > 0) -->
+            <Label fx:id="lblFontSizeHhmmss" text="HH:MM:SS font:" styleClass="setting-label"/>
+            <Spinner fx:id="spFontSizeHhmmss" prefWidth="60" editable="true" focusTraversable="false">
+                <valueFactory>
+                    <SpinnerValueFactory.IntegerSpinnerValueFactory min="8" max="28" initialValue="17"/>
+                </valueFactory>
+                <tooltip><Tooltip text="Font size for HH:MM:SS display (range 8–28, default 17). Scales with icon size."/></tooltip>
             </Spinner>
 
             <Separator orientation="VERTICAL" prefHeight="30"/>
