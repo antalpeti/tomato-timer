@@ -640,6 +640,19 @@ public class MainController {
         applyRelaxState(false);
     }
 
+    /**
+     * Finishes the current REST session early: always creates a Google Calendar
+     * event (when GCal is enabled) regardless of whether overtime has been reached,
+     * then immediately switches to WORK.
+     * <p>Safe to call at any point during RELAX / RELAX_LONG mode – even before the timer expires.</p>
+     */
+    public void finishRest() {
+        if ((mode == TimerMode.RELAX || mode == TimerMode.RELAX_LONG) && settings.isGCalEnable()) {
+            openGoogleCalendar(timerStartTime, LocalDateTime.now());
+        }
+        startWork();
+    }
+
     /** Shared state-reset for all relax transitions (avoids duplicating reset logic). */
     private void applyRelaxState(boolean longBreak) {
         timerStartTime         = LocalDateTime.now();
@@ -673,7 +686,6 @@ public class MainController {
     }
 
     public void reset() {
-        triggerGCalIfNeeded();
         isPaused          = false;
         timerStartTime    = LocalDateTime.now();
         pauseStartTime    = LocalDateTime.now();
@@ -834,7 +846,8 @@ public class MainController {
                 this::resume,
                 this::finishWork,
                 () -> this.startRelax(false),
-                this::startWork           // Go to Work – enabled in REST mode
+                this::startWork,           // Go to Work – enabled in REST mode
+                this::finishRest           // Finish Rest – enabled in REST mode
         );
         taskbarPreviewButtons.updateState(mode, isPaused);
     }

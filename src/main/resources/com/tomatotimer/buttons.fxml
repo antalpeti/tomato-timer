@@ -76,6 +76,14 @@
                     <tooltip><Tooltip text="Reset"/></tooltip>
                 </Button>
 
+                <!-- Finish Rest + Go to Work – creates GCal event (if enabled), then starts work -->
+                <Button fx:id="btnFinishRest"
+                        styleClass="icon-btn"
+                        onAction="#onFinishRest"
+                        focusTraversable="false">
+                    <tooltip><Tooltip text="Finish rest and start work (creates calendar event)"/></tooltip>
+                </Button>
+
                 <Button fx:id="btnPlay"
                         styleClass="icon-btn"
                         onAction="#onPlay"

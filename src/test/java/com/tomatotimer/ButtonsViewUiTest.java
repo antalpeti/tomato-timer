@@ -111,7 +111,7 @@ class ButtonsViewUiTest {
     // =========================================================================
 
     @Test
-    @DisplayName("updateUI(WORK, running): btnPause visible, btnPlay hidden, btnWork hidden")
+    @DisplayName("updateUI(WORK, running): btnPause visible, btnPlay hidden, btnWork hidden, btnFinishRest hidden")
     void workModeRunningShowsCorrectButtons() throws Exception {
         JavaFxTestHelper.runOnFxThread(() -> {
             controller.updateUI(
@@ -123,14 +123,16 @@ class ButtonsViewUiTest {
         });
         WaitForAsyncUtils.waitForFxEvents();
 
-        final var root     = stage.getScene().getRoot();
-        final var btnPause = (Button) root.lookup("#btnPause");
-        final var btnPlay  = (Button) root.lookup("#btnPlay");
-        final var btnWork  = (Button) root.lookup("#btnWork");
+        final var root         = stage.getScene().getRoot();
+        final var btnPause     = (Button) root.lookup("#btnPause");
+        final var btnPlay      = (Button) root.lookup("#btnPlay");
+        final var btnWork      = (Button) root.lookup("#btnWork");
+        final var btnFinishRest= (Button) root.lookup("#btnFinishRest");
 
-        assertNotNull(btnPause, "#btnPause not found in buttons.fxml");
-        assertNotNull(btnPlay,  "#btnPlay not found in buttons.fxml");
-        assertNotNull(btnWork,  "#btnWork not found in buttons.fxml");
+        assertNotNull(btnPause,      "#btnPause not found in buttons.fxml");
+        assertNotNull(btnPlay,       "#btnPlay not found in buttons.fxml");
+        assertNotNull(btnWork,       "#btnWork not found in buttons.fxml");
+        assertNotNull(btnFinishRest, "#btnFinishRest not found in buttons.fxml");
 
         assertTrue(btnPause.isVisible(),
                 "btnPause must be visible while the WORK timer is running");
@@ -138,6 +140,73 @@ class ButtonsViewUiTest {
                 "btnPlay must be hidden while the WORK timer is running (not paused)");
         assertFalse(btnWork.isVisible(),
                 "btnWork must be hidden during WORK mode");
+        assertFalse(btnFinishRest.isVisible(),
+                "btnFinishRest must be hidden during WORK mode");
+    }
+
+    // =========================================================================
+    //  Test 3b – REST mode (timer running): correct button visibility
+    // =========================================================================
+
+    @Test
+    @DisplayName("updateUI(RELAX, running): btnWork visible, btnFinishRest visible, btnPause hidden, btnFinishWork hidden")
+    void restModeRunningShowsCorrectButtons() throws Exception {
+        JavaFxTestHelper.runOnFxThread(() -> {
+            controller.updateUI(
+                    NeonPreset.AURORA_DRIFT, NeonGlowProfile.BALANCED,
+                    TimerMode.RELAX,
+                    /*isPaused=*/false, /*isOverTime=*/false,
+                    30.0, "Rest  5:00", "Start @ 8:30");
+            return null;
+        });
+        WaitForAsyncUtils.waitForFxEvents();
+
+        final var root          = stage.getScene().getRoot();
+        final var btnWork       = (Button) root.lookup("#btnWork");
+        final var btnFinishRest = (Button) root.lookup("#btnFinishRest");
+        final var btnPause      = (Button) root.lookup("#btnPause");
+        final var btnFinishWork = (Button) root.lookup("#btnFinishWork");
+
+        assertNotNull(btnWork,       "#btnWork not found in buttons.fxml");
+        assertNotNull(btnFinishRest, "#btnFinishRest not found in buttons.fxml");
+        assertNotNull(btnPause,      "#btnPause not found in buttons.fxml");
+        assertNotNull(btnFinishWork, "#btnFinishWork not found in buttons.fxml");
+
+        assertTrue(btnWork.isVisible(),
+                "btnWork must be visible during REST mode");
+        assertTrue(btnFinishRest.isVisible(),
+                "btnFinishRest must be visible during REST mode");
+        assertFalse(btnPause.isVisible(),
+                "btnPause must be hidden during REST mode");
+        assertFalse(btnFinishWork.isVisible(),
+                "btnFinishWork must be hidden during REST mode");
+    }
+
+    // =========================================================================
+    //  Test 3c – REST mode: btnFinishRest.fire() triggers finishRest()
+    // =========================================================================
+
+    @Test
+    @DisplayName("updateUI(RELAX): btnFinishRest.fire() triggers finishRest() on MainController")
+    void restModeBtnFinishRestFireTriggersFinishRest() throws Exception {
+        final var mockMc = Mockito.mock(MainController.class);
+
+        JavaFxTestHelper.runOnFxThread(() -> {
+            controller.updateUI(
+                    NeonPreset.AURORA_DRIFT, NeonGlowProfile.BALANCED,
+                    TimerMode.RELAX,
+                    /*isPaused=*/false, /*isOverTime=*/false,
+                    30.0, "Rest  5:00", "Start @ 8:30");
+            controller.setMainController(mockMc);
+
+            final var btnFinishRest = (Button) stage.getScene().getRoot().lookup("#btnFinishRest");
+            assertNotNull(btnFinishRest, "#btnFinishRest not found on FX thread");
+            btnFinishRest.fire();
+            return null;
+        });
+        WaitForAsyncUtils.waitForFxEvents();
+
+        Mockito.verify(mockMc, Mockito.times(1)).finishRest();
     }
 
     // =========================================================================

@@ -90,15 +90,16 @@ public final class WindowsTaskbarPreviewButtonsHelper {
     private static final int BUTTON_FINISH_WORK = 2003;
     private static final int BUTTON_TAKE_BREAK  = 2004;
     private static final int BUTTON_GO_TO_WORK  = 2005;
+    private static final int BUTTON_FINISH_REST = 2006;
 
-    private static final int BUTTON_COUNT = 5;
+    private static final int BUTTON_COUNT = 6;
     /**
-     * Total icon slots: 5 for the regular buttons + 1 extra for the Resume alternate
+     * Total icon slots: 6 for the regular buttons + 1 extra for the Resume alternate
      * icon that occupies the BUTTON_PAUSE slot when the WORK timer is paused.
      */
-    private static final int ICON_COUNT        = 6;
+    private static final int ICON_COUNT        = 7;
     /** Index inside {@link #buttonIcons} / {@link #buttonIconFiles} for the Resume icon. */
-    private static final int ICON_SLOT_RESUME  = 5;
+    private static final int ICON_SLOT_RESUME  = 6;
 
     // ── SVG path data (Material Design 24 × 24 viewbox, mirrors IconFactory) ────
     // These paths are duplicated here to avoid a JavaFX dependency from the
@@ -157,6 +158,7 @@ public final class WindowsTaskbarPreviewButtonsHelper {
     private Runnable onFinishWork;
     private Runnable onTakeBreak;
     private Runnable onGoToWork;
+    private Runnable onFinishRest;
 
     private boolean installed;
     private boolean buttonsAdded;
@@ -174,7 +176,8 @@ public final class WindowsTaskbarPreviewButtonsHelper {
                         Runnable onResume,
                         Runnable onFinishWork,
                         Runnable onTakeBreak,
-                        Runnable onGoToWork) {
+                        Runnable onGoToWork,
+                        Runnable onFinishRest) {
         if (!isWindows() || installed) {
             return;
         }
@@ -185,6 +188,7 @@ public final class WindowsTaskbarPreviewButtonsHelper {
         this.onFinishWork = onFinishWork;
         this.onTakeBreak  = onTakeBreak;
         this.onGoToWork   = onGoToWork;
+        this.onFinishRest = onFinishRest;
 
         try {
             if (!initializeComAndTaskbar()) {
@@ -279,11 +283,11 @@ public final class WindowsTaskbarPreviewButtonsHelper {
      * <p>Visibility rules:</p>
      * <ul>
      *   <li><b>Work phase – running</b>: visible: Reset, <em>Pause</em>, Finish Work, Take a Break;
-     *       Go to Work is <em>hidden</em>.</li>
+     *       Go to Work and Finish Rest are <em>hidden</em>.</li>
      *   <li><b>Work phase – paused</b>: the Pause slot is replaced by an active <em>Resume</em> button
      *       (same button ID 2002, swapped icon and tooltip) so the user can continue from the
      *       thumbnail preview.</li>
-     *   <li><b>Rest phase</b>: visible: Reset, Go to Work;
+     *   <li><b>Rest phase</b>: visible: Reset, Finish Rest, Go to Work;
      *       Pause/Resume, Finish Work, Take a Break are <em>hidden</em>.</li>
      * </ul>
      * Buttons are hidden via {@code THBF_HIDDEN} so they occupy no space in the
@@ -322,6 +326,10 @@ public final class WindowsTaskbarPreviewButtonsHelper {
 
         // Go to Work: hidden in work phase, visible and enabled in rest phase
         setButtonFlags(BUTTON_GO_TO_WORK,
+                !inWorkMode ? (THBF_ENABLED | THBF_DISMISSONCLICK) : THBF_HIDDEN);
+
+        // Finish Rest: hidden in work phase, visible and enabled in rest phase
+        setButtonFlags(BUTTON_FINISH_REST,
                 !inWorkMode ? (THBF_ENABLED | THBF_DISMISSONCLICK) : THBF_HIDDEN);
 
         try {
@@ -566,6 +574,7 @@ public final class WindowsTaskbarPreviewButtonsHelper {
             case BUTTON_FINISH_WORK -> onFinishWork;
             case BUTTON_TAKE_BREAK  -> onTakeBreak;
             case BUTTON_GO_TO_WORK  -> onGoToWork;
+            case BUTTON_FINISH_REST -> onFinishRest;
             default -> null;
         };
         if (action != null) {
@@ -588,16 +597,21 @@ public final class WindowsTaskbarPreviewButtonsHelper {
         buttonIcons[2] = loadButtonIconFromSvg(SVG_CALENDAR,  hexToAwtColor(IconFactory.COLOR_CALENDAR), 2);
         // Slot 3 – Take a break (gamepad) – sky blue (IconFactory.COLOR_RELAX)
         buttonIcons[3] = loadButtonIconFromSvg(SVG_RELAX,     hexToAwtColor(IconFactory.COLOR_RELAX),    3);
-        // Slot 4 – Go to Work (briefcase) – coral/tomato (IconFactory.COLOR_WORK)
-        buttonIcons[4] = loadButtonIconFromSvg(SVG_WORK,      hexToAwtColor(IconFactory.COLOR_WORK),     4);
-        // Slot 5 – Resume (play triangle) – teal (IconFactory.COLOR_PLAY); alternate for BUTTON_PAUSE slot when paused
+        // Slot 4 – Finish Rest (calendar) – coral/tomato (IconFactory.COLOR_WORK, matches btnFinishRest)
+        //          Placed before Go to Work so the REST-mode button order matches the main UI:
+        //          Reset | Finish Rest | Go to Work
+        buttonIcons[4] = loadButtonIconFromSvg(SVG_CALENDAR,  hexToAwtColor(IconFactory.COLOR_WORK),     4);
+        // Slot 5 – Go to Work (briefcase) – coral/tomato (IconFactory.COLOR_WORK)
+        buttonIcons[5] = loadButtonIconFromSvg(SVG_WORK,      hexToAwtColor(IconFactory.COLOR_WORK),     5);
+        // Slot 6 – Resume (play triangle) – teal (IconFactory.COLOR_PLAY); alternate for BUTTON_PAUSE slot when paused
         buttonIcons[ICON_SLOT_RESUME] = loadButtonIconFromSvg(SVG_RESUME, hexToAwtColor(IconFactory.COLOR_PLAY), ICON_SLOT_RESUME);
 
         configureButton(buttons[0], BUTTON_RESET,       buttonIcons[0], "Reset");
         configureButton(buttons[1], BUTTON_PAUSE,       buttonIcons[1], "Pause");
         configureButton(buttons[2], BUTTON_FINISH_WORK, buttonIcons[2], "Finish work and start short break");
         configureButton(buttons[3], BUTTON_TAKE_BREAK,  buttonIcons[3], "Take a break");
-        configureButton(buttons[4], BUTTON_GO_TO_WORK,  buttonIcons[4], "Go to Work");
+        configureButton(buttons[4], BUTTON_FINISH_REST, buttonIcons[4], "Finish rest and start work");
+        configureButton(buttons[5], BUTTON_GO_TO_WORK,  buttonIcons[5], "Go to Work");
     }
 
     /**
