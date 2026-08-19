@@ -1,0 +1,316 @@
+/* ============================================================
+   TomatoTimer JavaFX – style.css
+   Compact, dark-themed, transparent window skin.
+   Cyberpunk / neon palette — accent colours & gradients live
+   in TimerBackgroundHelper.java; icon colours in IconFactory.java.
+   ============================================================ */
+
+/* ---- Root / window ---------------------------------------- */
+.root-pane {
+    -fx-background-color: transparent;
+    /* Neon purple window border — visible against any OS background */
+    -fx-border-color: rgba(160,80,255,0.65);
+    -fx-border-width: 1;
+    -fx-border-radius: 2;
+}
+
+/* ---- Timer face root (buttons.fxml StackPane) ------------- */
+/* Initial fallback colour; overridden every tick by            */
+/* TimerBackgroundHelper.computeRootGradientCss() via Java.    */
+.buttons-root {
+    -fx-background-color: #06000F;
+}
+
+/* ---- Progress bar fills entire window height -------------- */
+.timer-progress {
+    -fx-pref-height: 44;
+    -fx-min-height:  44;
+    -fx-max-height:  Infinity;
+    /* -fx-accent set dynamically by ButtonsController as a fallback */
+}
+.timer-progress .bar {
+    -fx-background-radius: 0;
+    -fx-background-insets: 0;
+    /* gradient set dynamically by ButtonsController via .bar lookup */
+}
+.timer-progress .track {
+    -fx-background-radius: 0;
+    -fx-background-insets: 0;
+    /* near-transparent overlay so root gradient shows through;     */
+    /* value overridden each tick by TimerBackgroundHelper.          */
+    -fx-background-color: rgba(0, 0, 0, 0.18);
+}
+
+/* ---- Labels ----------------------------------------------- */
+.label-time {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+    -fx-alignment: center;
+    /* Neon glow: purple halo around the time text for cyberpunk feel.
+       The dark shadow offset keeps legibility against bright backgrounds. */
+    -fx-effect: dropshadow(gaussian, rgba(180,80,255,0.90), 14, 0.40, 0, 0);
+}
+
+.label-time-small {
+    -fx-font-size: 11px;
+    -fx-text-fill: #F0F0FF;
+    -fx-alignment: center-right;
+    -fx-effect: dropshadow(gaussian, rgba(150,60,255,0.75), 8, 0.30, 0, 0);
+}
+
+.label-info {
+    -fx-font-size: 9px;
+    -fx-text-fill: #D0D0FF;
+    -fx-effect: dropshadow(gaussian, rgba(120,50,200,0.60), 4, 0.15, 0, 0);
+}
+
+.label-version {
+    -fx-font-size: 9px;
+    -fx-text-fill: #aaaaaa;
+    -fx-padding: 0 4 0 4;
+}
+
+/* ---- Icon buttons (main timer row) ------------------------ */
+.icon-btn {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 4;
+    -fx-cursor: hand;
+    -fx-min-width:  34;
+    -fx-min-height: 34;
+}
+.icon-btn:hover {
+    /* Neon purple tinted ghost background + radiant glow on hover */
+    -fx-background-color: rgba(140,60,255,0.22);
+    -fx-background-radius: 4;
+    -fx-effect: dropshadow(gaussian, rgba(140,60,255,0.60), 10, 0.30, 0, 0);
+}
+.icon-btn:pressed {
+    /* Intense neon bloom on press */
+    -fx-background-color: rgba(180,80,255,0.42);
+    -fx-background-radius: 4;
+    -fx-effect: dropshadow(gaussian, rgba(200,100,255,0.85), 16, 0.50, 0, 0);
+}
+
+
+/* ---- Small icon buttons (sound settings) ------------------ */
+.icon-btn-sm {
+    -fx-background-color: rgba(255,255,255,0.08);
+    -fx-border-color: rgba(255,255,255,0.18);
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+    -fx-text-fill: #eeeeee;
+    -fx-font-size: 11px;
+    -fx-padding: 1 3 1 3;
+    -fx-cursor: hand;
+    -fx-min-width:  24;
+    -fx-min-height: 20;
+}
+.icon-btn-sm:hover   { -fx-background-color: rgba(255,255,255,0.2); }
+.icon-btn-sm:pressed { -fx-background-color: rgba(255,255,255,0.35); }
+
+/* ---- Window-control buttons (top-right) ------------------- */
+.win-ctrl-btn {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 2;
+    -fx-cursor: hand;
+    -fx-min-width:  20;
+    -fx-min-height: 20;
+    -fx-max-width:  20;
+    -fx-max-height: 20;
+}
+.win-ctrl-btn:hover   { -fx-background-color: rgba(255,255,255,0.18); -fx-background-radius: 3; }
+.win-ctrl-btn:pressed { -fx-background-color: rgba(200,50,50,0.55);   -fx-background-radius: 3; }
+
+/* ToggleButton selected state for AlwaysOnTop */
+.win-ctrl-btn:selected {
+    -fx-background-color: rgba(162,155,254,0.30);  /* matches COLOR_PIN_ON */
+    -fx-background-radius: 3;
+}
+
+/* ---- Settings / sound-settings page background ------------ */
+.page-root {
+    -fx-background-color: #1e1e1e;
+    -fx-min-height: 44;
+}
+
+/* ---- Setting labels --------------------------------------- */
+.setting-label {
+    -fx-text-fill: #cccccc;
+    -fx-font-size: 11px;
+}
+
+/* ---- Sound section labels --------------------------------- */
+.sound-label {
+    -fx-text-fill: #bbbbbb;
+    -fx-font-size: 9px;
+    -fx-alignment: center;
+}
+
+/* ---- Spinner ----------------------------------------------- */
+.spinner {
+    -fx-background-color: #2e2e2e;
+}
+.spinner .text-field {
+    -fx-text-fill: white;
+    -fx-background-color: #2e2e2e;
+    -fx-border-color: #555;
+    -fx-border-radius: 2;
+}
+
+/* ---- CheckBox ---------------------------------------------- */
+.check-box {
+    -fx-text-fill: #cccccc;
+    -fx-font-size: 10px;
+}
+/* Dark box background */
+.check-box .box {
+    -fx-background-color: #2e2e2e;
+    -fx-border-color: #555;
+    -fx-border-radius: 2;
+    -fx-background-radius: 2;
+}
+.check-box:hover .box {
+    -fx-border-color: #A29BFE;
+}
+.check-box:selected .box {
+    -fx-background-color: #2e2e2e;
+    -fx-border-color: #A29BFE;
+}
+/* White checkmark (two-layer paint matches Modena highlight convention) */
+.check-box .mark {
+    -fx-background-color: transparent;
+}
+.check-box:selected .mark {
+    -fx-background-color: white, white;
+}
+
+/* ---- RadioButton ------------------------------------------- */
+.radio-button {
+    -fx-text-fill: #cccccc;
+    -fx-font-size: 10px;
+}
+.radio-button .radio {
+    -fx-background-color: #2e2e2e;
+    -fx-border-color: #666666;
+    -fx-border-radius: 50%;
+    -fx-background-radius: 50%;
+}
+.radio-button:selected .radio .dot {
+    -fx-background-color: #A29BFE;  /* matches COLOR_PIN_ON / settings lavender */
+    -fx-background-radius: 50%;
+}
+.radio-button:hover .radio {
+    -fx-border-color: #A29BFE;
+}
+
+/* ---- TextField -------------------------------------------- */
+.text-field {
+    -fx-background-color: #2a2a2a;
+    -fx-text-fill: #eeeeee;
+    -fx-border-color: #555555;
+    -fx-border-radius: 2;
+    -fx-background-radius: 2;
+    -fx-font-size: 11px;
+}
+.text-field:focused {
+    -fx-border-color: #4ECDC4;  /* teal focus ring */
+}
+
+/* ---- MenuButton / ContextMenu ------------------------------ */
+.menu-button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+.menu-button .arrow-button { -fx-padding: 0; }
+.menu-button .arrow        { -fx-shape: ""; -fx-padding: 0; }
+
+.context-menu {
+    -fx-background-color: #1e1e1e;
+    -fx-border-color: #555;
+}
+.menu-item { -fx-background-color: #1e1e1e; }
+.menu-item:focused { -fx-background-color: #3a3a3a; }
+.menu-item .label  { -fx-text-fill: #dddddd; }
+
+/* ---- ScrollPane ------------------------------------------- */
+.scroll-pane {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+}
+.scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+.scroll-bar:horizontal { -fx-pref-height: 8; }
+.scroll-bar:horizontal .thumb { -fx-background-color: #555; }
+.scroll-bar:horizontal .track { -fx-background-color: #333; }
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button { -fx-padding: 0; }
+
+/* ---- ComboBox (dark theme – matches spinner/text-field palette) */
+.combo-box {
+    -fx-background-color: #2e2e2e;
+    -fx-border-color: #555;
+    -fx-border-radius: 2;
+    -fx-background-radius: 2;
+}
+/* Hover: slightly lighter border, no colour shift */
+.combo-box:hover {
+    -fx-border-color: #777;
+}
+/* Focused: subtle teal edge — same accent as TextField (#4ECDC4) but at
+   ~55 % opacity so it reads as a gentle ring rather than a bold highlight.
+   A faint dropshadow adds depth without being visually noisy. */
+.combo-box:focused {
+    -fx-border-color: rgba(78, 205, 196, 0.55);
+    -fx-effect: dropshadow(gaussian, rgba(78, 205, 196, 0.20), 5, 0.10, 0, 0);
+}
+/* Arrow button picks up a barely-there teal wash on focus so the whole
+   control feels unified, but remains visually secondary to the border. */
+.combo-box:focused .arrow-button {
+    -fx-background-color: rgba(78, 205, 196, 0.10);
+}
+/* Display cell shown in the closed combo box */
+.combo-box .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #eeeeee;
+    -fx-padding: 2 4 2 4;
+    -fx-font-size: 11px;
+}
+/* Arrow-button strip on the right */
+.combo-box .arrow-button {
+    -fx-background-color: #3a3a3a;
+    -fx-background-radius: 0 2 2 0;
+    -fx-padding: 0 6 0 6;
+}
+.combo-box .arrow-button .arrow {
+    -fx-background-color: #cccccc;
+}
+/* Popup list container */
+.combo-box-popup .list-view {
+    -fx-background-color: #1e1e1e;
+    -fx-border-color: #555;
+    -fx-border-radius: 2;
+    -fx-background-radius: 2;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.55), 8, 0, 0, 3);
+}
+/* Popup list items */
+.combo-box-popup .list-cell {
+    -fx-background-color: #1e1e1e;
+    -fx-text-fill: #eeeeee;
+    -fx-padding: 4 8 4 8;
+    -fx-font-size: 11px;
+}
+.combo-box-popup .list-cell:filled:hover {
+    -fx-background-color: #3a3a3a;
+    -fx-text-fill: white;
+}
+.combo-box-popup .list-cell:filled:selected,
+.combo-box-popup .list-cell:filled:selected:hover {
+    -fx-background-color: rgba(162, 155, 254, 0.35);  /* lavender accent – matches radio-button */
+    -fx-text-fill: white;
+}
+
+

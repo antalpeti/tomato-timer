@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+
+<!--
+  taskbar_settings.fxml – taskbar icon display settings page.
+  Icons are assigned programmatically by TaskbarSettingsController (SVGPath via IconFactory).
+-->
+<HBox xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.tomatotimer.controller.TaskbarSettingsController"
+      fx:id="rootBox"
+      prefHeight="44" maxWidth="Infinity"
+      alignment="CENTER_LEFT"
+      styleClass="page-root">
+
+    <fx:define>
+        <ToggleGroup fx:id="layoutGroup"/>
+    </fx:define>
+
+    <!-- Back button – graphic set by controller -->
+    <Button fx:id="btnBack"
+            styleClass="icon-btn"
+            onAction="#onBack"
+            focusTraversable="false">
+        <tooltip><Tooltip text="Back to settings"/></tooltip>
+    </Button>
+
+    <ScrollPane HBox.hgrow="ALWAYS"
+                fitToHeight="true"
+                vbarPolicy="NEVER"
+                hbarPolicy="AS_NEEDED"
+                style="-fx-background-color: transparent; -fx-background: transparent;">
+
+        <HBox fx:id="taskbarRow" alignment="CENTER_LEFT" spacing="8" style="-fx-padding: 2 4 2 4;">
+
+            <!-- Enable / disable taskbar icon -->
+            <CheckBox fx:id="cbTaskbarEnable"
+                      text="Enable"
+                      selected="true"
+                      onAction="#onEnableChanged"
+                      focusTraversable="false">
+                <tooltip><Tooltip text="Show countdown in the Windows taskbar icon"/></tooltip>
+            </CheckBox>
+
+            <Separator orientation="VERTICAL" prefHeight="30"/>
+
+            <!-- Font size spinner – MM:SS display (hours == 0) -->
+            <Label fx:id="lblFontSizeMmss" text="MM:SS font:" styleClass="setting-label"/>
+            <Spinner fx:id="spFontSizeMmss" prefWidth="60" editable="true" focusTraversable="false">
+                <valueFactory>
+                    <SpinnerValueFactory.IntegerSpinnerValueFactory min="8" max="28" initialValue="23"/>
+                </valueFactory>
+                <tooltip><Tooltip text="Font size for MM:SS display (range 8–28, default 23). Scales with icon size."/></tooltip>
+            </Spinner>
+
+            <Separator orientation="VERTICAL" prefHeight="30"/>
+
+            <!-- Font size spinner – HH:MM:SS display (hours > 0) -->
+            <Label fx:id="lblFontSizeHhmmss" text="HH:MM:SS font:" styleClass="setting-label"/>
+            <Spinner fx:id="spFontSizeHhmmss" prefWidth="60" editable="true" focusTraversable="false">
+                <valueFactory>
+                    <SpinnerValueFactory.IntegerSpinnerValueFactory min="8" max="28" initialValue="17"/>
+                </valueFactory>
+                <tooltip><Tooltip text="Font size for HH:MM:SS display (range 8–28, default 17). Scales with icon size."/></tooltip>
+            </Spinner>
+
+            <Separator orientation="VERTICAL" prefHeight="30"/>
+
+            <!-- Layout orientation -->
+            <Label fx:id="lblLayout" text="Layout:" styleClass="setting-label"/>
+            <RadioButton fx:id="rbVertical"
+                         text="Vertical"
+                         toggleGroup="$layoutGroup"
+                         onAction="#onLayoutChanged"
+                         focusTraversable="false">
+                <tooltip><Tooltip text="Stacked: MM/SS (2 lines) or HH/MM/SS (3 lines)"/></tooltip>
+            </RadioButton>
+            <RadioButton fx:id="rbHorizontal"
+                         text="Horizontal"
+                         toggleGroup="$layoutGroup"
+                         onAction="#onLayoutChanged"
+                         focusTraversable="false">
+                <tooltip><Tooltip text="Single line: MM:SS or HH:MM:SS"/></tooltip>
+            </RadioButton>
+
+        </HBox>
+    </ScrollPane>
+</HBox>
+

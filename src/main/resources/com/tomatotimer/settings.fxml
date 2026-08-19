@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+<?import javafx.util.*?>
+
+<!--
+  settings.fxml – equivalent to Page_Settings.xaml.
+  Icons are assigned programmatically by SettingsController (SVGPath via IconFactory).
+-->
+<HBox xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.tomatotimer.controller.SettingsController"
+      fx:id="rootBox"
+      prefHeight="44" maxWidth="Infinity"
+      alignment="CENTER_LEFT"
+      styleClass="page-root">
+
+    <!-- Back button – graphic set by controller -->
+    <Button fx:id="btnBack"
+            styleClass="icon-btn"
+            onAction="#onBack"
+            focusTraversable="false">
+        <tooltip><Tooltip text="Back to timer"/></tooltip>
+    </Button>
+
+    <!-- Scrollable settings -->
+    <ScrollPane HBox.hgrow="ALWAYS"
+                fitToHeight="true"
+                vbarPolicy="NEVER"
+                hbarPolicy="AS_NEEDED"
+                style="-fx-background-color: transparent; -fx-background: transparent;">
+
+        <HBox fx:id="settingsRow" alignment="CENTER_LEFT" spacing="6" style="-fx-padding: 2 4 2 4;">
+
+            <!-- Work time -->
+            <Label fx:id="lblWork" text="Work:" styleClass="setting-label"/>
+            <Spinner fx:id="spWorkTime" prefWidth="60" editable="true" focusTraversable="false">
+                <valueFactory>
+                    <SpinnerValueFactory.IntegerSpinnerValueFactory min="1" max="120" initialValue="25"/>
+                </valueFactory>
+            </Spinner>
+
+            <!-- Short rest time -->
+            <Label fx:id="lblRest" text="Rest:" styleClass="setting-label"/>
+            <Spinner fx:id="spRelaxTime" prefWidth="60" editable="true" focusTraversable="false">
+                <valueFactory>
+                    <SpinnerValueFactory.IntegerSpinnerValueFactory min="1" max="60" initialValue="5"/>
+                </valueFactory>
+            </Spinner>
+
+            <!-- Long rest time -->
+            <Label fx:id="lblLong" text="Long:" styleClass="setting-label"/>
+            <Spinner fx:id="spLongRelaxTime" prefWidth="60" editable="true" focusTraversable="false">
+                <valueFactory>
+                    <SpinnerValueFactory.IntegerSpinnerValueFactory min="1" max="120" initialValue="15"/>
+                </valueFactory>
+            </Spinner>
+
+            <!-- Theme settings button – navigates to dedicated Theme/Glow/Selection settings page -->
+            <Separator orientation="VERTICAL" prefHeight="30"/>
+            <Button fx:id="btnThemeSettings"
+                    styleClass="icon-btn" onAction="#onThemeSettings"
+                    focusTraversable="false">
+                <tooltip><Tooltip text="Theme settings (preset, glow, selection mode)"/></tooltip>
+            </Button>
+
+            <!-- Calendar settings button – navigates to dedicated Google Calendar settings page -->
+            <!-- margin left=2 right=2: symmetric breathing room around separators -->
+            <Separator orientation="VERTICAL" prefHeight="30">
+                <HBox.margin><Insets left="2" right="2"/></HBox.margin>
+            </Separator>
+
+            <Button fx:id="btnCalendarSettings"
+                    styleClass="icon-btn" onAction="#onCalendarSettings"
+                    focusTraversable="false">
+                <tooltip><Tooltip text="Google Calendar settings"/></tooltip>
+            </Button>
+
+            <Separator orientation="VERTICAL" prefHeight="30">
+                <HBox.margin><Insets left="2" right="2"/></HBox.margin>
+            </Separator>
+
+            <!-- Taskbar settings button – graphic set by controller -->
+            <Button fx:id="btnTaskbarSettings"
+                    styleClass="icon-btn" onAction="#onTaskbarSettings"
+                    focusTraversable="false">
+                <tooltip><Tooltip text="Taskbar display settings (font size, layout)"/></tooltip>
+            </Button>
+
+            <!-- same 2+2 margin: symmetric around separator between taskbar and sound -->
+            <Separator orientation="VERTICAL" prefHeight="30">
+                <HBox.margin><Insets left="2" right="2"/></HBox.margin>
+            </Separator>
+
+            <!-- Sound settings button – graphic set by controller -->
+            <!-- margin right=2: trailing edge matches the icon-group separator rhythm (6+2=8 px) -->
+            <Button fx:id="btnSoundSettings"
+                    styleClass="icon-btn" onAction="#onSoundSettings"
+                    focusTraversable="false">
+                <tooltip><Tooltip text="Sound settings"/></tooltip>
+                <HBox.margin><Insets right="2"/></HBox.margin>
+            </Button>
+
+        </HBox>
+    </ScrollPane>
+
+    <!-- Version label -->
+    <Label fx:id="labelVersion" text="v1.0.0"
+           styleClass="label-version"
+           HBox.hgrow="NEVER"/>
+
+</HBox>
+

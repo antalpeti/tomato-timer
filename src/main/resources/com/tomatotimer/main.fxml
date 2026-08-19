@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+
+<!--
+  main.fxml – outermost shell.
+  Hosts the content pane (where pages are swapped in) and the always-visible
+  window controls (always-on-top toggle + close menu).
+  Window-control icons are assigned programmatically by MainController (SVGPath via IconFactory).
+-->
+<StackPane xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.tomatotimer.controller.MainController"
+           fx:id="rootPane"
+           styleClass="root-pane"
+           prefWidth="260" prefHeight="44"
+           minWidth="160" minHeight="44">
+
+    <!-- Page content fills the whole pane -->
+    <StackPane fx:id="contentPane" maxWidth="Infinity" maxHeight="Infinity" />
+
+    <!-- Window controls – overlaid top-right; fade in/out on mouse-enter/leave -->
+    <HBox fx:id="windowControlPane"
+          alignment="TOP_RIGHT"
+          pickOnBounds="false"
+          StackPane.alignment="TOP_RIGHT">
+
+        <!-- Always-on-top toggle – graphic set by controller -->
+        <ToggleButton fx:id="btnAlwaysOnTop"
+                      styleClass="win-ctrl-btn"
+                      onAction="#handleAlwaysOnTop"
+                      prefWidth="20" prefHeight="20"
+                      focusTraversable="false">
+            <tooltip><Tooltip text="Always On Top"/></tooltip>
+        </ToggleButton>
+
+        <!-- Close menu button – graphic set by controller -->
+        <MenuButton fx:id="btnClose"
+                    styleClass="win-ctrl-btn"
+                    prefWidth="20" prefHeight="20"
+                    focusTraversable="false">
+            <tooltip><Tooltip text="Close"/></tooltip>
+            <items>
+                <MenuItem text="Close (save state)"        onAction="#handleClose"/>
+                <MenuItem text="Close (don't save state)"  onAction="#handleCloseNoSave"/>
+            </items>
+        </MenuButton>
+    </HBox>
+</StackPane>

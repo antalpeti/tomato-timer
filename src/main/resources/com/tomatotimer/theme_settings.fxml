@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+
+<!--
+  theme_settings.fxml – Neon theme preset, glow profile, and selection-mode settings page.
+  Icons are assigned programmatically by ThemeSettingsController (SVGPath via IconFactory).
+-->
+<HBox xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.tomatotimer.controller.ThemeSettingsController"
+      fx:id="rootBox"
+      prefHeight="44" maxWidth="Infinity"
+      alignment="CENTER_LEFT"
+      styleClass="page-root">
+
+    <!-- Back button – graphic set by controller -->
+    <Button fx:id="btnBack"
+            styleClass="icon-btn"
+            onAction="#onBack"
+            focusTraversable="false">
+        <tooltip><Tooltip text="Back to settings"/></tooltip>
+    </Button>
+
+    <ScrollPane HBox.hgrow="ALWAYS"
+                fitToHeight="true"
+                vbarPolicy="NEVER"
+                hbarPolicy="AS_NEEDED"
+                style="-fx-background-color: transparent; -fx-background: transparent;">
+
+        <HBox fx:id="themeRow" alignment="CENTER_LEFT" spacing="6" style="-fx-padding: 2 4 2 4;">
+
+            <!-- Neon theme preset -->
+            <Label fx:id="lblPreset" text="Theme:" styleClass="setting-label"/>
+            <ComboBox fx:id="cbNeonPreset" prefWidth="120" focusTraversable="false">
+                <tooltip><Tooltip text="Neon visual theme preset"/></tooltip>
+            </ComboBox>
+
+            <!-- Neon glow intensity profile -->
+            <Separator orientation="VERTICAL" prefHeight="30"/>
+            <Label fx:id="lblGlow" text="Glow:" styleClass="setting-label"/>
+            <ComboBox fx:id="cbNeonGlowProfile" prefWidth="100" focusTraversable="false">
+                <tooltip><Tooltip text="Glow intensity profile: Soft / Balanced / Vivid"/></tooltip>
+            </ComboBox>
+
+            <!-- Theme selection mode – applied on each WORK phase start -->
+            <Separator orientation="VERTICAL" prefHeight="30"/>
+            <Label fx:id="lblSelection" text="Selection:" styleClass="setting-label"/>
+            <ComboBox fx:id="cbThemeSelectionMode" prefWidth="100" focusTraversable="false">
+                <tooltip><Tooltip text="Theme selection on WORK start: Static / Sequential / Random / Shuffle"/></tooltip>
+            </ComboBox>
+
+        </HBox>
+    </ScrollPane>
+</HBox>
+

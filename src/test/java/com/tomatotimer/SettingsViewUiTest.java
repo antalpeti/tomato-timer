@@ -1,0 +1,345 @@
+package com.tomatotimer;
+
+import com.tomatotimer.controller.MainController;
+import com.tomatotimer.controller.SettingsController;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.Spinner;
+import javafx.scene.layout.HBox;
+import javafx.stage.Stage;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.testfx.util.WaitForAsyncUtils;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+@SuppressWarnings("unchecked")
+
+/**
+ * TestFX-based UI integration tests for {@code settings.fxml} /
+ * {@link SettingsController}.
+ *
+ * <p>All tests are guarded by {@link JavaFxTestHelper#ensureToolkitStarted()} and
+ * skipped automatically in headless / CI environments.</p>
+ *
+ * <h3>Coverage targets</h3>
+ * <ul>
+ *   <li>Structural node presence and correct types.</li>
+ *   <li>{@link SettingsController#syncFromSettings()} propagates AppSettings values to spinners.</li>
+ *   <li>Navigation button fire() calls the correct {@link MainController} method.</li>
+ * </ul>
+ */
+@DisplayName("SettingsView – TestFX UI integration tests")
+class SettingsViewUiTest {
+
+    private Stage             stage;
+    private SettingsController controller;
+
+    // ── JavaFX toolkit guard ─────────────────────────────────────────────────
+
+    @BeforeAll
+    static void requireFxToolkit() {
+        Assumptions.assumeTrue(
+                JavaFxTestHelper.ensureToolkitStarted(),
+                "JavaFX toolkit unavailable – SettingsView UI tests skipped");
+    }
+
+    // ── Per-test fixture setup ───────────────────────────────────────────────
+
+    @BeforeEach
+    void setUp() throws Exception {
+        JavaFxTestHelper.runOnFxThread(() -> {
+            final var loader = new FXMLLoader(App.class.getResource("settings.fxml"));
+            final HBox root = loader.load();
+            controller = loader.getController();
+            stage = new Stage();
+            stage.setScene(new Scene(root, 520, 44));
+            stage.show();
+            return null;
+        });
+        WaitForAsyncUtils.waitForFxEvents();
+    }
+
+    @AfterEach
+    void tearDown() throws Exception {
+        JavaFxTestHelper.runOnFxThread(() -> {
+            stage.hide();
+            return null;
+        });
+    }
+
+    // =========================================================================
+    //  Test 1 – Root node type
+    // =========================================================================
+
+    @Test
+    @DisplayName("settings.fxml root node is an HBox")
+    void rootIsHBox() {
+        assertInstanceOf(HBox.class, stage.getScene().getRoot(),
+                "The root node in settings.fxml must be an HBox");
+    }
+
+    // =========================================================================
+    //  Test 2 – btnBack presence
+    // =========================================================================
+
+    @Test
+    @DisplayName("btnBack is present and is a Button")
+    void btnBackIsPresent() {
+        final var node = stage.getScene().getRoot().lookup("#btnBack");
+        assertNotNull(node, "#btnBack must be present in settings.fxml");
+        assertInstanceOf(Button.class, node);
+    }
+
+    // =========================================================================
+    //  Test 3 – Spinner nodes present
+    // =========================================================================
+
+    @Test
+    @DisplayName("Work / Rest / LongRest spinners are present")
+    void spinnersArePresent() {
+        final var root = stage.getScene().getRoot();
+        assertNotNull(root.lookup("#spWorkTime"),      "#spWorkTime must be present");
+        assertNotNull(root.lookup("#spRelaxTime"),     "#spRelaxTime must be present");
+        assertNotNull(root.lookup("#spLongRelaxTime"), "#spLongRelaxTime must be present");
+    }
+
+    // =========================================================================
+    //  Test 4 – Navigation buttons present
+    // =========================================================================
+
+    @Test
+    @DisplayName("Navigation icon buttons are present")
+    void navButtonsArePresent() {
+        final var root = stage.getScene().getRoot();
+        assertNotNull(root.lookup("#btnThemeSettings"),    "#btnThemeSettings must be present");
+        assertNotNull(root.lookup("#btnCalendarSettings"), "#btnCalendarSettings must be present");
+        assertNotNull(root.lookup("#btnSoundSettings"),    "#btnSoundSettings must be present");
+        assertNotNull(root.lookup("#btnTaskbarSettings"),  "#btnTaskbarSettings must be present");
+    }
+
+    // =========================================================================
+    //  Test 5 – Version label
+    // =========================================================================
+
+    @Test
+    @DisplayName("labelVersion is present and its text starts with 'v'")
+    void labelVersionStartsWithV() {
+        final var node = stage.getScene().getRoot().lookup("#labelVersion");
+        assertNotNull(node, "#labelVersion must be present in settings.fxml");
+        assertInstanceOf(Label.class, node);
+        assertTrue(((Label) node).getText().startsWith("v"),
+                "Version label text must start with 'v'");
+    }
+
+    // =========================================================================
+    //  Test 6 – syncFromSettings() propagates AppSettings values to spinners
+    // =========================================================================
+
+    @Test
+    @DisplayName("syncFromSettings() sets spinner values from AppSettings")
+    @SuppressWarnings("unchecked")
+    void syncFromSettingsUpdatesSpinners() throws Exception {
+        final var settings  = AppSettings.getInstance();
+        final int origWork  = settings.getWorkTime();
+        final int origRelax = settings.getRelaxTime();
+        final int origLong  = settings.getRelaxTimeLong();
+        try {
+            settings.setWorkTime(20);
+            settings.setRelaxTime(7);
+            settings.setRelaxTimeLong(12);
+
+            JavaFxTestHelper.runOnFxThread(() -> {
+                controller.syncFromSettings();
+                return null;
+            });
+            WaitForAsyncUtils.waitForFxEvents();
+
+            final var root    = stage.getScene().getRoot();
+            final var spWork  = (Spinner<Integer>) root.lookup("#spWorkTime");
+            final var spRelax = (Spinner<Integer>) root.lookup("#spRelaxTime");
+            final var spLong  = (Spinner<Integer>) root.lookup("#spLongRelaxTime");
+
+            assertEquals(20, (int) spWork.getValue(),
+                    "spWorkTime must reflect setWorkTime(20)");
+            assertEquals(7, (int) spRelax.getValue(),
+                    "spRelaxTime must reflect setRelaxTime(7)");
+            assertEquals(12, (int) spLong.getValue(),
+                    "spLongRelaxTime must reflect setRelaxTimeLong(12)");
+        } finally {
+            settings.setWorkTime(origWork);
+            settings.setRelaxTime(origRelax);
+            settings.setRelaxTimeLong(origLong);
+        }
+    }
+
+    // =========================================================================
+    //  Test 7 – btnBack.fire() → mainController.showButtons()
+    // =========================================================================
+
+    @Test
+    @DisplayName("btnBack.fire() triggers mainController.showButtons()")
+    void btnBackFiresShowButtons() throws Exception {
+        final var mockMc = Mockito.mock(MainController.class);
+        JavaFxTestHelper.runOnFxThread(() -> {
+            controller.setMainController(mockMc);
+            final var btn = (Button) stage.getScene().getRoot().lookup("#btnBack");
+            assertNotNull(btn, "#btnBack not found on FX thread");
+            btn.fire();
+            return null;
+        });
+        WaitForAsyncUtils.waitForFxEvents();
+        Mockito.verify(mockMc, Mockito.times(1)).showButtons();
+    }
+
+    // =========================================================================
+    //  Test 8 – btnThemeSettings.fire() → mainController.showThemeSettings()
+    // =========================================================================
+
+    @Test
+    @DisplayName("btnThemeSettings.fire() triggers mainController.showThemeSettings()")
+    void btnThemeSettingsFiresShowThemeSettings() throws Exception {
+        final var mockMc = Mockito.mock(MainController.class);
+        JavaFxTestHelper.runOnFxThread(() -> {
+            controller.setMainController(mockMc);
+            final var btn = (Button) stage.getScene().getRoot().lookup("#btnThemeSettings");
+            assertNotNull(btn, "#btnThemeSettings not found on FX thread");
+            btn.fire();
+            return null;
+        });
+        WaitForAsyncUtils.waitForFxEvents();
+        Mockito.verify(mockMc, Mockito.times(1)).showThemeSettings();
+    }
+
+    // =========================================================================
+    //  Test 9 – btnCalendarSettings.fire() → mainController.showCalendarSettings()
+    // =========================================================================
+
+    @Test
+    @DisplayName("btnCalendarSettings.fire() triggers mainController.showCalendarSettings()")
+    void btnCalendarSettingsFiresShowCalendarSettings() throws Exception {
+        final var mockMc = Mockito.mock(MainController.class);
+        JavaFxTestHelper.runOnFxThread(() -> {
+            controller.setMainController(mockMc);
+            final var btn = (Button) stage.getScene().getRoot().lookup("#btnCalendarSettings");
+            assertNotNull(btn, "#btnCalendarSettings not found on FX thread");
+            btn.fire();
+            return null;
+        });
+        WaitForAsyncUtils.waitForFxEvents();
+        Mockito.verify(mockMc, Mockito.times(1)).showCalendarSettings();
+    }
+
+    // =========================================================================
+    //  Test 10 – btnSoundSettings.fire() → mainController.showSoundSettings()
+    // =========================================================================
+
+    @Test
+    @DisplayName("btnSoundSettings.fire() triggers mainController.showSoundSettings()")
+    void btnSoundSettingsFiresShowSoundSettings() throws Exception {
+        final var mockMc = Mockito.mock(MainController.class);
+        JavaFxTestHelper.runOnFxThread(() -> {
+            controller.setMainController(mockMc);
+            final var btn = (Button) stage.getScene().getRoot().lookup("#btnSoundSettings");
+            assertNotNull(btn, "#btnSoundSettings not found on FX thread");
+            btn.fire();
+            return null;
+        });
+        WaitForAsyncUtils.waitForFxEvents();
+        Mockito.verify(mockMc, Mockito.times(1)).showSoundSettings();
+    }
+
+    // =========================================================================
+    //  Test 11 – btnTaskbarSettings.fire() → mainController.showTaskbarSettings()
+    // =========================================================================
+
+    @Test
+    @DisplayName("btnTaskbarSettings.fire() triggers mainController.showTaskbarSettings()")
+    void btnTaskbarSettingsFiresShowTaskbarSettings() throws Exception {
+        final var mockMc = Mockito.mock(MainController.class);
+        JavaFxTestHelper.runOnFxThread(() -> {
+            controller.setMainController(mockMc);
+            final var btn = (Button) stage.getScene().getRoot().lookup("#btnTaskbarSettings");
+            assertNotNull(btn, "#btnTaskbarSettings not found on FX thread");
+            btn.fire();
+            return null;
+        });
+        WaitForAsyncUtils.waitForFxEvents();
+        Mockito.verify(mockMc, Mockito.times(1)).showTaskbarSettings();
+    }
+
+    // =========================================================================
+    //  Test 12 – regression: initialize() must pre-populate spinners from AppSettings
+    //             (not from the FXML initialValue stubs) so that firing any navigation
+    //             button (which calls syncToSettings()) never overwrites the registry
+    //             with a stale FXML stub value.
+    // =========================================================================
+
+    @Test
+    @DisplayName("initialize() pre-populates spWorkTime from AppSettings, not FXML stub – " +
+            "btnBack.fire() must preserve the stored work_time")
+    void initializePrePopulatesWorkTimeAndBtnBackPreservesIt() throws Exception {
+        // Regression for: SettingsController.initialize() registered change-listeners
+        // without first calling syncFromSettings().  Firing any nav button (onBack,
+        // onThemeSettings, etc.) invoked syncToSettings() which wrote the FXML stub
+        // initialValue="30" to the Windows Registry, overriding the migration default 25.
+        final var settings = AppSettings.getInstance();
+        final int origWork = settings.getWorkTime();
+        final Stage[] freshStage = new Stage[1];
+        try {
+            settings.setWorkTime(42); // value different from both current FXML stub (25) and old stub (30)
+
+            // Load a FRESH FXML instance *after* setting the value so initialize() picks it up.
+            final SettingsController[] freshCtrl = new SettingsController[1];
+            JavaFxTestHelper.runOnFxThread(() -> {
+                final var loader = new FXMLLoader(App.class.getResource("settings.fxml"));
+                final HBox freshRoot = loader.load();
+                freshCtrl[0] = loader.getController();
+                freshStage[0] = new Stage();
+                freshStage[0].setScene(new Scene(freshRoot, 520, 44));
+                freshStage[0].show();
+                return null;
+            });
+            WaitForAsyncUtils.waitForFxEvents();
+
+            // Spinner must already reflect AppSettings (initialize() calls syncFromSettings()).
+            final var sp = (Spinner<Integer>) freshStage[0].getScene().getRoot().lookup("#spWorkTime");
+            assertNotNull(sp, "#spWorkTime must be present");
+            assertEquals(42, (int) sp.getValue(),
+                    "spWorkTime must show 42 (AppSettings value) immediately after FXML load; " +
+                    "initialize() must call syncFromSettings() before returning");
+
+            // Fire Back WITHOUT an explicit syncFromSettings() – must not corrupt work_time.
+            final var mockMc = Mockito.mock(MainController.class);
+            JavaFxTestHelper.runOnFxThread(() -> {
+                freshCtrl[0].setMainController(mockMc);
+                ((Button) freshStage[0].getScene().getRoot().lookup("#btnBack")).fire();
+                return null;
+            });
+            WaitForAsyncUtils.waitForFxEvents();
+
+            assertEquals(42, settings.getWorkTime(),
+                    "work_time must remain 42 after btnBack fires without explicit syncFromSettings(); " +
+                    "syncToSettings() must not write the old FXML initialValue stub to prefs");
+        } finally {
+            settings.setWorkTime(origWork);
+            if (freshStage[0] != null) {
+                JavaFxTestHelper.runOnFxThread(() -> {
+                    freshStage[0].hide();
+                    return null;
+                });
+            }
+        }
+    }
+}
+
